@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pneuma Nomads • Beading Patterns</title>
+
+  <!-- Root-relative so it works from any folder -->
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <!-- Favicons -->
+  <link rel="icon" type="image/png" href="/my-favicon/favicon-96x96.png" sizes="96x96" />
+  <link rel="icon" type="image/svg+xml" href="/my-favicon/favicon.svg" />
+  <link rel="shortcut icon" href="/my-favicon/favicon.ico" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/my-favicon/apple-touch-icon.png" />
+  <meta name="apple-mobile-web-app-title" content="PN" />
+  <link rel="manifest" href="/my-favicon/site.webmanifest" />
+
+  <meta name="description" content="Nomadic couple living full-time in an RV. Sharing travel adventures, off-grid RV life tips, and creative handmade + digital projects." />
+  <meta name="keywords" content="handmade beadwork, beading patterns, digital patterns, rv life, travel, nature, gay, couple, digital nomads, nomadic lifestyle, pneuma nomads" />
+  <meta name="author" content="Chad Riley" />
+</head>
+
+<body>
+  <canvas id="dragon-bg" aria-hidden="true"></canvas>
+  <!-- Navigation -->
+  <nav id="navbar">
+    <div class="container">
+      <div class="logo">
+        <a href="/#hero" aria-label="Go to top">
+          <img
+            src="/images/pn_logo.svg"
+            alt="Pneuma Nomads logo Retro looks PN"
+            width="50"
+            height="50"
+          />
+        </a>
+      </div>
+
+      <div class="nav-links">
+        <a href="/#hero">Home</a>
+      </div>
+
+      <button class="hamburger" aria-label="Menu">
+        <span></span><span></span><span></span>
+      </button>
+    </div>
+  </nav>
+
+<!-- Main -->
+<section id="beadingpatterns">
+  <div class="container">
+    <h1>Beading Patterns</h1>
+    <p>Click “View” to open in a new tab, or “Download” to save the PDF.</p>
+
+    <div class="bp-layout">
+      <aside class="bp-filters" aria-label="Filter patterns" aria-controls="bp-cards">
+        <form id="bp-filter-form">
+          <fieldset>
+            <legend>Types</legend>
+            <div>
+              <input type="checkbox" id="bp-type-brick" name="type" value="brick-stitch" />
+              <label for="bp-type-brick">Brick Stitch</label>
+            </div>
+            <div>
+              <input type="checkbox" id="bp-type-loom" name="type" value="loom" />
+              <label for="bp-type-loom">Loom</label>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Categories</legend>
+            <div>
+              <input type="checkbox" id="bp-cat-halloween" name="category" value="halloween" />
+              <label for="bp-cat-halloween">Halloween</label>
+            </div>
+            <div>
+              <input type="checkbox" id="bp-cat-rainbow" name="category" value="rainbow" />
+              <label for="bp-cat-rainbow">Rainbow</label>
+            </div>
+            <div>
+              <input type="checkbox" id="bp-cat-animals" name="category" value="animals" />
+              <label for="bp-cat-animals">Animals</label>
+            </div>
+          </fieldset>
+          <button type="button" id="bp-clear" class="btn">Clear Filters</button>
+        </form>
+      </aside>
+
+      <div id="bp-cards" class="cards" role="region" aria-label="Pattern cards">
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Jack-O’-Lantern beading pattern thumbnail" width="640" height="480" 
+               src="assets/jackolantern.jpg">
+        </div>
+        <h2>Jack-O’-Lantern (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/jackolantern.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/jackolantern.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="pumpkin beading pattern thumbnail" width="640" height="480" 
+               src="assets/pumpkin.jpg">
+        </div>
+        <h2>Pumpkin (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/pumpkin.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/pumpkin.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="loom" data-categories="rainbow">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Rainbow Diamonds beading pattern thumbnail" width="640" height="480" 
+               src="assets/rainbowdiamonds.jpg">
+        </div>
+        <h2>Rainbow Diamonds (Loom)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/rainbowdiamonds.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/rainbowdiamonds.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="loom" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Aliens beading pattern thumbnail" width="640" height="480"
+               src="assets/aliens.jpg">
+        </div>
+        <h2>Aliens (Loom)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/Aliens.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/Aliens.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Ghost beading pattern thumbnail" width="640" height="480"
+               src="assets/ghost.jpg">
+        </div>
+        <h2>Ghost (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/ghost.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/ghost.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="animals">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Parrot beading pattern thumbnail" width="640" height="480"
+               src="assets/parrot.jpg">
+        </div>
+        <h2>Parrot (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/parrot.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/parrot.pdf" download>Download</a>
+        </div>
+      </article>
+        
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Ghost Moving beading pattern thumbnail" width="640" height="480"
+               src="assets/ghostmoving.jpg">
+        </div>
+        <h2>Ghost (Moving) (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/ghostmoving.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/ghostmoving.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Jack-O’-Lantern with Witch Hat beading pattern thumbnail" width="640" height="480"
+               src="assets/jackolanternwitchhat.jpg">
+        </div>
+        <h2>Jack-O’-Lantern with Witch Hat (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/jackolanternwitchhat.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/jackolanternwitchhat.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="Spooky Season beading pattern thumbnail" width="640" height="480"
+               src="assets/spookyseason.jpg">
+        </div>
+        <h2>Spooky Season (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/spookyseason.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/spookyseason.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="halloween">
+        <div class="thumb" aria-hidden="true">
+          <img alt="UFO beading pattern thumbnail" width="640" height="480"
+               src="assets/ufo.jpg">
+        </div>
+        <h2>UFO (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/ufo.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/ufo.pdf" download>Download</a>
+        </div>
+      </article>
+
+      <article class="card" data-type="brick-stitch" data-categories="rainbow">
+        <div class="thumb" aria-hidden="true">
+          <img alt="UFO Rainbow beading pattern thumbnail" width="640" height="480"
+               src="assets/uforainbow.jpg">
+        </div>
+        <h2>UFO Rainbow (Brick Stitch)</h2>
+        <p>PDF template</p>
+        <div class="actions">
+          <a class="btn-light" href="assets/uforainbow.pdf" target="_blank" rel="noopener">View</a>
+          <a class="btn-light" href="assets/uforainbow.pdf" download>Download</a>
+        </div>
+      </article>
+
+    </div> <!-- /#bp-cards -->
+    </div> <!-- /.bp-layout -->
+  </div>
+</section>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; <span id="year"></span> Pneuma Nomads. All rights reserved.</p>
+      <div class="social-icons">
+        <a href="https://www.instagram.com/pneumanomads/" target="_blank" rel="noopener noreferrer" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+        <a href="https://www.tiktok.com/@pneumanomads" target="_blank" rel="noopener noreferrer" aria-label="TikTok"><i class="fab fa-tiktok"></i></a>
+        <a href="https://pinterest.com/pneumanomads" target="_blank" rel="noopener noreferrer" aria-label="Pinterest"><i class="fab fa-pinterest"></i></a>
+        <a href="https://zora.co/@pneumanomads" target="_blank" rel="noopener noreferrer" aria-label="Zora"><i class="fas fa-circle"></i></a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Back to Top Button -->
+  <a href="/#hero" class="back-to-top" aria-label="Back to top">
+    <i class="fas fa-arrow-up"></i>
+  </a>
+
+  <script>
+    // Set current year in footer
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Mobile menu toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    hamburger.addEventListener('click', () => {
+      navLinks.classList.toggle('active');
+      hamburger.classList.toggle('active');
+    });
+
+    // Smooth scroll for local anchors on this page (none by default)
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        e.preventDefault();
+        const target = document.querySelector(this.getAttribute('href'));
+        if (target) target.scrollIntoView({ behavior: 'smooth' });
+        navLinks.classList.remove('active');
+        hamburger.classList.remove('active');
+      });
+    });
+
+    // Show/hide back to top button
+    window.addEventListener('scroll', () => {
+      const backToTop = document.querySelector('.back-to-top');
+      if (window.pageYOffset > 300) backToTop.classList.add('show');
+      else backToTop.classList.remove('show');
+    });
+
+    // Beading Patterns: Filtering (progressive enhancement)
+    (function () {
+      const form = document.getElementById('bp-filter-form');
+      const cardsContainer = document.getElementById('bp-cards');
+      if (!form || !cardsContainer) return; // Only on this page
+
+      const clearBtn = document.getElementById('bp-clear');
+      const cards = Array.from(cardsContainer.querySelectorAll('.card'));
+
+      function getSelected(name) {
+        return Array.from(form.querySelectorAll(`input[name="${name}"]:checked`)).map(i => i.value.toLowerCase());
+      }
+
+      function applyFilter() {
+        const selectedTypes = getSelected('type');
+        const selectedCats = getSelected('category');
+
+        let visibleCount = 0;
+        cardsContainer.setAttribute('aria-busy', 'true');
+
+        for (const card of cards) {
+          const cardType = (card.dataset.type || '').toLowerCase();
+          const cardCats = (card.dataset.categories || '').toLowerCase().split(',').map(s => s.trim()).filter(Boolean);
+
+          const typePass = selectedTypes.length === 0 || selectedTypes.includes(cardType);
+          const catPass = selectedCats.length === 0 || selectedCats.some(c => cardCats.includes(c));
+          const show = typePass && catPass;
+
+          card.style.display = show ? '' : 'none';
+          card.setAttribute('aria-hidden', show ? 'false' : 'true');
+          if (show) visibleCount++;
+        }
+
+        // Update region label to announce count succinctly
+        const baseLabel = 'Pattern cards';
+        cardsContainer.setAttribute('aria-label', `${baseLabel} (${visibleCount} shown)`);
+        cardsContainer.removeAttribute('aria-busy');
+      }
+
+      form.addEventListener('change', applyFilter);
+
+      if (clearBtn) {
+        clearBtn.addEventListener('click', () => {
+          form.querySelectorAll('input[type="checkbox"]').forEach(cb => { cb.checked = false; });
+          applyFilter();
+          // Return focus to the first control for keyboard users
+          const firstControl = form.querySelector('input[type="checkbox"]') || form.querySelector('button, input, select');
+          if (firstControl) firstControl.focus();
+        });
+      }
+
+      // Initial call ensures ARIA label reflects full count
+      applyFilter();
+    })();
+  </script>
+  <script src="dragon-bg.js"></script>
+</body>
+</html>
