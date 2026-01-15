@@ -3,265 +3,185 @@
   if (!canvas) return;
 
   const ctx = canvas.getContext('2d', { alpha: true });
+  const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const rootStyle = getComputedStyle(document.documentElement);
+  const colors = [
+    rootStyle.getPropertyValue('--red').trim(),
+    rootStyle.getPropertyValue('--orange').trim(),
+    rootStyle.getPropertyValue('--gold').trim(),
+    rootStyle.getPropertyValue('--green').trim(),
+    rootStyle.getPropertyValue('--blue').trim(),
+    rootStyle.getPropertyValue('--purple').trim()
+  ].filter(Boolean);
 
-  const COLORS = [
-    '#f82553', // red
-    '#fb6640', // orange
-    '#f8c421', // gold
-    '#49cc5c', // green
-    '#2c7ce5', // blue
-    '#6434e9', // purple
-  ];
+  const dpr = window.devicePixelRatio || 1;
+  let points = [];
+  let bounds = null;
+  let lastIter = 0;
+  let lastBuild = 0;
 
-  const DPR = Math.max(1, Math.min(2, window.devicePixelRatio || 1));
+  function buildTurns(iterations) {
+    let turns = [];
+    for (let i = 0; i < iterations; i += 1) {
+      const reversed = turns.slice().reverse();
+      const inverted = reversed.map(turn => (turn === 'L' ? 'R' : 'L'));
+      turns = turns.concat('L', inverted);
+    }
+    return turns;
+  }
 
-  function hexToRgb(hex) {
-    const normalized = hex.replace('#', '').trim();
-    const value = parseInt(normalized, 16);
+  function buildPoints(turns) {
+    const pts = [];
+    const dx = [1, 0, -1, 0];
+    const dy = [0, 1, 0, -1];
+    let dir = 0;
+    let x = 0;
+    let y = 0;
+
+    pts.push({ x, y });
+
+    for (const turn of turns) {
+      x += dx[dir];
+      y += dy[dir];
+      pts.push({ x, y });
+      dir = (dir + (turn === 'L' ? 1 : 3)) & 3;
+    }
+
+    x += dx[dir];
+    y += dy[dir];
+    pts.push({ x, y });
+
+    return pts;
+  }
+
+  function computeBounds(pts) {
+    let minX = Infinity;
+    let minY = Infinity;
+    let maxX = -Infinity;
+    let maxY = -Infinity;
+
+    for (const p of pts) {
+      if (p.x < minX) minX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y > maxY) maxY = p.y;
+    }
+
     return {
-      r: (value >> 16) & 255,
-      g: (value >> 8) & 255,
-      b: value & 255,
+      minX,
+      minY,
+      maxX,
+      maxY,
+      width: maxX - minX,
+      height: maxY - minY,
+      centerX: (minX + maxX) / 2,
+      centerY: (minY + maxY) / 2
     };
   }
 
-  function lerp(a, b, t) {
-    return a + (b - a) * t;
-  }
-
-  function lerpColor(aHex, bHex, t) {
-    const a = hexToRgb(aHex);
-    const b = hexToRgb(bHex);
-    const r = Math.round(lerp(a.r, b.r, t));
-    const g = Math.round(lerp(a.g, b.g, t));
-    const bch = Math.round(lerp(a.b, b.b, t));
-    return `rgb(${r}, ${g}, ${bch})`;
-  }
-
-  function rainbowAt(t01) {
-    const t = ((t01 % 1) + 1) % 1;
-    const n = COLORS.length;
-    const scaled = t * n;
-    const i = Math.floor(scaled);
-    const frac = scaled - i;
-    const a = COLORS[i % n];
-    const b = COLORS[(i + 1) % n];
-    return lerpColor(a, b, frac);
-  }
-
-  let w = 0;
-  let h = 0;
-
   function resize() {
-    w = Math.floor(window.innerWidth);
-    h = Math.floor(window.innerHeight);
+    const width = window.innerWidth;
+    const height = window.innerHeight;
 
-    canvas.width = Math.floor(w * DPR);
-    canvas.height = Math.floor(h * DPR);
-    canvas.style.width = `${w}px`;
-    canvas.style.height = `${h}px`;
+    canvas.width = Math.floor(width * dpr);
+    canvas.height = Math.floor(height * dpr);
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
 
-    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-
-    // Recenter on resize
-    resetView();
-    restart();
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   }
 
-  // Dragon curve is represented by a list of left/right turns (0/1).
-  // Each iteration: newSeq = seq + [1] + reverse(invert(seq))
-  let turns = [];
-  let order = 0;
-
-  // Rendering state
-  let drawIndex = 0;
-  let dir = 0; // 0:right, 1:down, 2:left, 3:up
-
-  // We'll compute path points incrementally for efficiency.
-  // points are in "grid" coordinates then projected to screen.
-  let gridX = 0;
-  let gridY = 0;
-
-  // View transform
-  let originX = 0;
-  let originY = 0;
-  let step = 6; // pixels per segment (adjusted by fit)
-
-  // Bounds tracking (grid space)
-  let minX = 0;
-  let maxX = 0;
-  let minY = 0;
-  let maxY = 0;
-
-  function resetBounds() {
-    minX = maxX = 0;
-    minY = maxY = 0;
+  function prepareCurve(iterations) {
+    const turns = buildTurns(iterations);
+    points = buildPoints(turns);
+    bounds = computeBounds(points);
+    lastIter = iterations;
   }
 
-  function updateBounds(x, y) {
-    if (x < minX) minX = x;
-    if (x > maxX) maxX = x;
-    if (y < minY) minY = y;
-    if (y > maxY) maxY = y;
-  }
+  function draw(timestamp, revealProgress = 1) {
+    const width = canvas.clientWidth;
+    const height = canvas.clientHeight;
 
-  function resetView() {
-    step = Math.max(2, Math.min(10, Math.floor(Math.min(w, h) / 180)));
-    originX = Math.round(w / 2);
-    originY = Math.round(h / 2);
-  }
+    ctx.clearRect(0, 0, width, height);
 
-  function estimateBounds(seq) {
-    let x = 0;
-    let y = 0;
-    let d = 0;
-    let mnX = 0;
-    let mxX = 0;
-    let mnY = 0;
-    let mxY = 0;
+    if (!bounds || points.length < 2) return;
+    const visibleCount = Math.max(2, Math.floor(points.length * revealProgress));
 
-    function stepForward() {
-      if (d === 0) x += 1;
-      else if (d === 1) y += 1;
-      else if (d === 2) x -= 1;
-      else y -= 1;
+    const padding = 0;
+    const scale = Math.min(
+      (width - padding * 2) / bounds.width,
+      (height - padding * 2) / bounds.height
+    );
+    const time = timestamp || 0;
+    const angle = time * 0.00008;
+    const pulse = 0.98 + Math.sin(time * 0.0007) * 0.02;
+    const phase = Math.floor(time / 2000) % colors.length;
 
-      if (x < mnX) mnX = x;
-      if (x > mxX) mxX = x;
-      if (y < mnY) mnY = y;
-      if (y > mxY) mxY = y;
-    }
+    function drawLayer(layerAngle, layerScale, layerAlpha, phaseOffset) {
+      ctx.save();
+      ctx.translate(width / 2, height / 2);
+      ctx.rotate(layerAngle);
+      ctx.scale(scale * pulse * layerScale, scale * pulse * layerScale);
+      ctx.translate(-bounds.centerX, -bounds.centerY);
+      ctx.lineWidth = 1.4 / scale;
+      ctx.lineCap = 'round';
+      ctx.globalAlpha = layerAlpha;
 
-    // Start as a point, then one forward move.
-    stepForward();
-
-    for (let i = 0; i < seq.length; i += 1) {
-      // turn: 1 = right, 0 = left (conventional choice)
-      d = (d + (seq[i] ? 1 : 3)) & 3;
-      stepForward();
-    }
-
-    return { minX: mnX, maxX: mxX, minY: mnY, maxY: mxY };
-  }
-
-  let segmentsTotal = 1;
-
-  function advanceOrder() {
-    // Build next dragon turn sequence.
-    // new = old + [1] + reverse(invert(old))
-    const n = turns.length;
-    const next = new Array(n * 2 + 1);
-
-    for (let i = 0; i < n; i += 1) next[i] = turns[i];
-    next[n] = 1;
-    for (let i = 0; i < n; i += 1) {
-      next[n + 1 + i] = turns[n - 1 - i] ? 0 : 1;
-    }
-
-    turns = next;
-    order += 1;
-    segmentsTotal *= 2;
-  }
-
-  function restart() {
-    // Start at order 0 (exactly one segment), then grow 1,2,4,8,16...
-    ctx.clearRect(0, 0, w, h);
-    turns = [];
-    order = 0;
-    segmentsTotal = 1;
-
-    drawIndex = 0;
-    dir = 0;
-    gridX = 0;
-    gridY = 0;
-    resetBounds();
-    updateBounds(0, 0);
-  }
-
-  function drawSegment(fromX, fromY, toX, toY, t01) {
-    ctx.strokeStyle = rainbowAt(t01);
-    ctx.beginPath();
-    ctx.moveTo(originX + fromX * step, originY + fromY * step);
-    ctx.lineTo(originX + toX * step, originY + toY * step);
-    ctx.stroke();
-  }
-
-  function stepForward() {
-    const x0 = gridX;
-    const y0 = gridY;
-
-    if (dir === 0) gridX += 1;
-    else if (dir === 1) gridY += 1;
-    else if (dir === 2) gridX -= 1;
-    else gridY -= 1;
-
-    updateBounds(gridX, gridY);
-
-    const t01 = segmentsTotal <= 1 ? 0 : drawIndex / segmentsTotal;
-
-    drawSegment(x0, y0, gridX, gridY, t01);
-  }
-
-  // Animation tuning
-  const MAX_ORDER = 18; // 2^18 segments (~262k) is heavy; we’ll scale as we go
-  let lastTs = 0;
-  let segsPerSecond = 4000;
-
-  function setStrokeWidthForOrder() {
-    // Thinner as it gets more complex.
-    const base = 2.0;
-    const thin = Math.max(0.7, base - order * 0.08);
-    ctx.lineWidth = thin;
-  }
-
-  function animate(ts) {
-    const dt = Math.min(0.05, (ts - lastTs) / 1000 || 0);
-    lastTs = ts;
-
-    setStrokeWidthForOrder();
-
-    // Draw a batch of segments this frame based on dt.
-    const batch = Math.max(1, Math.floor(segsPerSecond * dt));
-
-    for (let i = 0; i < batch; i += 1) {
-      // Completed current stage => double complexity and keep drawing.
-      if (drawIndex >= segmentsTotal) {
-        if (order >= MAX_ORDER) {
-          restart();
-          break;
+      for (let c = 0; c < colors.length; c += 1) {
+        ctx.strokeStyle = colors[(c + phase + phaseOffset) % colors.length];
+        ctx.beginPath();
+        for (let i = 0; i < visibleCount - 1; i += 1) {
+          if (i % colors.length !== c) continue;
+          const p0 = points[i];
+          const p1 = points[i + 1];
+          ctx.moveTo(p0.x, p0.y);
+          ctx.lineTo(p1.x, p1.y);
         }
-        advanceOrder();
+        ctx.stroke();
       }
 
-      // Segment 0: just draw the first line.
-      if (drawIndex === 0) {
-        stepForward();
-        drawIndex += 1;
-        continue;
-      }
-
-      // Apply turn then step forward.
-      const t = turns[drawIndex - 1];
-      dir = (dir + (t ? 1 : 3)) & 3;
-      stepForward();
-      drawIndex += 1;
+      ctx.restore();
     }
 
-    requestAnimationFrame(animate);
+    drawLayer(angle, 1, 0.9, 0);
+    drawLayer(-angle * 0.6, 0.92, 0.6, 2);
   }
 
-  // Init
-  function init() {
-    resize();
+  function animate(timestamp) {
+    const now = timestamp || 0;
+    const rampMs = 52000;
+    const holdMs = 20000;
+    const totalMs = rampMs + holdMs;
+    const maxIter = 19;
+    const minIter = 7;
+    const progress = (now % totalMs) / totalMs;
+    const rampProgress = Math.min(1, progress * (totalMs / rampMs));
+    const targetIter = Math.round(minIter + rampProgress * (maxIter - minIter));
 
-    requestAnimationFrame(animate);
+    if (targetIter !== lastIter && now - lastBuild > 120) {
+      prepareCurve(targetIter);
+      lastBuild = now;
+    }
+
+    const revealDuration = 2600;
+    const revealProgress = Math.min(1, (now - lastBuild) / revealDuration);
+
+    draw(timestamp, revealProgress);
+    if (!prefersReduced) {
+      window.requestAnimationFrame(animate);
+    }
   }
+
+  resize();
+  prepareCurve(12);
+  draw(0);
 
   window.addEventListener('resize', () => {
     resize();
+    draw(0);
   });
 
-  init();
+  if (!prefersReduced) {
+    window.requestAnimationFrame(animate);
+  }
 })();
