@@ -682,6 +682,15 @@ footer p {
     font-size: 0.9rem;
 }
 
+.footer-cta {
+    margin-bottom: 1.5rem;
+}
+
+.footer-cta .btn-light {
+    padding: 0.75rem 1.75rem;
+    font-size: 0.9rem;
+}
+
 /* Back to Top Button */
 .back-to-top {
     position: fixed;
@@ -1119,7 +1128,7 @@ footer p {
 
 #beadingpatterns .cards article .thumb {
     width: 100%;
-    aspect-ratio: 4 / 3;
+    aspect-ratio: 1 / 1;
     border-radius: 8px;
     overflow: hidden;
     margin-bottom: 12px;
@@ -1214,6 +1223,9 @@ footer p {
 
 #beadingpatterns .bp-filters .btn {
   margin-top: 0.5rem;
+  background-color: var(--light);
+  border-color: var(--light);
+  color: var(--dark);
 }
 
 /* Cards: light on light for readability in this section */
