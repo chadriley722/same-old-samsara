@@ -150,9 +150,8 @@ section {
 
 .pn-title .pn-letter {
     display: inline-block;
-    animation: pn-cycle 12s linear infinite;
-    animation-delay: calc(var(--pn-offset, 0) * -2s);
-    animation-fill-mode: both;
+    color: var(--hemp);
+    animation: none;
 }
 
 .pn-word .pn-letter:nth-child(1) { --pn-offset: 0; }
