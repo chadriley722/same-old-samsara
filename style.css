@@ -395,7 +395,6 @@ section {
     text-align: center;
     color: var(--dark);
     background-color: var(--light);
-    background-image: url('images/light.png');
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -1054,7 +1053,6 @@ footer .footer-copy {
   #socials {
     padding: var(--section-padding);
     background-color: var(--dark);
-    background-image: url('images/light.png');  
     background-size: cover;
     background-position: center;  
     background-repeat: no-repeat;
@@ -1486,3 +1484,71 @@ footer .footer-copy {
 
 /* On-chain list */
 .onchain-list { list-style: disc; padding-left: 1.25rem; }
+
+/* Documentary Section */
+#documentary {
+    padding: 3rem 0;
+    background-color: var(--light);
+    color: var(--dark);
+    text-align: center;
+    scroll-margin-top: 80px;
+}
+
+#documentary h2 {
+    font-size: var(--section-heading-size);
+    margin-bottom: 1rem;
+    color: var(--dark);
+}
+
+#documentary .subheadline {
+    max-width: 560px;
+    margin: 0 auto 2rem;
+    color: var(--dark);
+}
+
+#documentary .doc-thumb {
+    position: relative;
+    display: block;
+    max-width: 720px;
+    margin: 0 auto 1.25rem;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+#documentary .doc-thumb img {
+    display: block;
+    width: 100%;
+    height: auto;
+    transition: transform 0.3s ease;
+}
+
+#documentary .doc-thumb:hover img {
+    transform: scale(1.03);
+}
+
+#documentary .doc-play {
+    position: absolute;
+    right: 14px;
+    bottom: 14px;
+    width: 56px;
+    height: 56px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background: rgba(81, 79, 76, 0.85);
+    color: var(--light);
+    font-size: 1.3rem;
+    padding-left: 4px;
+    box-sizing: border-box;
+}
+
+#documentary .doc-title {
+    font-size: 1.3rem;
+    margin-bottom: 1.5rem;
+}
+
+#documentary .btn:hover {
+    border-color: var(--dark);
+}
