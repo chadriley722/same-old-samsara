@@ -40,6 +40,8 @@ PATTERNS = [
     {"file": "rainbowdiamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True},
     {"file": "ghost", "name": "ghost", "type": "brick stitch", "cats": ["halloween"], "free": True, "seasonal": True},
     {"file": "parrot", "name": "rainbow parrot", "type": "brick stitch", "cats": ["animals", "rainbow"], "etsy": "4456758738", "live": True},
+    {"file": "squid", "name": "squid (wavy fringe)", "type": "brick stitch", "cats": ["animals"], "etsy": "4604548842", "live": True},
+    {"file": "jellyfish", "name": "jellyfish (3 sizes)", "type": "brick stitch", "cats": ["animals"], "etsy": "4604569492", "live": True},
     {"file": "sillygoose", "name": "silly goose", "type": "brick stitch", "cats": ["animals"], "etsy": "1784926935", "live": True},
     {"file": "triceratops", "name": "triceratops", "type": "brick stitch", "cats": ["animals"], "etsy": "1778070364", "live": True},
     {"file": "omsymbolbrickstitch", "name": "om symbol", "type": "brick stitch", "cats": ["symbols"], "etsy": "4456770826", "live": True},
