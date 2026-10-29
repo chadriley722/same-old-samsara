@@ -97,19 +97,19 @@ PATTERNS = [
 ]
 
 # the wheel of the year on the land (public version: nothing here gives away where the land is)
-MONTHS = [
-    ("jan", "seed catalogs by the space heater. we're south in the rv, planning beds on paper."),
-    ("feb", "maple season up north. onion seeds start indoors at the end of the month."),
-    ("mar", "first seeds under lights. the paperwork side of farming happens now."),
-    ("apr", "seedlings harden off. we pack up and head north."),
-    ("may", "back on the land may 1. the tarps come off and the first beds go in."),
-    ("jun", "succession sowing. long days. watching the deer watch the garden."),
-    ("jul", "first harvests. the plan is a little farm stand by the road."),
-    ("aug", "peak harvest. the goldenrod starts to turn."),
-    ("sep", "goldenrod everywhere. september 4 is the day we got the keys."),
-    ("oct", "peak fall color. garlic in. tarps down on the beds for winter."),
-    ("nov", "we lock up the land and head south for the winter."),
-    ("dec", "rest. seed orders. the land sleeps under the snow."),
+MONTHS = [  # year one. what the land does, plus our plans marked as plans. no chores we don't actually do.
+    ("jan", "snow on the meadow. the land rests and we're south for the winter."),
+    ("feb", "the deepest cold. somewhere out there the maples are getting ready."),
+    ("mar", "mud season. the snow pulls back off the meadow."),
+    ("apr", "peepers in the wet spots. first green under last year's grass."),
+    ("may", "back on the land may 1. leaves out, black flies out."),
+    ("jun", "long days. everything grows a foot overnight. the plan for 2027: the first garden beds."),
+    ("jul", "fireflies over the meadow. the plan someday: a little farm stand."),
+    ("aug", "hot and green. the goldenrod starts to turn."),
+    ("sep", "goldenrod everywhere. september 4, 2026 is the day we got the keys."),
+    ("oct", "peak color, then the leaves come down. mushrooms after every rain."),
+    ("nov", "bare trees, first frost. we close up and head south for the winter."),
+    ("dec", "first real snow. the land sleeps."),
 ]
 
 # spots on the illustrated map. x, y in the 1000 x 640 drawing. not to scale, not the real layout.
@@ -118,31 +118,31 @@ SPOTS = [
      "note": "most of the land is open meadow. in september it's solid goldenrod, and we mow paths through it with a push mower and a scythe."},
     {"id": "woods", "x": 820, "y": 150, "name": "the woods", "img": "images/land/canopy.jpg",
      "note": "the back of the land is woods. old trees, fallen logs, mushrooms after every rain."},
-    {"id": "creek", "x": 900, "y": 470, "name": "the creek", "img": "images/land/mist-field.jpg",
-     "note": "the land runs down to a creek. on cold mornings the mist sits on the low ground and burns off by nine."},
+    {"id": "creek", "x": 900, "y": 470, "name": "the creek", "img": "images/land/creek.jpg",
+     "note": "the land runs down to the creek. this is the view from the bank in early october."},
     {"id": "track", "x": 150, "y": 520, "name": "the old track", "img": "images/land/mist-sunrise.jpg",
      "note": "one rough dirt track is the only way in. every load of gravel counts."},
     {"id": "beds", "x": 360, "y": 420, "name": "the garden beds", "img": "images/land/storm.jpg",
      "note": "where the market garden starts in 2027. small at first: a few beds under tarps we already had."},
-    {"id": "saplings", "x": 610, "y": 470, "name": "the walnut saplings", "img": "images/land/roots.jpg",
-     "note": "an air pruning bed for black walnut seedlings. the roots hit air and branch out instead of one long taproot."},
+    {"id": "mycelium", "x": 740, "y": 220, "name": "the mycelium bark", "img": "images/land/roots.jpg",
+     "note": "a piece of bark we picked up in the woods. those white threads are mycelium, the part of a mushroom you never see."},
     {"id": "forest-floor", "x": 700, "y": 90, "name": "the mushroom spot", "img": "images/land/mushroom.jpg",
      "note": "after rain the forest floor puts up mushrooms we're still learning to name."},
     {"id": "house", "x": 270, "y": 230, "name": "the house site (someday)", "img": "images/land/lone-tree.jpg",
      "note": "the house comes later, 2028 or after. we already moved the spot once. that's how it goes."},
 ]
 
-PHOTOS = [
-    ("images/land/mist-sunrise.jpg", "fog on the low ground at sunrise."),
-    ("images/land/meadow.jpg", "the meadow, late summer."),
-    ("images/land/storm.jpg", "a storm rolling in over the field."),
-    ("images/land/canopy.jpg", "looking up in the woods."),
-    ("images/land/mushroom.jpg", "after the rain."),
-    ("images/land/moon-dusk.jpg", "moonrise over the tree line."),
-    ("images/land/forest-floor.jpg", "the forest floor in october."),
-    ("images/land/pink-sky.jpg", "a pink evening."),
-    ("images/land/lone-tree.jpg", "the lone tree in the field."),
-    ("images/land/roots.jpg", "roots, after the air pruning bed."),
+PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
+    ("images/land/mist-sunrise.jpg", "fog on the low ground at sunrise.", "center"),
+    ("images/land/meadow.jpg", "the meadow, late summer.", "center"),
+    ("images/land/creek.jpg", "the creek in early october.", "center"),
+    ("images/land/storm.jpg", "a storm rolling in over the field.", "center"),
+    ("images/land/canopy.jpg", "looking up in the woods.", "center"),
+    ("images/land/mushroom.jpg", "after the rain.", "center"),
+    ("images/land/moon-dusk.jpg", "the moon over the meadow at dusk.", "8% 50%"),
+    ("images/land/forest-floor.jpg", "the forest floor in october.", "center"),
+    ("images/land/lone-tree.jpg", "the lone tree in the field.", "center"),
+    ("images/land/roots.jpg", "mycelium on a piece of bark from the woods.", "center"),
 ]
 
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
@@ -268,7 +268,7 @@ def almanac_strip():
   <div><span class="label">today on the land</span><strong data-a="day">day –</strong></div>
   <div><span class="label">the moon</span><strong><i class="moon" data-a="moonicon" aria-hidden="true"></i><span data-a="moon">–</span></strong></div>
   <div><span class="label">sunrise · sunset</span><strong data-a="sun">–</strong></div>
-  <div><span class="label">where we are</span><strong data-a="where">–</strong></div>
+  <div><span class="label">the season</span><strong data-a="season">–</strong></div>
 </div>"""
 
 def section_head(no, title, sub=""):
@@ -302,7 +302,7 @@ def wheel_block():
     return f"""<div class="wheel-wrap reveal">
   <div class="wheel" id="wheel" data-months='{e(data)}' role="group" aria-label="the wheel of the year"></div>
   <div class="wheel-note"><span class="label" id="wheel-m">this month</span><p id="wheel-text"></p>
-  <p class="label hint">tap a month. the wheel always comes back around.</p></div>
+  <p class="label hint">tap a month. this is year one, so we're still learning what the land does.</p></div>
 </div>"""
 
 def map_block(base):
@@ -341,7 +341,7 @@ def land_svg():
   <path class="creek thin" d="M952,44 C912,164 972,244 917,334 C862,424 962,504 912,624"/>
   <path class="track" d="M20,600 C120,560 160,520 220,470 C280,420 300,350 270,250"/>
   <rect class="bed" x="320" y="395" width="90" height="16" rx="3"/><rect class="bed" x="320" y="420" width="90" height="16" rx="3"/><rect class="bed" x="320" y="445" width="90" height="16" rx="3"/>
-  <rect class="bed small" x="585" y="460" width="50" height="22" rx="3"/>
+  
   <circle class="house" cx="270" cy="230" r="22"/>
   <g class="rose" transform="translate(110,130)"><circle r="34"/><path d="M0,-44 L7,0 L0,44 L-7,0 Z"/><text y="-50">n</text></g>
   <text class="mapword" x="420" y="190">goldenrod</text><text class="mapword" x="760" y="370">the woods end here</text>
@@ -402,7 +402,7 @@ ORG = {
 
 def hero_block(base, kicker=""):
     return f"""<section class="hero">
-  <div class="ring-wrap" aria-hidden="true"><div class="ring"></div><i class="mark big"></i></div>
+  <div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
   <div class="wrap hero-text">
     {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
     <h1>same old samsara</h1>
@@ -418,10 +418,10 @@ def home(variant="home"):
     picks = [p for p in PATTERNS if p.get("design")][:5]
     wear = "".join(f"""<a class="wcard reveal" href="{listing(p['id'])}" target="_blank" rel="noopener">
       <img src="{base}{p['img']}" alt="{e(p['name'])}" width="600" height="600" loading="lazy"><div><h3>{e(p['name'])}</h3><span class="label">{p['price']}</span></div></a>""" for p in FEATURED)
-    strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap in PHOTOS)
+    strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
   {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
-  <p class="lede reveal">meadow, woods and a creek. farm first: a market garden, a farm stand, flowers. we're here may through mid november and on the road for winter.</p>
+  <p class="lede reveal">meadow, woods and a creek. right now it's goldenrod, mushrooms and a lot of figuring out. the plan is a small farm: a market garden, a farm stand, flowers.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
 <div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a></div></div></section>"""
@@ -452,10 +452,10 @@ def home(variant="home"):
 
 def land_page():
     base = "../"
-    strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap in PHOTOS)
+    strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
-  <p class="def">we bought it on september 4, 2026. meadow, woods and a creek, one rough track in. no house yet, no barn, no tractor. the plan is farm first: a market garden, a farm stand, flowers. the films are the record of figuring it out.</p>
+  <p class="def">we bought it on september 4, 2026. meadow, woods and a creek, one rough track in. no house yet, no barn, no tractor. the plan, someday, is a small farm: a market garden, a farm stand, flowers. the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
@@ -605,7 +605,7 @@ def about_page():
 
 def notfound():
     base = "/"
-    body = f"""<section class="hero"><div class="ring-wrap" aria-hidden="true"><div class="ring"></div><i class="mark big"></i></div>
+    body = f"""<section class="hero"><div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
 <div class="wrap hero-text"><p class="label kicker">404</p><h1>back around again.</h1><p class="tag">this page isn't here.</p>
 <p class="def">you went all the way around the wheel and ended up where you started. same old cycle.</p>
 <div class="btns center"><a class="btn solid" href="/">home</a><a class="btn" href="/patterns/">patterns</a><a class="btn" href="/land/">the land</a></div></div></section>"""

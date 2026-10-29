@@ -60,8 +60,6 @@
   }
 
   /* ---------- almanac strip ---------- */
-  var md = (now.getMonth() + 1) * 100 + now.getDate();
-  var onLand = md >= 501 && md <= 1115;
   var day = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - DAY_ONE) / 864e5) + 1;
   document.querySelectorAll("[data-almanac]").forEach(function (a) {
     var set = function (k, html) { var el = a.querySelector('[data-a="' + k + '"]'); if (el) el.innerHTML = html; };
@@ -69,7 +67,7 @@
     set("moon", phaseName);
     set("moonicon", moonSVG(age));
     set("sun", clock(sun.rise) + " · " + clock(sun.set));
-    set("where", onLand ? "on the land, central ny" : "on the road for winter");
+    set("season", ["deep winter", "deep winter", "mud season", "early spring", "spring", "early summer", "high summer", "late summer", "goldenrod season", now.getDate() < 20 ? "peak fall" : "late fall", "late fall", "early winter"][now.getMonth()]);
   });
 
   /* ---------- the ring turns as you scroll (and slowly on its own) ---------- */

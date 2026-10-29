@@ -172,8 +172,8 @@ p { margin: 0; }
 .pcard { text-decoration: none; display: flex; flex-direction: column; gap: 6px; }
 .pcard[hidden] { display: none; }
 .pimg { background: var(--card); border-radius: 6px; overflow: hidden; box-shadow: var(--shadow); aspect-ratio: 4 / 3; }
-.pimg img { width: 100%; height: 100%; object-fit: cover; transition: transform .5s; }
-.pcard:hover .pimg img { transform: scale(1.06) rotate(-1deg); }
+.pimg img { width: 100%; height: 100%; object-fit: contain; padding: 6px; transition: transform .5s; }
+.pcard:hover .pimg img { transform: scale(1.04); }
 .pmeta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-top: 6px; }
 .pmeta h3 { font-size: 20px; }
 .pill { font: 13px var(--label); padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
