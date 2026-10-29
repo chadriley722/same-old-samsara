@@ -120,10 +120,10 @@ SPOTS = [
      "note": "the back of the land is woods. old trees, fallen logs, mushrooms after every rain."},
     {"id": "creek", "x": 900, "y": 470, "name": "the creek", "img": "images/land/creek.jpg",
      "note": "the land runs down to the creek. this is the view from the bank in early october."},
-    {"id": "track", "x": 150, "y": 520, "name": "the old track", "img": "images/land/mist-sunrise.jpg",
+    {"id": "track", "x": 150, "y": 520, "name": "the old track", "img": "images/land/track.jpg",
      "note": "one rough dirt track is the only way in. every load of gravel counts."},
     {"id": "beds", "x": 360, "y": 420, "name": "the garden beds", "img": "images/land/storm.jpg",
-     "note": "where the market garden starts in 2027. small at first: a few beds under tarps we already had."},
+     "note": "where the garden beds go in 2027. right now it's goldenrod, and we're clearing it."},
     {"id": "mycelium", "x": 740, "y": 220, "name": "the mycelium bark", "img": "images/land/roots.jpg",
      "note": "a piece of bark we picked up in the woods. those white threads are mycelium, the part of a mushroom you never see."},
     {"id": "forest-floor", "x": 700, "y": 90, "name": "the mushroom spot", "img": "images/land/mushroom.jpg",
@@ -143,6 +143,35 @@ PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
     ("images/land/forest-floor.jpg", "the forest floor in october.", "center"),
     ("images/land/lone-tree.jpg", "the lone tree in the field.", "center"),
     ("images/land/roots.jpg", "mycelium on a piece of bark from the woods.", "center"),
+]
+
+# field guide: who lives here (zoom in, guess, tap to see it whole). focus = where the close-up starts.
+# add trail cam photos here as they come in.
+CRITTERS = [
+    {"id": "garter", "img": "images/land/snake.jpg", "focus": "57% 60%", "name": "a garter snake",
+     "note": "on the gravel. harmless, and fast."},
+    {"id": "grub", "img": "images/land/grub.jpg", "focus": "44% 50%", "name": "a beetle grub",
+     "note": "found on the land in october. it'll be a beetle someday."},
+    {"id": "wasp", "img": "images/land/wasp.jpg", "focus": "64% 46%", "name": "a wasp",
+     "note": "hanging off the truck mirror."},
+]
+
+# field guide: things to find. starts face down with a hint, tap to turn it over.
+FINDS = [
+    {"id": "goldenrod", "img": "images/land/meadow.jpg", "name": "goldenrod", "hint": "the whole meadow turns this color in september.",
+     "note": "most of the land is goldenrod. it feeds the bees in fall, and it's what we're clearing for the garden."},
+    {"id": "mycelium", "img": "images/land/roots.jpg", "name": "mycelium", "hint": "white threads on a piece of bark.",
+     "note": "the part of a mushroom you never see. it runs through the dead wood and the soil and holds the woods together."},
+    {"id": "white-mushroom", "img": "images/land/mushroom.jpg", "name": "a little white mushroom", "hint": "pops up in the leaves after rain.",
+     "note": "we're not naming it, and we're definitely not eating it."},
+    {"id": "moss", "img": "images/land/moss.jpg", "name": "moss on a fallen log", "hint": "soft and green, all over the fallen logs.",
+     "note": "with a tiny mushroom growing out of it. the woods are full of these logs."},
+    {"id": "gully", "img": "images/land/forest-floor.jpg", "name": "the gully", "hint": "fallen trees, rocks and water, deep in the woods.",
+     "note": "a little stream cuts through the woods here. everything is covered in moss."},
+    {"id": "canopy", "img": "images/land/canopy.jpg", "name": "the canopy", "hint": "you have to look up for this one.",
+     "note": "tall trees in the back woods. lie down and look up."},
+    {"id": "creek", "img": "images/land/creek.jpg", "name": "the creek", "hint": "where the land runs out.",
+     "note": "the land runs down to the creek. this is early october from the bank."},
 ]
 
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
@@ -246,7 +275,7 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <a class="skip" href="#main">skip to the good part</a>
 """
 
-NAV = [("the land", "land/"), ("films", "films/"), ("patterns", "patterns/"), ("bead lab", "bead-lab/"), ("jewelry", SHOP)]
+NAV = [("the land", "land/"), ("films", "films/"), ("patterns", "patterns/"), ("field guide", "field-guide/"), ("jewelry", SHOP)]
 
 def nav(base, here=""):
     def link(t, h):
@@ -379,7 +408,7 @@ def footer(base):
     return f"""<footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
-  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
+  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
   <p class="label">winters we travel as <a href="{PN}" target="_blank" rel="noopener">pneuma nomads</a>. &copy; <span id="year">2026</span> same old samsara</p>
 </div></footer>
 <script src="{base}js/site.js" defer></script>
@@ -424,7 +453,7 @@ def home(variant="home"):
   <p class="lede reveal">meadow, woods and a creek. right now it's goldenrod, mushrooms and a lot of figuring out. the plan is a small farm: a market garden, a farm stand, flowers.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
-<div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a></div></div></section>"""
+<div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
     s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("02", "films", "season 1 · 2026")}{films_block(base)}</div></section>"""
     s_make = f"""<section class="section" id="patterns"><div class="wrap">{section_head("03", "make", "beading patterns + the bead lab")}
   <p class="lede reveal">brick stitch and bead loom patterns. every bead charted, a word chart you can tick off, toho colors listed. a few are free.</p>
@@ -460,7 +489,7 @@ def land_page():
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "field notes", "photos from the land")}<div class="fieldgrid">{strip}</div>
-<div class="btns reveal"><a class="btn solid" href="{base}films/">watch the films</a></div></div></section>"""
+<div class="btns reveal"><a class="btn solid" href="{base}field-guide/">play the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",
                 "34 acres of meadow, woods and creek in central New York that we're slowly turning into a small farm. A map, the wheel of the year, and field notes.",
                 base, "land/", body, here="land/")
@@ -582,6 +611,34 @@ def beadlab_page():
                 "A free brick stitch pattern maker. Color beads on a real offset brick grid with Toho colors, mirror for symmetry, and get a word chart to stitch from.",
                 base, "bead-lab/", body, here="bead-lab/", extra_js=f'<script src="{base}js/beadlab.js" defer></script>')
 
+def fieldguide_page():
+    base = "../"
+    crit = "".join(f"""<button class="critter reveal" type="button" data-id="{c['id']}" aria-label="who's this? tap to see">
+  <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']}"></span>
+  <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>""" for c in CRITTERS)
+    crit += """<div class="critter soon reveal"><span class="cframe"><span class="cam" aria-hidden="true"></span></span>
+  <span class="ans show"><strong>coming soon</strong><span>a trail cam is going up on the land. whoever walks past ends up here.</span></span></div>"""
+    finds = "".join(f"""<button class="find reveal" type="button" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
+  <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
+  <span class="face front"><img src="{base}{f['img']}" alt="{e(f['name'])}" loading="lazy"><strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
+    body = f"""<section class="hero small"><div class="wrap hero-text">
+  <p class="label kicker">the land</p><h1>the field guide</h1><p class="tag">who lives here, and what we've found.</p>
+  <p class="def">everything here was found on our land in central new york. we're not experts. we're learning it one walk at a time, and this guide grows as we do.</p>
+</div></section>
+<section class="section"><div class="wrap">{section_head("·", "who lives here", "guess first, then tap")}
+  <p class="lede reveal">each one starts zoomed way in. take a guess, then tap to see the whole thing.</p>
+  <div class="critters" id="critters">{crit}</div>
+  <p class="label tally" id="met"></p>
+</div></section>
+<section class="section band soft"><div class="wrap">{section_head("·", "things to find", "read the hint, then turn it over")}
+  <div class="finds" id="finds">{finds}</div>
+  <p class="label tally" id="found"></p>
+  <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}land/">walk the land</a></div>
+</div></section>"""
+    return page("The Field Guide: Who Lives on the Land | Same Old Samsara",
+                "A little interactive field guide to our 34 acres in central New York: guess the animals from a close-up, and turn over the mushrooms, moss and plants we've found.",
+                base, "field-guide/", body, here="field-guide/", extra_js=f'<script src="{base}js/fieldguide.js" defer></script>')
+
 def about_page():
     base = "../"
     body = f"""<section class="hero small"><div class="wrap hero-text">
@@ -629,7 +686,7 @@ def llms_txt():
             lines.append(f"- [{p['name']}]({SITE}/assets/{p['file']}.pdf): free {p['type']} pattern. {p['blurb']}")
         elif p.get("live"):
             lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): {p['type']} pattern, ${p['price']}. {p['blurb']} Buy: {listing(p['etsy'])}")
-    lines += ["", "## Tools", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
+    lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
               "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and creek in central New York, bought September 4, 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
@@ -680,10 +737,11 @@ if __name__ == "__main__":
     paid = [p for p in PATTERNS if not p.get("free") and p.get("live")]
     for p in paid: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
     write("bead-lab/index.html", beadlab_page())
+    write("field-guide/index.html", fieldguide_page())
     write("about/index.html", about_page())
     write("404.html", notfound())
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "land/", "films/", "patterns/", "bead-lab/", "about/"] + [f"patterns/{slug(p)}/" for p in paid]))
+    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/"] + [f"patterns/{slug(p)}/" for p in paid]))
     print("built", 9 + len(paid), "pages")

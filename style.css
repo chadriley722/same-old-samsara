@@ -290,3 +290,33 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
   .reveal { opacity: 1; transform: none; }
 }
+
+/* ---------- field guide ---------- */
+.critters { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+.critter { position: relative; display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 10px 10px 14px; border: 0; background: var(--card); color: var(--ink); box-shadow: var(--shadow); border-radius: 6px; cursor: pointer; font: inherit; }
+.critter.soon { cursor: default; }
+.cframe { display: block; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: var(--rule); position: relative; }
+.cframe img { width: 100%; height: 100%; object-fit: cover; transform: scale(4.5); transition: transform 1.1s cubic-bezier(.2, .7, .2, 1); }
+.critter.open .cframe img { transform: scale(1); }
+.critter .q { color: var(--accent); }
+.critter.open .q { display: none; }
+.ans { display: none; flex-direction: column; gap: 4px; }
+.critter.open .ans, .ans.show { display: flex; }
+.ans strong, .find .front strong { font-family: var(--display); font-size: 21px; font-weight: 600; }
+.ans span, .find .front span { font-size: 15.5px; color: var(--ink-soft); }
+.cam { position: absolute; inset: 0; margin: auto; width: 46%; height: 34%; border: 2px dashed var(--ink-soft); border-radius: 10px; }
+.cam::after { content: ""; position: absolute; inset: 0; margin: auto; width: 34%; aspect-ratio: 1; border: 2px dashed var(--ink-soft); border-radius: 50%; }
+.tally { margin-top: 18px; color: var(--accent); }
+.finds { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
+.find { position: relative; min-height: 330px; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1000px; font: inherit; color: var(--ink); text-align: left; }
+.find .face { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 16px; border-radius: 6px; background: var(--card); box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+.find .back { justify-content: space-between; border: 1px dashed var(--ink-soft); background: transparent; }
+.find .back .hint { font-family: var(--display); font-style: italic; font-size: 22px; line-height: 1.25; }
+.find .front { transform: rotateY(180deg); }
+.find.flipped .back { transform: rotateY(-180deg); }
+.find.flipped .front { transform: rotateY(0); }
+.find .front img { aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; width: 100%; }
+.find:hover .back { border-color: var(--accent); }
+.critter:focus-visible, .find:focus-visible { outline: 2px dashed var(--accent); outline-offset: 3px; }
+@media (prefers-reduced-motion: reduce) { .cframe img, .find .face { transition: none; } }
+button.btn { background: transparent; color: var(--ink); cursor: pointer; }
