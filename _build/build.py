@@ -436,7 +436,7 @@ def hero_block(base, kicker=""):
     {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
     <h1>same old samsara</h1>
     <p class="tag">the same old cycle.</p>
-    <p class="def">films from the land, handmade jewelry, beading patterns, and whatever comes next. two guys, 34 acres in central new york, learning as we go.</p>
+    <p class="def">a creative outlet: films from the land, handmade jewelry, beading patterns, and whatever comes next. two guys, 34 acres in central new york, learning as we go.</p>
   </div>
   <div class="wrap">{almanac_strip()}</div>
 </section>"""
