@@ -199,16 +199,51 @@ def design(p):
 
 def pattern_img(p, kind="hero"):
     """site path of the pattern image. hero = 4:3 chart art, card = square."""
-    if p.get("design") and (ROOT / f"images/patterns/{slug(p)}.jpg").exists():
+    if (ROOT / f"images/patterns/{slug(p)}.jpg").exists():
         return f"images/patterns/{slug(p)}.jpg"
     return f"assets/{p['file']}.jpg"
+
+def old_card(p, dst):
+    """4:3 stand-in for patterns not redone yet: the old square picture framed on wavy cream + name label,
+    so it matches the v2 heroes. replaced automatically once the pattern gets a design + hero."""
+    import base64, tempfile
+    W, H, S = 1400, 1050, 740
+    b64 = lambda f, t: f"data:{t};base64," + base64.b64encode(pathlib.Path(f).read_bytes()).decode()
+    waves = "".join(f'<path d="M0 {y} C350 {y-28} 700 {y+28} 1050 {y} S1400 {y-20} 1400 {y-20}" fill="none" stroke="#514f4c" stroke-opacity="0.09" stroke-width="2"/>'
+                    for y in range(60, H, 115))
+    x, y = (W - S) / 2, 52
+    pic = b64(ROOT / f"assets/{p['file']}.jpg", "image/jpeg")
+    name, sub = f'{p["name"]} pattern', f'{p["type"]} · {"free pdf" if p.get("free") else "pdf"}'
+    font = pathlib.Path.home() / "Library/Fonts/FrauncesSOS-SemiBold.ttf"
+    tw = int(subprocess.run(["magick", "-font", str(font), "-pointsize", "38", f"label:{name}", "-format", "%w", "info:"],
+                            capture_output=True, text=True).stdout or len(name) * 17)
+    pw = max(tw, len(sub) * 10.5) + 140
+    px, py = (W - pw) / 2, 852
+    svg = (f'<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="{W}" height="{H}">'
+           '<defs><filter id="sh" x="-10%" y="-10%" width="120%" height="125%"><feDropShadow dx="0" dy="8" stdDeviation="12" flood-color="#33351f" flood-opacity="0.25"/></filter>'
+           f'<clipPath id="r"><rect x="{x}" y="{y}" width="{S}" height="{S}" rx="14"/></clipPath></defs>'
+           f'<rect width="{W}" height="{H}" fill="#fff3d9"/>{waves}'
+           f'<rect x="{x-12}" y="{y-12}" width="{S+24}" height="{S+24}" rx="20" fill="#fffaf0" filter="url(#sh)"/>'
+           f'<image xlink:href="{pic}" x="{x}" y="{y}" width="{S}" height="{S}" clip-path="url(#r)"/>'
+           f'<rect x="{px}" y="{py}" width="{pw}" height="106" rx="16" fill="#33351f" filter="url(#sh)"/>'
+           f'<image xlink:href="{b64(ROOT / "images/mark-cream.svg", "image/svg+xml")}" x="{px+24}" y="{py+14}" width="64" height="78"/>'
+           f'<text x="{px+108}" y="{py+56}" font-family="Fraunces SOS" font-weight="600" font-size="38" fill="#fff4d9">{html.escape(name)}</text>'
+           f'<text x="{px+110}" y="{py+86}" font-family="Courier Prime" font-weight="700" font-size="17" letter-spacing="1" fill="#d4a12a">{html.escape(sub)}</text></svg>')
+    with tempfile.TemporaryDirectory() as t:
+        pathlib.Path(f"{t}/c.svg").write_text(svg)
+        subprocess.run(["rsvg-convert", f"{t}/c.svg", "-o", f"{t}/c.png"], check=True)
+        subprocess.run(["magick", f"{t}/c.png", "-strip", "-quality", "82", str(dst)], check=True)
 
 def copy_pattern_images():
     out = ROOT / "images/patterns"; out.mkdir(parents=True, exist_ok=True)
     for p in PATTERNS:
-        if not p.get("design"): continue
-        src = PATTERN_SRC / p["design"] / "UPLOAD TO ETSY/1 hero.jpg"
         dst = out / f"{slug(p)}.jpg"
+        if not p.get("design"):
+            src = ROOT / f"assets/{p['file']}.jpg"
+            if src.exists() and (not dst.exists() or src.stat().st_mtime > dst.stat().st_mtime):
+                old_card(p, dst)
+            continue
+        src = PATTERN_SRC / p["design"] / "UPLOAD TO ETSY/1 hero.jpg"
         if src.exists() and (not dst.exists() or src.stat().st_mtime > dst.stat().st_mtime):
             subprocess.run(["magick", str(src), "-resize", "1400x1050", "-strip", "-quality", "80", str(dst)], check=True)
 
