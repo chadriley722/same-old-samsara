@@ -50,8 +50,6 @@ PATTERNS = [
      "blurb": "a little round pumpkin with a curly stem. quick, cute and free."},
     {"file": "rainbowdiamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
      "blurb": "a rainbow diamond band for the bead loom. free."},
-    {"file": "ghost", "name": "ghost", "type": "brick stitch", "cats": ["halloween"], "free": True, "seasonal": True,
-     "blurb": "a little floating ghost. this season's freebie."},
     {"file": "parrot", "design": "parrot", "slug": "rainbow-parrot", "name": "rainbow parrot", "type": "brick stitch", "cats": ["animals", "rainbow"],
      "etsy": "4456758738", "price": "2.99", "live": True,
      "blurb": "a scarlet macaw in nine colors: red, gold, green, cornflower and a long navy tail on a perch."},
