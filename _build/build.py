@@ -2,7 +2,7 @@
 """Builds sameoldsamsara.xyz, the almanac (v3, Oct 28 2026).
 
 Run from anywhere: python3 _build/build.py   (Jekyll skips folders starting with _, so this never goes live)
-Writes: index.html, land/, films/, patterns/ (+ one page per pattern), bead-lab/, about/, ig/ yt/ pin/ (link-in-bio
+Writes: index.html, land/, films/, patterns/ (+ one page per pattern), bead-lab/, about/, road/ (pneuma nomads, PN look), ig/ yt/ pin/ (link-in-bio
 versions, noindex), 404.html, beadingpatterns.html (old url, points to patterns/), llms.txt, robots.txt, sitemap.xml.
 Copies pattern images from Same Old Samsara/Patterns/<design>/UPLOAD TO ETSY/ when they exist.
 
@@ -24,9 +24,18 @@ DEPOP = "https://depop.com/sameoldsamsara"
 IG = "https://instagram.com/sameoldsamsara"
 TT = "https://tiktok.com/@sameoldsamsara"
 PIN = "https://pinterest.com/sameoldsamsara"
-PN = "https://pneumanomads.xyz"
+PN = SITE + "/road/"
 NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header"
 LAND_DAY_ONE = "2026-09-04"
+
+# /road = pneuma nomads (winter travel), in the PN look, not the almanac. pneumanomads.xyz points here.
+PN_YT = "https://youtube.com/@pneumanomads"
+PN_IG = "https://instagram.com/pneumanomads"
+PN_TT = "https://tiktok.com/@pneumanomads"
+PN_SPOTIFY = "https://open.spotify.com/user/chadriley722"
+PN_COFFEE = "https://buymeacoffee.com/pneumanomads"
+ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Salem, Massachusetts", "label": "vlog 18", "len": "8:20",
+               "img": "images/road/latest-vlog.jpg"}
 
 # newest first
 EPISODES = [
@@ -442,7 +451,7 @@ def footer(base):
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
   <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
-  <p class="label">winters we travel as <a href="{PN}" target="_blank" rel="noopener">pneuma nomads</a>. &copy; <span id="year">2026</span> same old samsara</p>
+  <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="year">2026</span> same old samsara</p>
 </div></footer>
 <script src="{base}js/site.js" defer></script>
 </body>
@@ -680,7 +689,7 @@ def about_page():
 <section class="section"><div class="wrap prose reveal">
   <p><strong>same old samsara</strong> is chad's creative outlet. it started with memes, then beads and patterns, and now it's mostly film. later maybe screen prints, or things made from what grows on the land.</p>
   <p>samsara is the wheel: birth, death, coming back around. the raven sits on the ouroboros, the snake eating its tail. seasons come back. projects get set down and picked back up. the same old cycle.</p>
-  <p>in september 2026 we (chad and daniel) bought 34 acres in central new york: meadow, woods and a creek. we're turning it into a small farm, one bed at a time, and filming all of it. summers on the land, winters on the road in our rv as <a href="{PN}" target="_blank" rel="noopener">pneuma nomads</a>.</p>
+  <p>in september 2026 we (chad and daniel) bought 34 acres in central new york: meadow, woods and a creek. we're turning it into a small farm, one bed at a time, and filming all of it. summers on the land, winters on the road in our rv as <a href="{PN}">pneuma nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">youtube</a>.</li>
@@ -692,6 +701,144 @@ def about_page():
 </div></section>"""
     return page("About | Same Old Samsara", "Same Old Samsara is the creative outlet of Chad and Daniel: films from their land in central New York, handmade beaded jewelry and beading patterns.",
                 base, "about/", body, here="about/", jsonld=[ORG])
+
+PN_MARK = ('<svg viewBox="0 99 375 198" aria-hidden="true"><g fill="currentColor" transform="translate(1,99)">'
+           '<path transform="translate(7.66,197.47)" d="M0-23.83V-190.67H143v23.83h23.84v71.5H143V-71.5H47.67v47.67ZM47.67-95.34h71.5v-71.5h-71.5Z"/>'
+           '<path transform="translate(198.31,197.47)" d="M0-23.83V-190.67H47.67v23.83H71.5V-143H95.34v23.83h23.83v-71.5h47.67v166.84H119.17V-71.5H95.34V-95.34H71.5v-23.83H47.67v95.34Z"/></g></svg>')
+
+def pn_pin():
+    """the locked PN pixel map marker (Pneuma Nomads/Brand/Graphics/pixel pin/)"""
+    rows = ['...#####...', '.##h#####d.', '##h######dd', '##h#ooo##dd', '###ooooo#dd', '###ooooo#dd', '###ooooo#dd',
+            '####ooo##dd', '.########d.', '.#######dd.', '..######d..', '...####d...', '....##d....', '.....d.....']
+    col = {'#': '#b8645a', 'h': '#d48a7f', 'd': '#8f4a42', 'o': '#fff4d9'}
+    r = "".join(f'<rect x="{x}" y="{y}" width="1" height="1" fill="{col[c]}"/>' for y, row in enumerate(rows) for x, c in enumerate(row) if c in col)
+    return f'<svg class="pin" viewBox="0 0 11 14" shape-rendering="crispEdges" aria-hidden="true">{r}</svg>'
+
+def road_page():
+    """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html). self-contained css."""
+    base = "../"; v = ROAD_LATEST
+    title = "Pneuma Nomads | Chad & Daniel on the Road"
+    desc = "Chad and Daniel's winter travel videos. Summers on our land in central New York, winters in the fifth wheel following the warm air south."
+    links = [("youtube", PN_YT, "the road videos"), ("instagram", PN_IG, "photos from the road"), ("tiktok", PN_TT, "short clips"),
+             ("spotify", PN_SPOTIFY, "what we play in the truck"), ("buy us a coffee", PN_COFFEE, "fuel for the truck")]
+    btns = "".join(f'<a class="lnk" href="{u}" target="_blank" rel="noopener"><b>{e(n)}</b><span>{e(d)}</span><i aria-hidden="true">&gt;</i></a>' for n, u, d in links)
+    ld = [{"@context": "https://schema.org", "@type": "WebPage", "name": "Pneuma Nomads", "url": SITE + "/road/", "description": desc,
+           "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}, "sameAs": [PN_YT, PN_IG, PN_TT]}]
+    return f"""<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>{e(title)}</title>
+<meta name="description" content="{e(desc)}">
+<meta name="robots" content="index, follow, max-image-preview:large">
+<link rel="canonical" href="{SITE}/road/">
+<meta name="theme-color" content="#2e2d2b">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="Pneuma Nomads">
+<meta property="og:title" content="{e(title)}">
+<meta property="og:description" content="{e(desc)}">
+<meta property="og:url" content="{SITE}/road/">
+<meta property="og:image" content="{SITE}/{v['img']}">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" type="image/svg+xml" href="{base}images/road/pn-favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Work+Sans:wght@400;500;600&display=swap">
+<script type="application/ld+json">{json.dumps(ld[0], ensure_ascii=False)}</script>
+<style>
+:root {{ --cream:#fff4d9; --sand:#ecdcb8; --pepper:#514f4c; --night:#2e2d2b;
+  --brick:#b8645a; --clay:#c97b4a; --mustard:#d8ae55; --sage:#7f9a6a; --denim:#5f84a0; --plum:#87709b;
+  --pixel:'Press Start 2P','Courier New',monospace; --term:'VT323','Courier New',monospace; --body:'Work Sans','Helvetica Neue',sans-serif; }}
+* {{ box-sizing:border-box; }}
+html {{ background:var(--night); }}
+body {{ margin:0; background:var(--cream); color:var(--pepper); font-family:var(--body); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased; }}
+a {{ color:inherit; }}
+.wrap {{ max-width:560px; margin:0 auto; padding-left:max(18px, env(safe-area-inset-left, 0px)); padding-right:max(18px, env(safe-area-inset-right, 0px)); }}
+.screen {{ background:var(--night); color:var(--cream); padding-block:max(34px, env(safe-area-inset-top, 0px)) 30px; }}
+.mark {{ width:64px; display:block; color:var(--cream); }}
+.mark svg {{ width:100%; height:auto; display:block; }}
+h1 {{ font-family:var(--pixel); font-weight:400; font-size:clamp(19px, 6vw, 28px); line-height:1.5; margin:22px 0 6px; white-space:nowrap; min-height:1.5em; }}
+.cur {{ display:inline-block; width:.62em; height:1em; vertical-align:-.12em; margin-left:.12em; background:var(--clay); animation:blink 1.06s steps(1) infinite; }}
+@keyframes blink {{ 50% {{ opacity:0; }} }}
+.stripe {{ display:flex; width:104px; height:4px; }}
+.stripe i {{ flex:1; }}
+.stripe i:nth-child(1){{background:var(--brick)}} .stripe i:nth-child(2){{background:var(--clay)}} .stripe i:nth-child(3){{background:var(--mustard)}}
+.stripe i:nth-child(4){{background:var(--sage)}} .stripe i:nth-child(5){{background:var(--denim)}} .stripe i:nth-child(6){{background:var(--plum)}}
+.tag {{ font-family:var(--term); font-size:26px; line-height:1.1; color:var(--sand); margin:14px 0 18px; }}
+.bio {{ margin:0; max-width:34em; color:var(--cream); opacity:.92; }}
+.label {{ font-family:var(--pixel); font-size:10px; line-height:1.7; margin:0 0 12px; }}
+.label::before {{ content:"> "; color:var(--clay); }}
+section {{ padding-block:30px 6px; }}
+.vlog {{ display:block; text-decoration:none; border:3px solid var(--night); background:var(--night); box-shadow:6px 6px 0 var(--sand); }}
+.vlog .thumb {{ position:relative; aspect-ratio:16/9; overflow:hidden; }}
+.vlog img {{ width:100%; height:100%; object-fit:cover; display:block; }}
+.play {{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:var(--night); display:grid; place-items:center; }}
+.play::after {{ content:""; border-left:18px solid var(--cream); border-top:11px solid transparent; border-bottom:11px solid transparent; margin-left:5px; }}
+.vlog .meta {{ color:var(--cream); padding:12px 14px 14px; display:grid; gap:4px; }}
+.vlog .place {{ font-family:var(--pixel); font-size:11px; line-height:1.8; display:flex; align-items:center; gap:8px; }}
+.pin {{ height:15px; width:auto; flex-shrink:0; }}
+.vlog .sub {{ font-family:var(--term); font-size:21px; line-height:1; color:var(--sand); }}
+.links {{ display:grid; gap:10px; }}
+.lnk {{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:2px 10px; text-decoration:none; background:#fffaf0; border:2px solid var(--pepper); padding:12px 14px; }}
+.lnk b {{ font-family:var(--pixel); font-weight:400; font-size:10px; line-height:1.7; }}
+.lnk span {{ grid-row:2; font-size:14px; opacity:.8; }}
+.lnk i {{ grid-row:1 / 3; grid-column:2; font-style:normal; font-family:var(--pixel); font-size:12px; color:var(--clay); }}
+.lnk:hover, .lnk:focus-visible {{ background:var(--sand); }}
+a:focus-visible {{ outline:3px solid var(--mustard); outline-offset:2px; }}
+.land {{ border:2px dashed var(--pepper); padding:16px; display:grid; gap:10px; }}
+.land p {{ margin:0; }}
+.land .row {{ display:flex; flex-wrap:wrap; gap:8px; }}
+.btn {{ font-family:var(--pixel); font-size:9px; line-height:1.6; padding:10px 12px; text-decoration:none; background:var(--pepper); color:var(--cream); border:2px solid var(--pepper); }}
+.btn.ghost {{ background:transparent; color:var(--pepper); }}
+footer {{ padding-block:34px max(34px, env(safe-area-inset-bottom, 0px)); font-size:13px; opacity:.75; }}
+footer .stripe {{ margin-bottom:14px; }}
+@media (prefers-reduced-motion: reduce) {{ .cur {{ animation:none; }} }}
+</style>
+</head>
+<body>
+<header class="screen"><div class="wrap">
+  <span class="mark">{PN_MARK}</span>
+  <h1 aria-label="Pneuma Nomads"><span id="word" aria-hidden="true">Pneuma Nomads</span><span class="cur" aria-hidden="true"></span></h1>
+  <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p class="tag">following the warm air.</p>
+  <p class="bio">we're chad and daniel. summers we live on our land in central new york. winters we hitch up the fifth wheel with lucy and miley and head south. this is where the road videos live.</p>
+</div></header>
+<main id="main" class="wrap">
+  <section>
+    <p class="label">latest vlog</p>
+    <a class="vlog" href="https://www.youtube.com/watch?v={v['id']}" target="_blank" rel="noopener">
+      <span class="thumb"><img src="{base}{v['img']}" alt="{e(v['title'])}" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true"></span></span>
+      <span class="meta"><span class="place">{pn_pin()}{e(v['place'])}</span><span class="sub">{e(v['label'])} · {e(v['len'])} · {e(v['title'])}</span></span>
+    </a>
+  </section>
+  <section>
+    <p class="label">follow along</p>
+    <div class="links">{btns}</div>
+  </section>
+  <section>
+    <p class="label">the rest of the year</p>
+    <div class="land">
+      <p>summers we're home on 34 acres, turning it into a little farm. that story lives on same old samsara, along with chad's handmade jewelry and beading patterns.</p>
+      <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{SHOP}" target="_blank" rel="noopener">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
+    </div>
+  </section>
+</main>
+<footer><div class="wrap">
+  <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+  <p>pneuma nomads is part of the <a href="{base}index.html">same old samsara</a> family. &copy; <span id="y">2026</span></p>
+</div></footer>
+<script>
+(function(){{
+  document.getElementById('y').textContent = new Date().getFullYear();
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  var el = document.getElementById('word'), t = el.textContent, i = 0; el.textContent = '';
+  (function step(){{ if (i >= t.length) return; el.textContent += t[i++]; setTimeout(step, (1000/14) * (0.7 + Math.random()*0.6)); }})();
+}})();
+</script>
+</body>
+</html>
+"""
 
 def notfound():
     base = "/"
@@ -772,9 +919,10 @@ if __name__ == "__main__":
     write("bead-lab/index.html", beadlab_page())
     write("field-guide/index.html", fieldguide_page())
     write("about/index.html", about_page())
+    write("road/index.html", road_page())
     write("404.html", notfound())
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/"] + [f"patterns/{slug(p)}/" for p in paid]))
-    print("built", 9 + len(paid), "pages")
+    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/", "road/"] + [f"patterns/{slug(p)}/" for p in paid]))
+    print("built", 10 + len(paid), "pages")
