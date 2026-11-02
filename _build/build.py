@@ -808,7 +808,7 @@ footer .stripe {{ margin-bottom:14px; }}
   <section>
     <p class="label">latest vlog</p>
     <a class="vlog" href="https://www.youtube.com/watch?v={v['id']}" target="_blank" rel="noopener">
-      <span class="thumb"><img src="{base}{v['img']}" alt="{e(v['title'])}" width="960" height="540" loading="lazy"><span class="play" aria-hidden="true"></span></span>
+      <span class="thumb"><img src="{base}{v['img']}" alt="{e(v['title'])}" width="960" height="540" fetchpriority="high"><span class="play" aria-hidden="true"></span></span>
       <span class="meta"><span class="place">{pn_pin()}{e(v['place'])}</span><span class="sub">{e(v['label'])} · {e(v['len'])} · {e(v['title'])}</span></span>
     </a>
   </section>
