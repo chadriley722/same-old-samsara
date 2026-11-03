@@ -111,7 +111,7 @@ MONTHS = [  # year one. what the land does, plus our plans marked as plans. no c
     ("apr", "Peepers in the wet spots. First green under last year's grass."),
     ("may", "Back on the land May 1. Leaves out, black flies out."),
     ("jun", "Long days. Everything grows a foot overnight. The plan for 2027: the first garden beds."),
-    ("jul", "Fireflies over the meadow. The plan someday: a little farm stand."),
+    ("jul", "Fireflies over the meadow. The plan someday: fruit off our own food forest."),
     ("aug", "Hot and green. The goldenrod starts to turn."),
     ("sep", "Goldenrod everywhere. September 4, 2026 is the day we got the keys."),
     ("oct", "Peak color, then the leaves come down. Mushrooms after every rain."),
@@ -467,7 +467,7 @@ def page(title, desc, base, path, body, here="", noindex=False, jsonld=None, ima
 ORG = {
     "@context": "https://schema.org", "@type": "Organization", "name": "Same Old Samsara", "url": SITE + "/",
     "logo": SITE + "/favicon/web-app-manifest-512x512.png",
-    "description": "Same Old Samsara is the creative outlet of Chad and Daniel: a documentary about turning 34 acres in central New York into a small farm, handmade beaded jewelry, and brick stitch and bead loom patterns.",
+    "description": "Same Old Samsara is the creative outlet of Chad and Daniel: a documentary about building a homestead on 34 acres in central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
     "sameAs": [YT, IG, TT, PIN, SHOP, DIGITALS],
 }
 
@@ -492,7 +492,7 @@ def home(variant="home"):
     strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
   {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
-  <p class="lede reveal">Meadow, woods and a creek. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a small farm: a market garden, a farm stand, flowers.</p>
+  <p class="lede reveal">Meadow, woods and a creek. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
 <div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
@@ -518,7 +518,7 @@ def home(variant="home"):
     body = hero_block(base, kicker) + "".join(order)
     path = "" if variant == "home" else f"{variant}/"
     return page("Same Old Samsara | Films From the Land, Handmade Jewelry, Beading Patterns",
-                "Same Old Samsara: a documentary about turning 34 acres in central New York into a small farm, handmade beaded jewelry, and brick stitch and bead loom patterns.",
+                "Same Old Samsara: a documentary about building a homestead on 34 acres in central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
                 base, path, body, noindex=variant != "home", jsonld=[ORG, {"@context": "https://schema.org", "@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}] if variant == "home" else None)
 
 def land_page():
@@ -526,14 +526,14 @@ def land_page():
     strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
-  <p class="def">We bought it on September 4, 2026: meadow, woods and a creek, with one rough track in. No house yet, no barn, no tractor. The plan, someday, is a small farm with a market garden, a farm stand and flowers, and the films are the record of figuring it out.</p>
+  <p class="def">We bought it on September 4, 2026: meadow, woods and a creek, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "field notes", "photos from the land")}<div class="fieldgrid">{strip}</div>
 <div class="btns reveal"><a class="btn solid" href="{base}field-guide/">play the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",
-                "34 acres of meadow, woods and creek in central New York that we're slowly turning into a small farm. A map, the wheel of the year, and field notes.",
+                "34 acres of meadow, woods and creek in central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
                 base, "land/", body, here="land/")
 
 def films_page():
@@ -543,12 +543,12 @@ def films_page():
            "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": f'https://www.youtube.com/watch?v={x["id"]}'} for x in EPISODES]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 02</p><h1>films</h1><p class="tag">a season a year.</p>
-  <p class="def">A documentary about our first years on 34 acres in Central New York. Two guys, no farming background, one camera. Season 1 is 2026.</p>
+  <p class="def">A documentary about our first years on 34 acres in Central New York. Two guys, no homesteading background, one camera. Season 1 is 2026.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "season 1", "2026")}{films_block(base, all_eps=True, lede="new episodes as the year turns. start at episode 1, it's a story.")}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "between episodes", "shorts + the rest")}{follow_block(("etsy · jewelry", "etsy · patterns"))}</div></section>"""
     return page("Films | A Documentary From Our Land | Same Old Samsara",
-                "Same Old Samsara is a documentary series about our first years turning 34 acres in central New York into a small farm. Season 1, 2026.",
+                "Same Old Samsara is a documentary series about our first years building a homestead on 34 acres in central New York. Season 1, 2026.",
                 base, "films/", body, here="films/", jsonld=ld)
 
 def patterns_page():
@@ -689,7 +689,7 @@ def about_page():
 <section class="section"><div class="wrap prose reveal">
   <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
   <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
-  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a creek. We're turning it into a small farm, one bed at a time, and filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
+  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a creek. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
@@ -819,7 +819,7 @@ footer .stripe {{ margin-bottom:14px; }}
   <section>
     <p class="label">the rest of the year</p>
     <div class="land">
-      <p>Summers we're home on 34 acres, turning it into a little farm. That story lives on Same Old Samsara, along with Chad's handmade jewelry and beading patterns.</p>
+      <p>Summers we're home on 34 acres, building a homestead. That story lives on Same Old Samsara, along with Chad's handmade jewelry and beading patterns.</p>
       <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{SHOP}" target="_blank" rel="noopener">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
     </div>
   </section>
@@ -921,7 +921,7 @@ def old_patterns_redirect():
 
 def llms_txt():
     lines = ["# Same Old Samsara", "",
-             "> The creative outlet of Chad and Daniel: a documentary series about turning 34 acres in central New York into a small farm, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
+             "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
              "Headings on this site are lowercase on purpose. Prices are in USD.", "",
              "## Films", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
