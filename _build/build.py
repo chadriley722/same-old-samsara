@@ -40,9 +40,9 @@ ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Sale
 # newest first
 EPISODES = [
     {"id": "YDUcJU_dp78", "title": "our first month on 34 acres.", "label": "season 1 · episode 2", "len": "23:33",
-     "img": "images/ep2-month-one.jpg", "blurb": "no tractor. no brush hog. a scythe, a push mower and a lot of goldenrod. a path to the old shed, the rv moves onto the land, the first thunderstorm."},
+     "img": "images/ep2-month-one.jpg", "blurb": "No tractor and no brush hog, just a scythe, a push mower and a lot of goldenrod. We cut a path to the old shed, move the RV onto the land and ride out the first thunderstorm."},
     {"id": "xSpspkCw9og", "title": "we bought land.", "label": "season 1 · episode 1", "len": "41:24",
-     "img": "images/ep1-we-bought-land.jpg", "blurb": "34 acres of goldenrod and woods in central new york. how we found it, the rough perc test, and the first walk as owners."},
+     "img": "images/ep1-we-bought-land.jpg", "blurb": "34 acres of goldenrod and woods in Central New York. How we found it, the rough perc test, and the first walk as owners."},
 ]
 
 FEATURED = [
@@ -56,129 +56,129 @@ FEATURED = [
 # one entry per Etsy listing. live = listing is active right now. free = pdf on this site.
 PATTERNS = [
     {"file": "pumpkin", "name": "pumpkin", "type": "brick stitch", "cats": ["halloween"], "free": True,
-     "blurb": "a little round pumpkin with a curly stem. quick, cute and free."},
+     "blurb": "A little round pumpkin with a curly stem. Quick, cute and free."},
     {"file": "rainbowdiamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
-     "blurb": "a rainbow diamond band for the bead loom. free."},
+     "blurb": "A rainbow diamond band for the bead loom. Free."},
     {"file": "parrot", "design": "parrot", "slug": "rainbow-parrot", "name": "rainbow parrot", "type": "brick stitch", "cats": ["animals", "rainbow"],
      "etsy": "4456758738", "price": "2.99", "live": True,
-     "blurb": "a scarlet macaw in nine colors: red, gold, green, cornflower and a long navy tail on a perch."},
+     "blurb": "A scarlet macaw in nine colors: red, gold, green, cornflower and a long navy tail on a perch."},
     {"file": "squid", "design": "squid", "slug": "squid-wavy-fringe", "name": "squid (wavy fringe)", "type": "brick stitch", "cats": ["animals", "wavy fringe"],
      "etsy": "4604548842", "price": "3.99", "live": True,
-     "blurb": "a little plum squid with big eyes and long wavy fringe tentacles. the wave comes from the thread, and the pattern shows you how."},
+     "blurb": "A little plum squid with big eyes and long wavy fringe tentacles. The wave comes from the thread, and the pattern shows you how."},
     {"file": "jellyfish", "design": "jellyfish", "slug": "jellyfish", "name": "jellyfish (3 sizes)", "type": "brick stitch", "cats": ["animals", "wavy fringe"],
      "etsy": "4604569492", "price": "4.99", "live": True,
-     "blurb": "a round jellyfish bell with wavy fringe. small, medium and large, two colorways, all in one pdf."},
+     "blurb": "A round jellyfish bell with wavy fringe. Small, medium and large, two colorways, all in one PDF."},
     {"file": "sillygoose", "design": "sillygoose", "slug": "silly-goose", "name": "silly goose", "type": "brick stitch", "cats": ["animals"],
      "etsy": "1784926935", "price": "2.99", "live": True,
-     "blurb": "a white goose with an orange beak and feet, framed in black. for the silly geese."},
+     "blurb": "A white goose with an orange beak and feet, framed in black. For the silly geese."},
     {"file": "triceratops", "design": "triceratops", "slug": "triceratops", "name": "triceratops", "type": "brick stitch", "cats": ["animals"],
      "etsy": "1778070364", "price": "2.99", "live": True,
-     "blurb": "a little green triceratops with terra cotta horns and a spotted back."},
+     "blurb": "A little green triceratops with terra cotta horns and a spotted back."},
     {"file": "omsymbolbrickstitch", "design": "omsymbolbrickstitch", "slug": "om-symbol", "name": "om symbol", "type": "brick stitch", "cats": ["symbols"],
      "etsy": "4456770826", "price": "2.99", "live": True,
-     "blurb": "a black om on a soft beige ground. simple and steady."},
+     "blurb": "A black Om on a soft beige ground. Simple and steady."},
     {"file": "magicrainbowmushroom", "design": "magicrainbowmushroom", "slug": "magic-rainbow-mushroom", "name": "magic rainbow mushroom", "type": "brick stitch", "cats": ["rainbow"],
      "etsy": "1765666810", "price": "2.99", "live": True,
-     "blurb": "a rainbow cap on a little beige stem. bright and a little trippy."},
+     "blurb": "A rainbow cap on a little beige stem. Bright and a little trippy."},
     {"file": "ufo", "design": "ufo", "slug": "flying-saucer", "name": "flying saucer", "type": "brick stitch", "cats": ["space", "rainbow"],
      "etsy": "1777788647", "price": "2.99", "live": True,
-     "blurb": "a gray saucer beaming down. yellow beam or rainbow beam, both in one pdf."},
+     "blurb": "A gray saucer beaming down. Yellow beam or rainbow beam, both in one PDF."},
     {"file": "aliens", "slug": "aliens-loom", "name": "aliens", "type": "loom", "cats": ["space"], "etsy": "1760591136", "price": "2.99", "live": True,
-     "blurb": "a row of little alien heads for the bead loom. green or rainbow."},
+     "blurb": "A row of little alien heads for the bead loom. Green or rainbow."},
     {"file": "dnarainbow", "slug": "dna-double-helix", "name": "dna double helix", "type": "loom", "cats": ["rainbow", "symbols"], "etsy": "1792298367", "price": "2.99", "live": True,
-     "blurb": "a rainbow double helix bracelet for the bead loom."},
+     "blurb": "A rainbow double helix bracelet for the bead loom."},
     {"file": "rainbowspirals", "slug": "rainbow-spirals", "name": "rainbow spirals", "type": "loom", "cats": ["rainbow"], "etsy": "1775314125", "price": "2.99", "live": True,
-     "blurb": "rainbow spirals for the bead loom. bold and hypnotic."},
+     "blurb": "Rainbow spirals for the bead loom. Bold and hypnotic."},
     {"file": "rainbowsnake", "slug": "rainbow-snake", "name": "rainbow snake", "type": "loom", "cats": ["rainbow", "animals"], "etsy": "1774234169", "price": "2.99", "live": True,
-     "blurb": "a rainbow snake wave for the bead loom."},
+     "blurb": "A rainbow snake wave for the bead loom."},
     {"file": "witchhat", "slug": "witch-and-wizard-hats", "name": "witch hat + wizard hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781552260", "price": "2.99", "live": True,
-     "blurb": "two pointy hats, one listing. a witch hat and a starry wizard hat."},
+     "blurb": "Two pointy hats, one listing. A witch hat and a starry wizard hat."},
     {"file": "ghostmoving", "slug": "spooky-ghost", "name": "spooky ghost", "type": "brick stitch", "cats": ["halloween"], "etsy": "1792859785", "price": "2.99", "live": True,
-     "blurb": "a wavy little ghost mid float."},
+     "blurb": "A wavy little ghost mid float."},
     {"file": "jackolantern", "slug": "jack-o-lantern", "name": "jack o' lantern", "type": "brick stitch", "cats": ["halloween"], "etsy": "1788945937", "price": "2.99", "live": True,
-     "blurb": "a grinning jack o' lantern."},
+     "blurb": "A grinning jack o' lantern."},
     {"file": "jackolanternwitchhat", "slug": "jack-o-lantern-witch-hat", "name": "jack o' lantern in a witch hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781842810", "price": "2.99", "live": True,
-     "blurb": "a jack o' lantern wearing a witch hat. both halloween classics at once."},
+     "blurb": "A jack o' lantern wearing a witch hat. Both Halloween classics at once."},
     {"file": "spookyseason", "slug": "spooky-season", "name": "spooky season", "type": "brick stitch", "cats": ["halloween"], "etsy": "1775414610", "price": "2.99", "live": True,
-     "blurb": "a spooky season set for october."},
+     "blurb": "A spooky season set for October."},
 ]
 
 # the wheel of the year on the land (public version: nothing here gives away where the land is)
 MONTHS = [  # year one. what the land does, plus our plans marked as plans. no chores we don't actually do.
-    ("jan", "snow on the meadow. the land rests and we're south for the winter."),
-    ("feb", "the deepest cold. somewhere out there the maples are getting ready."),
-    ("mar", "mud season. the snow pulls back off the meadow."),
-    ("apr", "peepers in the wet spots. first green under last year's grass."),
-    ("may", "back on the land may 1. leaves out, black flies out."),
-    ("jun", "long days. everything grows a foot overnight. the plan for 2027: the first garden beds."),
-    ("jul", "fireflies over the meadow. the plan someday: a little farm stand."),
-    ("aug", "hot and green. the goldenrod starts to turn."),
-    ("sep", "goldenrod everywhere. september 4, 2026 is the day we got the keys."),
-    ("oct", "peak color, then the leaves come down. mushrooms after every rain."),
-    ("nov", "bare trees, first frost. we close up and head south for the winter."),
-    ("dec", "first real snow. the land sleeps."),
+    ("jan", "Snow on the meadow. The land rests and we're south for the winter."),
+    ("feb", "The deepest cold. Somewhere out there the maples are getting ready."),
+    ("mar", "Mud season. The snow pulls back off the meadow."),
+    ("apr", "Peepers in the wet spots. First green under last year's grass."),
+    ("may", "Back on the land May 1. Leaves out, black flies out."),
+    ("jun", "Long days. Everything grows a foot overnight. The plan for 2027: the first garden beds."),
+    ("jul", "Fireflies over the meadow. The plan someday: a little farm stand."),
+    ("aug", "Hot and green. The goldenrod starts to turn."),
+    ("sep", "Goldenrod everywhere. September 4, 2026 is the day we got the keys."),
+    ("oct", "Peak color, then the leaves come down. Mushrooms after every rain."),
+    ("nov", "Bare trees, first frost. We close up and head south for the winter."),
+    ("dec", "First real snow. The land sleeps."),
 ]
 
 # spots on the illustrated map. x, y in the 1000 x 640 drawing. not to scale, not the real layout.
 SPOTS = [
     {"id": "meadow", "x": 520, "y": 250, "name": "the meadow", "img": "images/land/meadow.jpg",
-     "note": "most of the land is open meadow. in september it's solid goldenrod, and we mow paths through it with a push mower and a scythe."},
+     "note": "Most of the land is open meadow. In September it's solid goldenrod, and we mow paths through it with a push mower and a scythe."},
     {"id": "woods", "x": 820, "y": 150, "name": "the woods", "img": "images/land/canopy.jpg",
-     "note": "the back of the land is woods. old trees, fallen logs, mushrooms after every rain."},
+     "note": "The back of the land is woods. Old trees, fallen logs, mushrooms after every rain."},
     {"id": "creek", "x": 900, "y": 470, "name": "the creek", "img": "images/land/creek.jpg",
-     "note": "the land runs down to the creek. this is the view from the bank in early october."},
+     "note": "The land runs down to the creek. This is the view from the bank in early October."},
     {"id": "track", "x": 150, "y": 520, "name": "the old track", "img": "images/land/track.jpg",
-     "note": "one rough dirt track is the only way in. every load of gravel counts."},
+     "note": "One rough dirt track is the only way in. Every load of gravel counts."},
     {"id": "beds", "x": 360, "y": 420, "name": "the garden beds", "img": "images/land/storm.jpg",
-     "note": "where the garden beds go in 2027. right now it's goldenrod, and we're clearing it."},
+     "note": "Where the garden beds go in 2027. Right now it's goldenrod, and we're clearing it."},
     {"id": "mycelium", "x": 740, "y": 220, "name": "the mycelium bark", "img": "images/land/roots.jpg",
-     "note": "a piece of bark we picked up in the woods. those white threads are mycelium, the part of a mushroom you never see."},
+     "note": "A piece of bark we picked up in the woods. Those white threads are mycelium, the part of a mushroom you never see."},
     {"id": "forest-floor", "x": 700, "y": 90, "name": "the mushroom spot", "img": "images/land/mushroom.jpg",
-     "note": "after rain the forest floor puts up mushrooms we're still learning to name."},
+     "note": "After rain the forest floor puts up mushrooms we're still learning to name."},
     {"id": "house", "x": 270, "y": 230, "name": "the house site (someday)", "img": "images/land/lone-tree.jpg",
-     "note": "the house comes later, 2028 or after. we already moved the spot once. that's how it goes."},
+     "note": "The house comes later, 2028 or after. We already moved the spot once. That's how it goes."},
 ]
 
 PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
-    ("images/land/mist-sunrise.jpg", "fog on the low ground at sunrise.", "center"),
-    ("images/land/meadow.jpg", "the meadow, late summer.", "center"),
-    ("images/land/creek.jpg", "the creek in early october.", "center"),
-    ("images/land/storm.jpg", "a storm rolling in over the field.", "center"),
-    ("images/land/canopy.jpg", "looking up in the woods.", "center"),
-    ("images/land/mushroom.jpg", "after the rain.", "center"),
-    ("images/land/moon-dusk.jpg", "the moon over the meadow at dusk.", "8% 50%"),
-    ("images/land/forest-floor.jpg", "the forest floor in october.", "center"),
-    ("images/land/lone-tree.jpg", "the lone tree in the field.", "center"),
-    ("images/land/roots.jpg", "mycelium on a piece of bark from the woods.", "center"),
+    ("images/land/mist-sunrise.jpg", "Fog on the low ground at sunrise.", "center"),
+    ("images/land/meadow.jpg", "The meadow, late summer.", "center"),
+    ("images/land/creek.jpg", "The creek in early October.", "center"),
+    ("images/land/storm.jpg", "A storm rolling in over the field.", "center"),
+    ("images/land/canopy.jpg", "Looking up in the woods.", "center"),
+    ("images/land/mushroom.jpg", "After the rain.", "center"),
+    ("images/land/moon-dusk.jpg", "The moon over the meadow at dusk.", "8% 50%"),
+    ("images/land/forest-floor.jpg", "The forest floor in October.", "center"),
+    ("images/land/lone-tree.jpg", "The lone tree in the field.", "center"),
+    ("images/land/roots.jpg", "Mycelium on a piece of bark from the woods.", "center"),
 ]
 
 # field guide: who lives here (zoom in, guess, tap to see it whole). focus = where the close-up starts.
 # add trail cam photos here as they come in.
 CRITTERS = [
     {"id": "garter", "img": "images/land/snake.jpg", "focus": "57% 60%", "name": "a garter snake",
-     "note": "on the gravel. harmless, and fast."},
+     "note": "On the gravel. Harmless, and fast."},
     {"id": "grub", "img": "images/land/grub.jpg", "focus": "44% 50%", "name": "a beetle grub",
-     "note": "found on the land in october. it'll be a beetle someday."},
+     "note": "Found on the land in October. It'll be a beetle someday."},
     {"id": "wasp", "img": "images/land/wasp.jpg", "focus": "64% 46%", "name": "a wasp",
-     "note": "hanging off the truck mirror."},
+     "note": "Hanging off the truck mirror."},
 ]
 
 # field guide: things to find. starts face down with a hint, tap to turn it over.
 FINDS = [
-    {"id": "goldenrod", "img": "images/land/meadow.jpg", "name": "goldenrod", "hint": "the whole meadow turns this color in september.",
-     "note": "most of the land is goldenrod. it feeds the bees in fall, and it's what we're clearing for the garden."},
-    {"id": "mycelium", "img": "images/land/roots.jpg", "name": "mycelium", "hint": "white threads on a piece of bark.",
-     "note": "the part of a mushroom you never see. it runs through the dead wood and the soil and holds the woods together."},
-    {"id": "white-mushroom", "img": "images/land/mushroom.jpg", "name": "a little white mushroom", "hint": "pops up in the leaves after rain.",
-     "note": "we're not naming it, and we're definitely not eating it."},
-    {"id": "moss", "img": "images/land/moss.jpg", "name": "moss on a fallen log", "hint": "soft and green, all over the fallen logs.",
-     "note": "with a tiny mushroom growing out of it. the woods are full of these logs."},
-    {"id": "gully", "img": "images/land/forest-floor.jpg", "name": "the gully", "hint": "fallen trees, rocks and water, deep in the woods.",
-     "note": "a little stream cuts through the woods here. everything is covered in moss."},
-    {"id": "canopy", "img": "images/land/canopy.jpg", "name": "the canopy", "hint": "you have to look up for this one.",
-     "note": "tall trees in the back woods. lie down and look up."},
-    {"id": "creek", "img": "images/land/creek.jpg", "name": "the creek", "hint": "where the land runs out.",
-     "note": "the land runs down to the creek. this is early october from the bank."},
+    {"id": "goldenrod", "img": "images/land/meadow.jpg", "name": "goldenrod", "hint": "The whole meadow turns this color in September.",
+     "note": "Most of the land is goldenrod. It feeds the bees in fall, and it's what we're clearing for the garden."},
+    {"id": "mycelium", "img": "images/land/roots.jpg", "name": "mycelium", "hint": "White threads on a piece of bark.",
+     "note": "The part of a mushroom you never see. It runs through the dead wood and the soil and holds the woods together."},
+    {"id": "white-mushroom", "img": "images/land/mushroom.jpg", "name": "a little white mushroom", "hint": "Pops up in the leaves after rain.",
+     "note": "We're not naming it, and we're definitely not eating it."},
+    {"id": "moss", "img": "images/land/moss.jpg", "name": "moss on a fallen log", "hint": "Soft and green, all over the fallen logs.",
+     "note": "With a tiny mushroom growing out of it. The woods are full of these logs."},
+    {"id": "gully", "img": "images/land/forest-floor.jpg", "name": "the gully", "hint": "Fallen trees, rocks and water, deep in the woods.",
+     "note": "A little stream cuts through the woods here. Everything is covered in moss."},
+    {"id": "canopy", "img": "images/land/canopy.jpg", "name": "the canopy", "hint": "You have to look up for this one.",
+     "note": "Tall trees in the back woods. Lie down and look up."},
+    {"id": "creek", "img": "images/land/creek.jpg", "name": "the creek", "hint": "Where the land runs out.",
+     "note": "The land runs down to the creek. This is early October from the bank."},
 ]
 
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
@@ -352,7 +352,7 @@ def yt_embed(ep, base):
   <span class="play" aria-hidden="true"></span><span class="len label">{ep['len']}</span>
 </button>"""
 
-def films_block(base, all_eps=False, lede="a documentary about our first year on 34 acres in central new york. one season a year."):
+def films_block(base, all_eps=False, lede="A documentary about our first year on 34 acres in Central New York. One season a year."):
     ep = EPISODES[0]
     rest = EPISODES if all_eps else EPISODES[1:]
     others = "".join(f"""<a class="ep reveal" href="https://www.youtube.com/watch?v={x['id']}" target="_blank" rel="noopener">
@@ -478,7 +478,7 @@ def hero_block(base, kicker=""):
     {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
     <h1>same old samsara</h1>
     <p class="tag">the same old cycle.</p>
-    <p class="def">a creative outlet: films from the land, handmade jewelry, beading patterns, and whatever comes next. two guys, 34 acres in central new york, learning as we go.</p>
+    <p class="def">A creative outlet: films from the land, handmade jewelry, beading patterns, and whatever comes next. Two guys, 34 acres in Central New York, learning as we go.</p>
   </div>
   <div class="wrap">{almanac_strip()}</div>
 </section>"""
@@ -492,18 +492,18 @@ def home(variant="home"):
     strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
   {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
-  <p class="lede reveal">meadow, woods and a creek. right now it's goldenrod, mushrooms and a lot of figuring out. the plan is a small farm: a market garden, a farm stand, flowers.</p>
+  <p class="lede reveal">Meadow, woods and a creek. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a small farm: a market garden, a farm stand, flowers.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
 <div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
     s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("02", "films", "season 1 · 2026")}{films_block(base)}</div></section>"""
     s_make = f"""<section class="section" id="patterns"><div class="wrap">{section_head("03", "make", "beading patterns + the bead lab")}
-  <p class="lede reveal">brick stitch and bead loom patterns. every bead charted, a word chart you can tick off, toho colors listed. a few are free.</p>
+  <p class="lede reveal">Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.</p>
   {patterns_grid(base, free + picks, show_filters=False)}
   <div class="btns reveal"><a class="btn solid" href="{base}patterns/">every pattern</a><a class="btn" href="{base}bead-lab/">play in the bead lab</a></div>
 </div></section>"""
     s_wear = f"""<section class="section band soft" id="wear"><div class="wrap">{section_head("04", "wear", "handmade jewelry")}
-  <p class="lede reveal">beaded by hand, one bead at a time. this is the shop that keeps the films going.</p>
+  <p class="lede reveal">Beaded by hand, one bead at a time. This is the shop that keeps the films going.</p>
   <div class="wgrid">{wear}</div>
   <div class="btns reveal"><a class="btn solid" href="{SHOP}" target="_blank" rel="noopener">the jewelry shop on etsy</a><a class="btn" href="{DEPOP}" target="_blank" rel="noopener">also on depop</a></div>
 </div></section>"""
@@ -526,7 +526,7 @@ def land_page():
     strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
-  <p class="def">we bought it on september 4, 2026. meadow, woods and a creek, one rough track in. no house yet, no barn, no tractor. the plan, someday, is a small farm: a market garden, a farm stand, flowers. the films are the record of figuring it out.</p>
+  <p class="def">We bought it on September 4, 2026: meadow, woods and a creek, with one rough track in. No house yet, no barn, no tractor. The plan, someday, is a small farm with a market garden, a farm stand and flowers, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
@@ -543,7 +543,7 @@ def films_page():
            "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": f'https://www.youtube.com/watch?v={x["id"]}'} for x in EPISODES]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 02</p><h1>films</h1><p class="tag">a season a year.</p>
-  <p class="def">a documentary about our first years on 34 acres in central new york. two guys, no farming background, one camera. season 1 is 2026.</p>
+  <p class="def">A documentary about our first years on 34 acres in Central New York. Two guys, no farming background, one camera. Season 1 is 2026.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "season 1", "2026")}{films_block(base, all_eps=True, lede="new episodes as the year turns. start at episode 1, it's a story.")}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "between episodes", "shorts + the rest")}{follow_block(("etsy · jewelry", "etsy · patterns"))}</div></section>"""
@@ -559,11 +559,11 @@ def patterns_page():
                                 "url": f'{SITE}/assets/{p["file"]}.pdf' if p.get("free") else f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 03</p><h1>beading patterns</h1><p class="tag">a few free. the rest at samsara digitals.</p>
-  <p class="def">brick stitch and bead loom patterns by same old samsara. every pdf has the bead diagram, a word chart you can tick off row by row, and the colors. instant download from etsy.</p>
+  <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. Instant download from Etsy.</p>
   <div class="btns center"><a class="btn solid" href="{DIGITALS}" target="_blank" rel="noopener">samsara digitals on etsy</a><a class="btn" href="{base}bead-lab/">design your own</a></div>
 </div></section>
 <section class="section"><div class="wrap">{patterns_grid(base, order)}
-  <div class="note reveal"><p><strong>don't bead?</strong> the finished pieces are in the <a href="{SHOP}" target="_blank" rel="noopener">jewelry shop</a>.</p></div>
+  <div class="note reveal"><p><strong>Don't bead?</strong> The finished pieces are in the <a href="{SHOP}" target="_blank" rel="noopener">jewelry shop</a>.</p></div>
 </div></section>"""
     return page("Beading Patterns: Brick Stitch + Bead Loom PDFs | Same Old Samsara",
                 "Brick stitch and bead loom beading patterns: rainbow parrot, squid and jellyfish wavy fringe, silly goose, triceratops, om, flying saucer and more. A few free PDFs, the rest $2.99 to $4.99 on Etsy.",
@@ -592,9 +592,9 @@ def pattern_detail(p):
     if d:
         swatches = "".join(f'<li><i style="background:{c["hex"]}"></i>{e(c["name"])}</li>' for c in d["colorways"][0]["colors"].values())
         swatches = f'<h3 class="mini">the colors</h3><ul class="swatches">{swatches}</ul>'
-    inside = ["bead diagram, every bead drawn", "word chart with a checkbox for every row", "color legend with toho codes + how many beads to buy",
-              "stitch guide with thread paths", "step by step how-to"] if d else ["bead diagram", "word chart", "color legend"]
-    if d and d.get("wave"): inside.insert(0, "the wave: how the wavy fringe works")
+    inside = ["Bead diagram, every bead drawn", "Word chart with a checkbox for every row", "Color legend with Toho codes + how many beads to buy",
+              "Stitch guide with thread paths", "Step by step how-to"] if d else ["Bead diagram", "Word chart", "Color legend"]
+    if d and d.get("wave"): inside.insert(0, "The wave: how the wavy fringe works")
     related = [q for q in PATTERNS if q is not p and not q.get("free") and set(q["cats"]) & set(p["cats"])][:3]
     rel = patterns_grid(base, related, show_filters=False) if related else ""
     body = f"""<section class="section pdetail"><div class="wrap">
@@ -622,7 +622,7 @@ def beadlab_page():
     pal = json.dumps([{"n": n, "c": c} for n, c in TOHO])
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 04</p><h1>the bead lab</h1><p class="tag">design your own brick stitch.</p>
-  <p class="def">tap beads to color them. mirror mode keeps it symmetric. when you like it, grab the word chart and stitch it for real. it saves in your browser, so you can come back to it.</p>
+  <p class="def">Tap beads to color them. Mirror mode keeps it symmetric. When you like it, grab the word chart and stitch it for real. It saves in your browser, so you can come back to it.</p>
 </div></section>
 <section class="section lab-section"><div class="wrap">
   <div class="lab" id="lab" data-palette='{e(pal)}'>
@@ -647,7 +647,7 @@ def beadlab_page():
   </div>
   <div class="chart-out" id="chartout" hidden><h3 class="mini">your word chart</h3><p class="label">rows top to bottom. → left to right, ← right to left. start with a ladder of your widest row.</p><pre id="charttext"></pre>
     <button type="button" class="btn" id="copychart">copy it</button></div>
-  <div class="note reveal"><p>made something? tag <strong>@sameoldsamsara</strong>. want a finished pattern instead? <a href="{base}patterns/">the pattern library</a>.</p></div>
+  <div class="note reveal"><p>Made something? Tag <strong>@sameoldsamsara</strong>. Want a finished pattern instead? <a href="{base}patterns/">The pattern library</a>.</p></div>
 </div></section>"""
     return page("The Bead Lab: Design Your Own Brick Stitch Pattern | Same Old Samsara",
                 "A free brick stitch pattern maker. Color beads on a real offset brick grid with Toho colors, mirror for symmetry, and get a word chart to stitch from.",
@@ -665,10 +665,10 @@ def fieldguide_page():
   <span class="face front"><img src="{base}{f['img']}" alt="{e(f['name'])}" loading="lazy"><strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">the land</p><h1>the field guide</h1><p class="tag">who lives here, and what we've found.</p>
-  <p class="def">everything here was found on our land in central new york. we're not experts. we're learning it one walk at a time, and this guide grows as we do.</p>
+  <p class="def">Everything here was found on our land in Central New York. We're not experts. We're learning it one walk at a time, and this guide grows as we do.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "who lives here", "guess first, then tap")}
-  <p class="lede reveal">each one starts zoomed way in. take a guess, then tap to see the whole thing.</p>
+  <p class="lede reveal">Each one starts zoomed way in. Take a guess, then tap to see the whole thing.</p>
   <div class="critters" id="critters">{crit}</div>
   <p class="label tally" id="met"></p>
 </div></section>
@@ -687,17 +687,17 @@ def about_page():
   <p class="label kicker">about</p><h1>who's behind this</h1><p class="tag">chad + daniel.</p>
 </div></section>
 <section class="section"><div class="wrap prose reveal">
-  <p><strong>same old samsara</strong> is chad's creative outlet. it started with memes, then beads and patterns, and now it's mostly film. later maybe screen prints, or things made from what grows on the land.</p>
-  <p>samsara is the wheel: birth, death, coming back around. the raven sits on the ouroboros, the snake eating its tail. seasons come back. projects get set down and picked back up. the same old cycle.</p>
-  <p>in september 2026 we (chad and daniel) bought 34 acres in central new york: meadow, woods and a creek. we're turning it into a small farm, one bed at a time, and filming all of it. summers on the land, winters on the road in our rv as <a href="{PN}">pneuma nomads</a>.</p>
+  <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
+  <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
+  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a creek. We're turning it into a small farm, one bed at a time, and filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
-    <li><a href="{base}films/">films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">youtube</a>.</li>
-    <li><a href="{base}patterns/">beading patterns</a>: brick stitch and bead loom pdfs on <a href="{DIGITALS}" target="_blank" rel="noopener">samsara digitals</a>. a few free.</li>
-    <li><a href="{SHOP}" target="_blank" rel="noopener">handmade jewelry</a>: beaded earrings, bracelets and necklaces on etsy.</li>
-    <li><a href="{base}bead-lab/">the bead lab</a>: a free tool to design your own brick stitch.</li>
+    <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
+    <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs on <a href="{DIGITALS}" target="_blank" rel="noopener">Samsara Digitals</a>. A few free.</li>
+    <li><a href="{SHOP}" target="_blank" rel="noopener">Handmade jewelry</a>: beaded earrings, bracelets and necklaces on Etsy.</li>
+    <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch.</li>
   </ul>
-  <h2>say hi</h2><p>the easiest way is a message on <a href="{SHOP}" target="_blank" rel="noopener">etsy</a> or <a href="{IG}" target="_blank" rel="noopener">instagram</a>.</p>
+  <h2>say hi</h2><p>The easiest way is a message on <a href="{SHOP}" target="_blank" rel="noopener">Etsy</a> or <a href="{IG}" target="_blank" rel="noopener">Instagram</a>.</p>
 </div></section>"""
     return page("About | Same Old Samsara", "Same Old Samsara is the creative outlet of Chad and Daniel: films from their land in central New York, handmade beaded jewelry and beading patterns.",
                 base, "about/", body, here="about/", jsonld=[ORG])
@@ -802,7 +802,7 @@ footer .stripe {{ margin-bottom:14px; }}
   <h1 aria-label="Pneuma Nomads"><span id="word" aria-hidden="true">Pneuma Nomads</span><span class="cur" aria-hidden="true"></span></h1>
   <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <p class="tag">following the warm air.</p>
-  <p class="bio">we're chad and daniel. summers we live on our land in central new york. winters we hitch up the fifth wheel with lucy and miley and head south. this is where the road videos live.</p>
+  <p class="bio">We're Chad and Daniel. Summers we live on our land in Central New York, and winters we hitch up the fifth wheel with Lucy and Miley and head south. This is where the road videos live.</p>
 </div></header>
 <main id="main" class="wrap">
   <section>
@@ -819,14 +819,14 @@ footer .stripe {{ margin-bottom:14px; }}
   <section>
     <p class="label">the rest of the year</p>
     <div class="land">
-      <p>summers we're home on 34 acres, turning it into a little farm. that story lives on same old samsara, along with chad's handmade jewelry and beading patterns.</p>
+      <p>Summers we're home on 34 acres, turning it into a little farm. That story lives on Same Old Samsara, along with Chad's handmade jewelry and beading patterns.</p>
       <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{SHOP}" target="_blank" rel="noopener">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
     </div>
   </section>
 </main>
 <footer><div class="wrap">
   <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <p>pneuma nomads is part of the <a href="{base}index.html">same old samsara</a> family. &copy; <span id="y">2026</span></p>
+  <p>Pneuma Nomads is part of the <a href="{base}index.html">Same Old Samsara</a> family. &copy; <span id="y">2026</span></p>
 </div></footer>
 <script>
 (function(){{
@@ -844,20 +844,20 @@ footer .stripe {{ margin-bottom:14px; }}
 # what we cook. one dict per recipe, newest first. amounts are written the way you'd say them (fractions, not decimals).
 RECIPES = [
     {"slug": "maple-pecan-sweet-potato-mash", "name": "maple pecan sweet potato mash", "date": "2026-11-03",
-     "blurb": "creamy sweet potatoes baked under toasted pecans and a drizzle of maple syrup.",
-     "story": "i made this for a friend and they asked for the recipe. there wasn't one. i just went by feel, so this is my best guess at what i did. taste as you go and make it yours.",
+     "blurb": "Creamy sweet potatoes baked under toasted pecans and a drizzle of maple syrup.",
+     "story": "I made this for a friend and they asked for the recipe. There wasn't one. I just went by feel, so this is my best guess at what I did. Taste as you go and make it yours.",
      "serves": 6, "prep": 20, "cook": 40, "season": "fall",
      "ingredients": ["3 lb sweet potatoes, peeled and cut into chunks", "4 tbsp butter, softened", "⅓ cup maple syrup",
                      "⅓ cup heavy cream or milk", "1 tsp cinnamon", "¼ tsp nutmeg", "½ tsp salt", "¾ cup pecans",
                      "2 tbsp maple syrup, for drizzling"],
-     "steps": ["preheat the oven to 350°F and butter an 8x8 or 9x9 baking dish.",
-               "boil the sweet potatoes in salted water until fork tender, about 15 minutes.",
-               "drain well and let them steam dry in the pot for a couple of minutes, so the mash isn't watery.",
-               "mash with the butter, maple syrup, cream, cinnamon, nutmeg and salt. taste and adjust.",
-               "spread it into the dish. scatter the pecans on top and drizzle with the rest of the maple syrup.",
-               "bake about 25 minutes, until it's hot and the pecans are toasted."],
-     "notes": ["make ahead: put it together a day early, keep it in the fridge, and add 10 minutes to the bake.",
-               "no nutmeg? 1½ tsp pumpkin pie spice works in place of both spices."]},
+     "steps": ["Preheat the oven to 350°F and butter an 8x8 or 9x9 baking dish.",
+               "Boil the sweet potatoes in salted water until fork tender, about 15 minutes.",
+               "Drain well and let them steam dry in the pot for a couple of minutes, so the mash isn't watery.",
+               "Mash with the butter, maple syrup, cream, cinnamon, nutmeg and salt. Taste and adjust.",
+               "Spread it into the dish. Scatter the pecans on top and drizzle with the rest of the maple syrup.",
+               "Bake about 25 minutes, until it's hot and the pecans are toasted."],
+     "notes": ["Make ahead: put it together a day early, keep it in the fridge, and add 10 minutes to the bake.",
+               "No nutmeg? 1½ tsp pumpkin pie spice works in place of both spices."]},
 ]
 
 def recipe_ld(r):
@@ -876,7 +876,7 @@ def recipes_page():
   <strong>{e(r['name'])}</strong><span>{e(r['blurb'])}</span></a>""" for r in RECIPES)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">the kitchen</p><h1>recipes</h1><p class="tag">what we're cooking.</p>
-  <p class="def">nothing fancy. mostly made by feel, then written down after so friends can make it too.</p>
+  <p class="def">Nothing fancy. Mostly made by feel, then written down after so friends can make it too.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "the recipe box", f"{len(RECIPES)} so far")}
   <div class="rcards">{cards}</div>
@@ -909,7 +909,7 @@ def notfound():
     base = "/"
     body = f"""<section class="hero"><div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
 <div class="wrap hero-text"><p class="label kicker">404</p><h1>back around again.</h1><p class="tag">this page isn't here.</p>
-<p class="def">you went all the way around the wheel and ended up where you started. same old cycle.</p>
+<p class="def">You went all the way around the wheel and ended up where you started. Same old cycle.</p>
 <div class="btns center"><a class="btn solid" href="/">home</a><a class="btn" href="/patterns/">patterns</a><a class="btn" href="/land/">the land</a></div></div></section>"""
     return page("Not Here | Same Old Samsara", "This page isn't here.", base, "404.html", body, noindex=True)
 
@@ -922,7 +922,7 @@ def old_patterns_redirect():
 def llms_txt():
     lines = ["# Same Old Samsara", "",
              "> The creative outlet of Chad and Daniel: a documentary series about turning 34 acres in central New York into a small farm, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
-             "Everything on this site is lowercase on purpose. Prices are in USD.", "",
+             "Headings on this site are lowercase on purpose. Prices are in USD.", "",
              "## Films", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
     lines += ["", "## Beading patterns", f"PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy]({DIGITALS}). Full library: {SITE}/patterns/", ""]
