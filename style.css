@@ -320,3 +320,35 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .critter:focus-visible, .find:focus-visible { outline: 2px dashed var(--accent); outline-offset: 3px; }
 @media (prefers-reduced-motion: reduce) { .cframe img, .find .face { transition: none; } }
 button.btn { background: transparent; color: var(--ink); cursor: pointer; }
+
+/* ---------- recipes ---------- */
+.rcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+.rcard { display: flex; flex-direction: column; gap: 8px; padding: 22px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); text-decoration: none; transition: transform .2s; }
+.rcard:hover { transform: translate(-2px, -2px); color: inherit; }
+.rcard strong { font-family: var(--display); font-size: 26px; font-weight: 600; line-height: 1.1; }
+.rfacts { display: flex; justify-content: center; gap: 28px; margin-top: 24px; }
+.rfacts span { display: flex; flex-direction: column; align-items: center; }
+.rfacts b { font-family: var(--display); font-size: 34px; font-weight: 600; color: var(--accent); line-height: 1; }
+.rfacts i { font-style: normal; }
+.recipe .lede { margin-inline: auto; text-align: center; }
+.rgrid { display: grid; grid-template-columns: minmax(0, 5fr) minmax(0, 7fr); gap: 40px; align-items: start; }
+.rgrid h2 { font-size: 32px; margin-bottom: 6px; }
+.ring-card { background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; padding: 22px; box-shadow: 4px 4px 0 var(--ink); position: sticky; top: 80px; }
+.ings { list-style: none; margin: 14px 0 0; padding: 0; }
+.ings li { border-top: 1px dashed var(--rule); }
+.ings label { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; cursor: pointer; font-size: 17px; }
+.ings input { accent-color: var(--moss); width: 18px; height: 18px; flex: none; transform: translateY(3px); }
+.ings input:checked + span { text-decoration: line-through; opacity: .5; }
+.steps { margin: 14px 0 0; padding: 0; list-style: none; counter-reset: s; }
+.steps li { counter-increment: s; position: relative; padding: 0 0 18px 52px; font-size: 18px; }
+.steps li::before { content: counter(s); position: absolute; left: 0; top: -4px; width: 36px; height: 36px; border-radius: 50%; display: grid; place-items: center;
+  background: var(--gold); color: var(--night); font-family: var(--display); font-weight: 600; font-size: 18px; }
+.recipe .note p { margin: 6px 0 0; }
+@media (max-width: 760px) { .rgrid { grid-template-columns: 1fr; } .ring-card { position: static; } }
+@media print {
+  .top, .foot, .btns, .skip, .ings + p { display: none !important; }
+  body { background: #fff; color: #000; font-size: 13px; }
+  .hero.small { padding: 0 0 12px; } .section { padding: 0; }
+  .ring-card { box-shadow: none; position: static; } .rgrid { grid-template-columns: 1fr 1.4fr; gap: 24px; }
+  .reveal { opacity: 1 !important; transform: none !important; }
+}

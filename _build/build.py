@@ -317,7 +317,7 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <a class="skip" href="#main">skip to the good part</a>
 """
 
-NAV = [("the land", "land/"), ("films", "films/"), ("patterns", "patterns/"), ("field guide", "field-guide/"), ("jewelry", SHOP)]
+NAV = [("the land", "land/"), ("films", "films/"), ("patterns", "patterns/"), ("field guide", "field-guide/"), ("recipes", "recipes/"), ("jewelry", SHOP)]
 
 def nav(base, here=""):
     def link(t, h):
@@ -450,7 +450,7 @@ def footer(base):
     return f"""<footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
-  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
+  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}recipes/">recipes</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
   <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="year">2026</span> same old samsara</p>
 </div></footer>
 <script src="{base}js/site.js" defer></script>
@@ -840,6 +840,71 @@ footer .stripe {{ margin-bottom:14px; }}
 </html>
 """
 
+# ---------------- recipes ----------------
+# what we cook. one dict per recipe, newest first. amounts are written the way you'd say them (fractions, not decimals).
+RECIPES = [
+    {"slug": "maple-pecan-sweet-potato-mash", "name": "maple pecan sweet potato mash", "date": "2026-11-03",
+     "blurb": "creamy sweet potatoes baked under toasted pecans and a drizzle of maple syrup.",
+     "story": "i made this for a friend and they asked for the recipe. there wasn't one. i just went by feel, so this is my best guess at what i did. taste as you go and make it yours.",
+     "serves": 6, "prep": 20, "cook": 40, "season": "fall",
+     "ingredients": ["3 lb sweet potatoes, peeled and cut into chunks", "4 tbsp butter, softened", "⅓ cup maple syrup",
+                     "⅓ cup heavy cream or milk", "1 tsp cinnamon", "¼ tsp nutmeg", "½ tsp salt", "¾ cup pecans",
+                     "2 tbsp maple syrup, for drizzling"],
+     "steps": ["preheat the oven to 350°F and butter an 8x8 or 9x9 baking dish.",
+               "boil the sweet potatoes in salted water until fork tender, about 15 minutes.",
+               "drain well and let them steam dry in the pot for a couple of minutes, so the mash isn't watery.",
+               "mash with the butter, maple syrup, cream, cinnamon, nutmeg and salt. taste and adjust.",
+               "spread it into the dish. scatter the pecans on top and drizzle with the rest of the maple syrup.",
+               "bake about 25 minutes, until it's hot and the pecans are toasted."],
+     "notes": ["make ahead: put it together a day early, keep it in the fridge, and add 10 minutes to the bake.",
+               "no nutmeg? 1½ tsp pumpkin pie spice works in place of both spices."]},
+]
+
+def recipe_ld(r):
+    return {"@context": "https://schema.org", "@type": "Recipe", "name": r["name"].title(), "description": r["blurb"],
+            "author": {"@type": "Person", "name": "Chad Riley"}, "datePublished": r["date"],
+            "recipeYield": f"{r['serves']} servings", "prepTime": f"PT{r['prep']}M", "cookTime": f"PT{r['cook']}M",
+            "totalTime": f"PT{r['prep'] + r['cook']}M", "recipeCategory": "Side dish", "keywords": f"{r['season']}, sweet potato, maple",
+            "recipeIngredient": r["ingredients"],
+            "recipeInstructions": [{"@type": "HowToStep", "text": t} for t in r["steps"]],
+            "url": f"{SITE}/recipes/{r['slug']}/"}
+
+def recipes_page():
+    base = "../"
+    cards = "".join(f"""<a class="rcard reveal" href="{r['slug']}/">
+  <span class="label">{e(r['season'])} · serves {r['serves']} · {r['prep'] + r['cook']} min</span>
+  <strong>{e(r['name'])}</strong><span>{e(r['blurb'])}</span></a>""" for r in RECIPES)
+    body = f"""<section class="hero small"><div class="wrap hero-text">
+  <p class="label kicker">the kitchen</p><h1>recipes</h1><p class="tag">what we're cooking.</p>
+  <p class="def">nothing fancy. mostly made by feel, then written down after so friends can make it too.</p>
+</div></section>
+<section class="section"><div class="wrap">{section_head("·", "the recipe box", f"{len(RECIPES)} so far")}
+  <div class="rcards">{cards}</div>
+</div></section>"""
+    return page("Recipes | Same Old Samsara", "Simple, cozy recipes from Chad and Daniel, mostly made by feel and written down after.",
+                base, "recipes/", body, here="recipes/")
+
+def recipe_detail(r):
+    base = "../../"
+    ings = "".join(f'<li><label><input type="checkbox"><span>{e(i)}</span></label></li>' for i in r["ingredients"])
+    steps = "".join(f"<li>{e(t)}</li>" for t in r["steps"])
+    notes = "".join(f"<p>{e(n)}</p>" for n in r["notes"])
+    body = f"""<section class="hero small"><div class="wrap hero-text">
+  <p class="label kicker"><a href="{base}recipes/">recipes</a> · {e(r['season'])}</p><h1>{e(r['name'])}</h1><p class="tag">{e(r['blurb'])}</p>
+  <div class="rfacts"><span><b>{r['serves']}</b><i class="label">servings</i></span><span><b>{r['prep']}</b><i class="label">min prep</i></span><span><b>{r['cook']}</b><i class="label">min cook</i></span></div>
+</div></section>
+<section class="section recipe"><div class="wrap">
+  <p class="lede reveal">{e(r['story'])}</p>
+  <div class="rgrid">
+    <div class="ring-card reveal"><h2>ingredients</h2><p class="label">tap to check off as you go</p><ul class="ings">{ings}</ul></div>
+    <div class="reveal"><h2>steps</h2><ol class="steps">{steps}</ol>
+      <div class="note"><span class="label">notes</span>{notes}</div>
+      <div class="btns"><button type="button" class="btn" onclick="window.print()">print it</button><a class="btn" href="{base}recipes/">all recipes</a></div></div>
+  </div>
+</div></section>"""
+    return page(f"{r['name'].title()} | Same Old Samsara Recipes", r["blurb"].capitalize(), base, f"recipes/{r['slug']}/", body,
+                here="recipes/", jsonld=[recipe_ld(r)])
+
 def notfound():
     base = "/"
     body = f"""<section class="hero"><div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
@@ -867,6 +932,7 @@ def llms_txt():
         elif p.get("live"):
             lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): {p['type']} pattern, ${p['price']}. {p['blurb']} Buy: {listing(p['etsy'])}")
     lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
+              "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
               "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and creek in central New York, bought September 4, 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
@@ -919,10 +985,12 @@ if __name__ == "__main__":
     write("bead-lab/index.html", beadlab_page())
     write("field-guide/index.html", fieldguide_page())
     write("about/index.html", about_page())
+    write("recipes/index.html", recipes_page())
+    for r in RECIPES: write(f"recipes/{r['slug']}/index.html", recipe_detail(r))
     write("road/index.html", road_page())
     write("404.html", notfound())
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/", "road/"] + [f"patterns/{slug(p)}/" for p in paid]))
-    print("built", 10 + len(paid), "pages")
+    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/", "road/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paid] + [f"recipes/{r['slug']}/" for r in RECIPES]))
+    print("built", 11 + len(paid) + len(RECIPES), "pages")
