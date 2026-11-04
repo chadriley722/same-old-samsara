@@ -207,10 +207,13 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .wheel-wrap { display: grid; grid-template-columns: minmax(260px, 440px) 1fr; gap: 40px; align-items: center; }
 @media (max-width: 780px) { .wheel-wrap { grid-template-columns: 1fr; } }
 .wheel svg { width: 100%; height: auto; overflow: visible; }
-.wheel .slice { fill: transparent; stroke: var(--rule); cursor: pointer; transition: fill .3s; }
+.wheel .slice { fill: transparent; stroke: var(--rule); cursor: pointer; transition: fill .3s; outline: none; -webkit-tap-highlight-color: transparent; }
 .wheel .slice:hover { fill: color-mix(in srgb, var(--gold) 25%, transparent); }
 .wheel .slice.now { fill: color-mix(in srgb, var(--gold) 45%, transparent); }
+.wheel .slice:active { fill: color-mix(in srgb, var(--gold) 60%, transparent); }
 .wheel .slice.sel { fill: var(--accent); }
+/* a browser outline on an svg shape is a square box, so keyboard focus traces the wedge instead */
+.wheel .slice:focus-visible { outline: none; stroke: var(--ink); stroke-width: 3; }
 .wheel text { font: 15px var(--label); fill: var(--ink); pointer-events: none; text-anchor: middle; dominant-baseline: middle; }
 .wheel .slice.sel + text { fill: var(--bg); }
 .wheel .hub { fill: currentColor; }
@@ -227,14 +230,21 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .land { width: 100%; height: auto; display: block; }
 .land .edge { fill: color-mix(in srgb, var(--gold) 14%, var(--card)); stroke: var(--ink); stroke-width: 2.2; stroke-dasharray: 2 0; }
 .land .woods { stroke: none; }
+.land .woods-tint { fill: color-mix(in srgb, var(--moss) 16%, transparent); stroke: none; }
 .land .hatch { stroke: var(--moss); stroke-width: 1.2; opacity: .45; }
 :root[data-theme="night"] .land .hatch { stroke: #a9ae7b; }
 .land .tree { fill: none; stroke: var(--moss); stroke-width: 1.6; stroke-linejoin: round; }
 :root[data-theme="night"] .land .tree { stroke: #b6bb85; }
+.land .tree.far { opacity: .35; }
 .land .grass { fill: none; stroke: var(--gold); stroke-width: 1.3; stroke-linecap: round; opacity: .8; }
-.land .creek { fill: none; stroke: #6f95d3; stroke-width: 4; stroke-linecap: round; }
-.land .creek.thin { stroke-width: 1.5; opacity: .6; }
+.land .river { fill: none; stroke: #6f95d3; stroke-width: 20; stroke-linecap: round; }
+.land .river.thin { stroke: #fff; stroke-width: 1.5; stroke-dasharray: 26 18; opacity: .55; }
+.land .road { fill: none; stroke: var(--ink-soft); stroke-width: 9; opacity: .35; }
 .land .track { fill: none; stroke: var(--rust); stroke-width: 3; stroke-dasharray: 3 8; stroke-linecap: round; }
+.land .trail { fill: none; stroke: var(--rust); stroke-width: 2; stroke-dasharray: 1 6; stroke-linecap: round; }
+.land .shed path { fill: var(--card); stroke: var(--ink); stroke-width: 1.8; stroke-linejoin: round; }
+:root[data-theme="night"] .land .track, :root[data-theme="night"] .land .trail { stroke: #e39a6e; }
+:root[data-theme="night"] .land .woods-tint { fill: color-mix(in srgb, #a9ae7b 20%, transparent); }
 .land .bed { fill: color-mix(in srgb, var(--rust) 35%, transparent); stroke: var(--rust); stroke-width: 1.5; }
 .land .house { fill: none; stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 4 4; }
 .land .rose circle { fill: none; stroke: var(--ink); stroke-width: 1; }
@@ -296,7 +306,7 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .critter { position: relative; display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 10px 10px 14px; border: 0; background: var(--card); color: var(--ink); box-shadow: var(--shadow); border-radius: 6px; cursor: pointer; font: inherit; }
 .critter.soon { cursor: default; }
 .cframe { display: block; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: var(--rule); position: relative; }
-.cframe img { width: 100%; height: 100%; object-fit: cover; transform: scale(4.5); transition: transform 1.1s cubic-bezier(.2, .7, .2, 1); }
+.cframe img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 4.5)); transition: transform 1.1s cubic-bezier(.2, .7, .2, 1); }
 .critter.open .cframe img { transform: scale(1); }
 .critter .q { color: var(--accent); }
 .critter.open .q { display: none; }
@@ -308,8 +318,9 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .cam::after { content: ""; position: absolute; inset: 0; margin: auto; width: 34%; aspect-ratio: 1; border: 2px dashed var(--ink-soft); border-radius: 50%; }
 .tally { margin-top: 18px; color: var(--accent); }
 .finds { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
-.find { position: relative; min-height: 330px; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1000px; font: inherit; color: var(--ink); text-align: left; }
-.find .face { position: absolute; inset: 0; display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 16px; border-radius: 6px; background: var(--card); box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
+.find { position: relative; display: grid; min-height: 330px; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1000px; font: inherit; color: var(--ink); text-align: left; }
+/* both faces share one grid cell, so the card grows to fit the longer side */
+.find .face { grid-area: 1 / 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 16px; border-radius: 6px; background: var(--card); box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
 .find .back { justify-content: space-between; border: 1px dashed var(--ink-soft); background: transparent; }
 .find .back .hint { font-family: var(--display); font-style: italic; font-size: 22px; line-height: 1.25; }
 .find .front { transform: rotateY(180deg); }
@@ -321,6 +332,15 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 @media (prefers-reduced-motion: reduce) { .cframe img, .find .face { transition: none; } }
 button.btn { background: transparent; color: var(--ink); cursor: pointer; }
 
+/* ---------- the make section: one shelf per kind of thing ---------- */
+.shelf { margin-top: 48px; }
+.shelf + .shelf { padding-top: 48px; border-top: 1px solid var(--rule); }
+.shelf-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 16px; margin: 0 0 10px; }
+.shelf h3, .shelf h2 { font-size: clamp(26px, 3.4vw, 36px); margin: 0; }
+.shelf.big h2 { font-size: clamp(38px, 6vw, 64px); }
+.section > .wrap > .shelf:first-child { margin-top: 0; }
+.shelf-all { margin-top: 40px; }
+.shelf-jump { margin-top: 20px; }
 /* ---------- recipes ---------- */
 .rcards { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 .rcard { display: flex; flex-direction: column; gap: 8px; padding: 22px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 14px; box-shadow: 4px 4px 0 var(--ink); text-decoration: none; transition: transform .2s; }

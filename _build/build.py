@@ -119,30 +119,30 @@ MONTHS = [  # year one. what the land does, plus our plans marked as plans. no c
     ("dec", "First real snow. The land sleeps."),
 ]
 
-# spots on the illustrated map. x, y in the 1000 x 640 drawing. not to scale, not the real layout.
+# spots on the illustrated map. x, y in the 1000 x 900 drawing. a cartoon, not to scale.
 SPOTS = [
-    {"id": "meadow", "x": 520, "y": 250, "name": "the meadow", "img": "images/land/meadow.jpg",
-     "note": "Most of the land is open meadow. In September it's solid goldenrod, and we mow paths through it with a push mower and a scythe."},
-    {"id": "woods", "x": 820, "y": 150, "name": "the woods", "img": "images/land/canopy.jpg",
-     "note": "The back of the land is woods. Old trees, fallen logs, mushrooms after every rain."},
-    {"id": "creek", "x": 900, "y": 470, "name": "the creek", "img": "images/land/creek.jpg",
-     "note": "The land runs down to the creek. This is the view from the bank in early October."},
-    {"id": "track", "x": 150, "y": 520, "name": "the old track", "img": "images/land/track.jpg",
-     "note": "One rough dirt track is the only way in. Every load of gravel counts."},
-    {"id": "beds", "x": 360, "y": 420, "name": "the garden beds", "img": "images/land/storm.jpg",
+    {"id": "meadow", "x": 250, "y": 465, "name": "the meadow", "img": "images/land/meadow.jpg",
+     "note": "About half the land is open meadow. In September it's solid goldenrod, and we mow paths through it with a push mower and a scythe."},
+    {"id": "woods", "x": 640, "y": 300, "name": "the woods", "img": "images/land/canopy.jpg",
+     "note": "The woods run the whole length of the river, so you walk through trees before you ever see water. Old trees, fallen logs, mushrooms after every rain."},
+    {"id": "river", "x": 690, "y": 118, "name": "the river", "img": "images/land/creek.jpg",
+     "note": "Past the woods, the land runs out at the river. This is the view from the bank in early October."},
+    {"id": "track", "x": 468, "y": 510, "name": "the old track", "img": "images/land/track.jpg",
+     "note": "One rough dirt track is the only way in. It swings up the side of the meadow to the shed, then turns into a footpath through the woods to the water. Every load of gravel counts."},
+    {"id": "beds", "x": 300, "y": 640, "name": "the garden beds", "img": "images/land/storm.jpg",
      "note": "Where the garden beds go in 2027. Right now it's goldenrod, and we're clearing it."},
-    {"id": "mycelium", "x": 740, "y": 220, "name": "the mycelium bark", "img": "images/land/roots.jpg",
+    {"id": "mycelium", "x": 545, "y": 205, "name": "the mycelium bark", "img": "images/land/roots.jpg",
      "note": "A piece of bark we picked up in the woods. Those white threads are mycelium, the part of a mushroom you never see."},
-    {"id": "forest-floor", "x": 700, "y": 90, "name": "the mushroom spot", "img": "images/land/mushroom.jpg",
+    {"id": "forest-floor", "x": 395, "y": 190, "name": "the mushroom spot", "img": "images/land/mushroom.jpg",
      "note": "After rain the forest floor puts up mushrooms we're still learning to name."},
-    {"id": "house", "x": 270, "y": 230, "name": "the house site (someday)", "img": "images/land/lone-tree.jpg",
+    {"id": "house", "x": 340, "y": 380, "name": "the house site (someday)", "img": "images/land/lone-tree.jpg",
      "note": "The house comes later, 2028 or after. We already moved the spot once. That's how it goes."},
 ]
 
 PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
     ("images/land/mist-sunrise.jpg", "Fog on the low ground at sunrise.", "center"),
     ("images/land/meadow.jpg", "The meadow, late summer.", "center"),
-    ("images/land/creek.jpg", "The creek in early October.", "center"),
+    ("images/land/creek.jpg", "The river in early October.", "center"),
     ("images/land/storm.jpg", "A storm rolling in over the field.", "center"),
     ("images/land/canopy.jpg", "Looking up in the woods.", "center"),
     ("images/land/mushroom.jpg", "After the rain.", "center"),
@@ -155,12 +155,18 @@ PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
 # field guide: who lives here (zoom in, guess, tap to see it whole). focus = where the close-up starts.
 # add trail cam photos here as they come in.
 CRITTERS = [
+    {"id": "grasshopper", "img": "images/land/grasshopper.jpg", "focus": "70% 42%", "name": "a grasshopper",
+     "note": "Posing on the RV hitch like it owned the place."},
     {"id": "garter", "img": "images/land/snake.jpg", "focus": "57% 60%", "name": "a garter snake",
      "note": "On the gravel. Harmless, and fast."},
-    {"id": "grub", "img": "images/land/grub.jpg", "focus": "44% 50%", "name": "a beetle grub",
-     "note": "Found on the land in October. It'll be a beetle someday."},
+    {"id": "monarch", "img": "images/land/monarch.jpg", "focus": "68% 59%", "zoom": 11, "name": "a monarch",
+     "note": "On the purple asters in the meadow, in September."},
     {"id": "wasp", "img": "images/land/wasp.jpg", "focus": "64% 46%", "name": "a wasp",
-     "note": "Hanging off the truck mirror."},
+     "note": "Hanging off the RV window."},
+    {"id": "toad", "img": "images/land/toad.jpg", "focus": "57% 58%", "name": "a big toad",
+     "note": "Sitting still in the grass, sure we couldn't see it."},
+    {"id": "caterpillar", "img": "images/land/caterpillar.jpg", "focus": "45% 52%", "name": "a yellow caterpillar",
+     "note": "Walking a railing in October. No idea what it turns into."},
 ]
 
 # field guide: things to find. starts face down with a hint, tap to turn it over.
@@ -177,8 +183,8 @@ FINDS = [
      "note": "A little stream cuts through the woods here. Everything is covered in moss."},
     {"id": "canopy", "img": "images/land/canopy.jpg", "name": "the canopy", "hint": "You have to look up for this one.",
      "note": "Tall trees in the back woods. Lie down and look up."},
-    {"id": "creek", "img": "images/land/creek.jpg", "name": "the creek", "hint": "Where the land runs out.",
-     "note": "The land runs down to the creek. This is early October from the bank."},
+    {"id": "river", "img": "images/land/creek.jpg", "name": "the river", "hint": "Keep walking through the woods until the trees stop.",
+     "note": "The land runs down to the river. This is early October from the bank."},
 ]
 
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
@@ -317,7 +323,7 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <a class="skip" href="#main">skip to the good part</a>
 """
 
-NAV = [("the land", "land/"), ("films", "films/"), ("patterns", "patterns/"), ("field guide", "field-guide/"), ("recipes", "recipes/"), ("jewelry", SHOP)]
+NAV = [("the land", "land/"), ("films", "films/"), ("make", "make/"), ("field guide", "field-guide/"), ("jewelry", SHOP)]
 
 def nav(base, here=""):
     def link(t, h):
@@ -377,7 +383,7 @@ def wheel_block():
 </div>"""
 
 def map_block(base):
-    pins = "".join(f"""<button class="pin" type="button" style="left:{s['x']/10}%;top:{s['y']/6.4}%" data-spot="{s['id']}" aria-label="{e(s['name'])}"><span></span></button>""" for s in SPOTS)
+    pins = "".join(f"""<button class="pin" type="button" style="left:{s['x']/10}%;top:{s['y']/9}%" data-spot="{s['id']}" aria-label="{e(s['name'])}"><span></span></button>""" for s in SPOTS)
     panels = json.dumps({s["id"]: {"name": s["name"], "note": s["note"], "img": base + s["img"]} for s in SPOTS})
     return f"""<div class="map reveal">
   <div class="map-art">{land_svg()}{pins}</div>
@@ -385,37 +391,60 @@ def map_block(base):
     <img id="map-img" src="{base}{SPOTS[0]['img']}" alt="" width="800" height="600" loading="lazy">
     <span class="label">a spot on the land</span><h3 id="map-name">{e(SPOTS[0]['name'])}</h3><p id="map-note">{e(SPOTS[0]['note'])}</p>
   </aside>
-  <p class="label map-foot">drawn from memory, not to scale. the real map stays with us.</p>
+  <p class="label map-foot">a cartoon, not to scale. the real map stays with us.</p>
 </div>"""
 
 def land_svg():
-    """a hand-drawn style map of the land. stylized on purpose."""
-    trees = ""
+    """a hand-drawn style map of the land: an L, woods along the river, the track up the meadow. a cartoon, not to scale."""
     import random
     r = random.Random(4)
-    for _ in range(70):
-        x, y = r.uniform(640, 990), r.uniform(20, 300)
-        if (x - 640) * 0.9 + (300 - y) < 60: continue
-        s = r.uniform(14, 24)
-        trees += f'<path d="M{x:.0f},{y:.0f} l{-s/2:.1f},{s:.1f} h{s:.1f} z M{x:.0f},{y+s:.0f} v6" class="tree"/>'
+    # rough outlines, only used to scatter trees and grass
+    land = [(70, 540), (395, 70), (770, 185), (450, 610), (630, 730), (450, 870)]
+    woods = [(215, 330), (395, 70), (770, 185), (450, 610), (470, 590), (510, 500), (530, 420), (470, 320), (400, 300), (300, 290)]
+    path = [(495, 245), (540, 190), (590, 135)]  # keep the footpath and the shed clear of trees
+    spots = [(s["x"], s["y"]) for s in SPOTS]
+    def inside(poly, x, y):
+        hit = False
+        for (x1, y1), (x2, y2) in zip(poly, poly[1:] + poly[:1]):
+            if (y1 > y) != (y2 > y) and x < x1 + (y - y1) * (x2 - x1) / (y2 - y1): hit = not hit
+        return hit
+    def near(pts, x, y, d): return any((x - a) ** 2 + (y - b) ** 2 < d * d for a, b in pts)
+    def tree(x, y, s, cls="tree"):
+        return f'<path d="M{x:.0f},{y:.0f} l{-s/2:.1f},{s:.1f} h{s:.1f} z M{x:.0f},{y+s:.0f} v6" class="{cls}"/>'
+    trees = ""
+    for _ in range(420):
+        x, y = r.uniform(200, 780), r.uniform(70, 610)
+        if not inside(woods, x, y) or near(path + spots, x, y + 10, 26): continue
+        trees += tree(x, y, r.uniform(14, 24))
+    # the woods carry on past our lines, on both sides of us along the water
+    for _ in range(90):
+        x, y = r.uniform(120, 1000), r.uniform(60, 560)
+        if inside(land, x, y) or y < 40 + (x - 300) * 0.32 + 30 or (x > 780 and y < 340 + (x - 780) * 0.05 and y < 170 + (x - 780) * 0.8): continue
+        if x > 560 and y > 430: continue
+        if x < 300 and y > 320: continue
+        if near([(860, 470)], x, y, 75): continue
+        trees += tree(x, y, r.uniform(12, 18), "tree far")
     grass = ""
-    for _ in range(140):
-        x, y = r.uniform(60, 760), r.uniform(120, 600)
-        if x > 640 and y < 300: continue
+    for _ in range(190):
+        x, y = r.uniform(70, 630), r.uniform(280, 870)
+        if not inside(land, x, y) or inside(woods, x, y) or near(spots, x, y, 22) or near([(165, 515), (205, 515), (245, 515)], x, y, 34): continue
         grass += f'<path d="M{x:.0f},{y:.0f} q2,-9 5,-12 M{x+4:.0f},{y:.0f} q1,-7 -2,-10" class="grass"/>'
-    return f"""<svg class="land" viewBox="0 0 1000 640" role="img" aria-label="an illustrated map of the land: meadow, woods, a creek, the old track and the garden beds">
+    return f"""<svg class="land" viewBox="0 0 1000 900" role="img" aria-label="an illustrated map of the land, shaped like a rough L: meadow at the bottom, woods running along the river at the top, and the old track coming in off the road and up the side of the meadow">
   <defs><pattern id="hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(35)"><line x1="0" y1="0" x2="0" y2="8" class="hatch"/></pattern></defs>
-  <path class="edge" d="M40,80 C200,40 420,30 620,20 C760,14 900,30 970,60 L985,600 C760,625 420,630 60,612 C30,420 28,250 40,80 Z"/>
-  <path class="woods" d="M620,24 C760,16 900,32 968,62 L978,330 C900,300 820,310 760,280 C700,250 660,180 640,120 Z" fill="url(#hatch)"/>
+  <path class="road" d="M380,910 C420,900 450,890 480,870 C540,825 600,785 655,745 C720,700 850,625 1005,590"/>
+  <path class="edge" d="M70,540 C160,420 290,210 395,70 C520,95 650,135 770,185 C660,330 560,470 450,610 C510,650 570,690 630,730 C570,780 510,825 450,870 C320,760 190,650 70,540 Z"/>
+  <path class="woods-tint" d="M215,330 C260,270 340,160 395,70 C520,95 650,135 770,185 C660,330 560,470 450,610 C458,604 465,596 470,590 C490,560 505,530 510,500 C520,470 532,445 530,420 C515,380 495,345 470,320 C445,303 420,298 400,300 C365,288 330,285 300,290 C270,300 240,315 215,330 Z"/>
+  <path class="woods" d="M215,330 C260,270 340,160 395,70 C520,95 650,135 770,185 C660,330 560,470 450,610 C458,604 465,596 470,590 C490,560 505,530 510,500 C520,470 532,445 530,420 C515,380 495,345 470,320 C445,303 420,298 400,300 C365,288 330,285 300,290 C270,300 240,315 215,330 Z" fill="url(#hatch)"/>
   {trees}{grass}
-  <path class="creek" d="M940,40 C900,160 960,240 905,330 C850,420 950,500 900,620"/>
-  <path class="creek thin" d="M952,44 C912,164 972,244 917,334 C862,424 962,504 912,624"/>
-  <path class="track" d="M20,600 C120,560 160,520 220,470 C280,420 300,350 270,250"/>
-  <rect class="bed" x="320" y="395" width="90" height="16" rx="3"/><rect class="bed" x="320" y="420" width="90" height="16" rx="3"/><rect class="bed" x="320" y="445" width="90" height="16" rx="3"/>
-  
-  <circle class="house" cx="270" cy="230" r="22"/>
-  <g class="rose" transform="translate(110,130)"><circle r="34"/><path d="M0,-44 L7,0 L0,44 L-7,0 Z"/><text y="-50">n</text></g>
-  <text class="mapword" x="420" y="190">goldenrod</text><text class="mapword" x="760" y="370">the woods end here</text>
+  <path class="river" d="M262,-10 C310,30 355,45 395,58 C520,85 660,120 775,172 C850,205 905,265 1010,285"/>
+  <path class="river thin" d="M262,-10 C310,30 355,45 395,58 C520,85 660,120 775,172 C850,205 905,265 1010,285"/>
+  <path class="track" d="M607,778 C560,750 470,730 425,695 C405,675 420,625 440,570 C455,530 480,490 490,450 C495,410 490,380 480,350 C470,320 458,300 450,285 C460,262 475,250 495,245"/>
+  <path class="trail" d="M495,245 C510,225 525,205 540,190 C560,170 575,152 590,135"/>
+  <g class="shed" transform="translate(495,236)"><path d="M-13,0 L0,-12 L13,0 V13 H-13 Z"/></g>
+  <rect class="bed" x="255" y="600" width="90" height="16" rx="3"/><rect class="bed" x="255" y="625" width="90" height="16" rx="3"/><rect class="bed" x="255" y="650" width="90" height="16" rx="3"/>
+  <circle class="house" cx="340" cy="380" r="22"/>
+  <g class="rose" transform="translate(860,470)"><circle r="34"/><path d="M0,-44 L7,0 L0,44 L-7,0 Z"/><text y="-50">n</text></g>
+  <text class="mapword" x="205" y="520">goldenrod</text><text class="mapword" x="860" y="150">the river</text><text class="mapword" x="830" y="670">the road</text>
 </svg>"""
 
 def patterns_grid(base, items, show_filters=True):
@@ -450,8 +479,8 @@ def footer(base):
     return f"""<footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
-  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}recipes/">recipes</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
-  <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="year">2026</span> same old samsara</p>
+  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}make/">make</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}recipes/">recipes</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
+  <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="foot-year">2026</span> same old samsara</p>
 </div></footer>
 <script src="{base}js/site.js" defer></script>
 </body>
@@ -478,29 +507,70 @@ def hero_block(base, kicker=""):
     {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
     <h1>same old samsara</h1>
     <p class="tag">the same old cycle.</p>
-    <p class="def">A creative outlet: films from the land, handmade jewelry, beading patterns, and whatever comes next. Two guys, 34 acres in Central New York, learning as we go.</p>
+    <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. Two guys, 34 acres in Central New York, learning as we go.</p>
   </div>
   <div class="wrap">{almanac_strip()}</div>
 </section>"""
 
+MAKE_INTRO = "Beadwork, food, and whatever else we're making at the time. When something turns out good, we share how we made it so you can try it too."
+
+def make_shelves(base, full=False):
+    """everything we make, one shelf per kind, on the home page and the make page. list order is page order.
+    a new kind (how-to guides, say) is one more dict here, once it has a page to link to. full = the make page, which shows more of each."""
+    free = [p for p in PATTERNS if p.get("free")]
+    picks = [p for p in PATTERNS if p.get("design")][:10 if full else 5]
+    return [
+        {"id": "patterns", "name": "beading patterns", "count": f"{len(PATTERNS)} patterns", "feature": True,
+         "note": "Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.",
+         "items": patterns_grid(base, free + picks, show_filters=False),
+         "links": [("every pattern", "patterns/"), ("play in the bead lab", "bead-lab/")]},
+        {"id": "recipes", "name": "recipes", "count": f"{len(RECIPES)} so far",
+         "note": "Nothing fancy, mostly made by feel.",
+         "items": f"""<div class="rcards">{"".join(recipe_card(r, f"{base}recipes/{r['slug']}/") for r in (RECIPES if full else RECIPES[:3]))}</div>""",
+         "links": [("all recipes", "recipes/")]},
+    ]
+
+def make_block(base, full=False):
+    out = ""
+    for sh in make_shelves(base, full):
+        btns = "".join(f"""<a class="btn{' solid' if i == 0 else ''}" href="{base}{href}">{e(t)}</a>""" for i, (t, href) in enumerate(sh["links"]))
+        big = full and sh.get("feature")
+        tag = "h2" if full else "h3"
+        count = f'<span class="label">{e(sh["count"])}</span>' if full else ""
+        out += f"""<div class="shelf{' big' if big else ''}" id="{sh['id']}"><div class="shelf-head reveal"><{tag}>{e(sh['name'])}</{tag}>{count}</div><p class="lede reveal">{e(sh['note'])}</p>
+  {sh['items']}
+  <div class="btns reveal">{btns}</div></div>"""
+    return out
+
+def make_page():
+    base = "../"
+    jump = " · ".join(f"""<a href="#{sh['id']}">{e(sh['name'])}</a>""" for sh in make_shelves(base, True))
+    body = f"""<section class="hero small"><div class="wrap hero-text">
+  <p class="label kicker">no. 03</p><h1>make</h1><p class="tag">what we make, and how.</p>
+  <p class="def">{e(MAKE_INTRO)}</p>
+  <p class="label shelf-jump">{jump}</p>
+</div></section>
+<section class="section"><div class="wrap">{make_block(base, full=True)}</div></section>"""
+    return page("Make: Beading Patterns + Recipes | Same Old Samsara",
+                "Everything we make and how we made it: brick stitch and bead loom beading patterns, recipes, and more as we go.",
+                base, "make/", body, here="make/")
+
 def home(variant="home"):
     base = "" if variant == "home" else "../"
-    free = [p for p in PATTERNS if p.get("free")]
-    picks = [p for p in PATTERNS if p.get("design")][:5]
     wear = "".join(f"""<a class="wcard reveal" href="{listing(p['id'])}" target="_blank" rel="noopener">
       <img src="{base}{p['img']}" alt="{e(p['name'])}" width="600" height="600" loading="lazy"><div><h3>{e(p['name'])}</h3><span class="label">{p['price']}</span></div></a>""" for p in FEATURED)
     strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
   {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
-  <p class="lede reveal">Meadow, woods and a creek. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
+  <p class="lede reveal">Meadow, woods and a river. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
 <div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
     s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("02", "films", "season 1 · 2026")}{films_block(base)}</div></section>"""
-    s_make = f"""<section class="section" id="patterns"><div class="wrap">{section_head("03", "make", "beading patterns + the bead lab")}
-  <p class="lede reveal">Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.</p>
-  {patterns_grid(base, free + picks, show_filters=False)}
-  <div class="btns reveal"><a class="btn solid" href="{base}patterns/">every pattern</a><a class="btn" href="{base}bead-lab/">play in the bead lab</a></div>
+    s_make = f"""<section class="section" id="make"><div class="wrap">{section_head("03", "make", "patterns, recipes + whatever's next")}
+  <p class="lede reveal">{e(MAKE_INTRO)}</p>
+  {make_block(base)}
+  <div class="btns reveal shelf-all"><a class="btn" href="{base}make/">everything we make</a></div>
 </div></section>"""
     s_wear = f"""<section class="section band soft" id="wear"><div class="wrap">{section_head("04", "wear", "handmade jewelry")}
   <p class="lede reveal">Beaded by hand, one bead at a time. This is the shop that keeps the films going.</p>
@@ -526,14 +596,14 @@ def land_page():
     strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
-  <p class="def">We bought it on September 4, 2026: meadow, woods and a creek, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
+  <p class="def">We bought it on September 4, 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "field notes", "photos from the land")}<div class="fieldgrid">{strip}</div>
 <div class="btns reveal"><a class="btn solid" href="{base}field-guide/">play the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",
-                "34 acres of meadow, woods and creek in central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
+                "34 acres of meadow, woods and river in central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
                 base, "land/", body, here="land/")
 
 def films_page():
@@ -558,7 +628,7 @@ def patterns_page():
            "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"],
                                 "url": f'{SITE}/assets/{p["file"]}.pdf' if p.get("free") else f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">no. 03</p><h1>beading patterns</h1><p class="tag">a few free. the rest at samsara digitals.</p>
+  <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">a few free. the rest at samsara digitals.</p>
   <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. Instant download from Etsy.</p>
   <div class="btns center"><a class="btn solid" href="{DIGITALS}" target="_blank" rel="noopener">samsara digitals on etsy</a><a class="btn" href="{base}bead-lab/">design your own</a></div>
 </div></section>
@@ -567,7 +637,7 @@ def patterns_page():
 </div></section>"""
     return page("Beading Patterns: Brick Stitch + Bead Loom PDFs | Same Old Samsara",
                 "Brick stitch and bead loom beading patterns: rainbow parrot, squid and jellyfish wavy fringe, silly goose, triceratops, om, flying saucer and more. A few free PDFs, the rest $2.99 to $4.99 on Etsy.",
-                base, "patterns/", body, here="patterns/", jsonld=ld)
+                base, "patterns/", body, here="make/", jsonld=ld)
 
 def pattern_detail(p):
     base = "../../"
@@ -615,7 +685,7 @@ def pattern_detail(p):
 </div></section>"""
     desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} ${p['price']}, instant download."
     return page(f"{title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
-                here="patterns/", jsonld=[product, crumbs], image=img_abs)
+                here="make/", jsonld=[product, crumbs], image=img_abs)
 
 def beadlab_page():
     base = "../"
@@ -656,7 +726,7 @@ def beadlab_page():
 def fieldguide_page():
     base = "../"
     crit = "".join(f"""<button class="critter reveal" type="button" data-id="{c['id']}" aria-label="who's this? tap to see">
-  <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']}"></span>
+  <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}"></span>
   <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>""" for c in CRITTERS)
     crit += """<div class="critter soon reveal"><span class="cframe"><span class="cam" aria-hidden="true"></span></span>
   <span class="ans show"><strong>coming soon</strong><span>a trail cam is going up on the land. whoever walks past ends up here.</span></span></div>"""
@@ -689,7 +759,7 @@ def about_page():
 <section class="section"><div class="wrap prose reveal">
   <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
   <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
-  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a creek. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
+  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
@@ -869,20 +939,23 @@ def recipe_ld(r):
             "recipeInstructions": [{"@type": "HowToStep", "text": t} for t in r["steps"]],
             "url": f"{SITE}/recipes/{r['slug']}/"}
 
+def recipe_card(r, href):
+    return f"""<a class="rcard reveal" href="{href}">
+  <span class="label">{e(r['season'])} · serves {r['serves']} · {r['prep'] + r['cook']} min</span>
+  <strong>{e(r['name'])}</strong><span>{e(r['blurb'])}</span></a>"""
+
 def recipes_page():
     base = "../"
-    cards = "".join(f"""<a class="rcard reveal" href="{r['slug']}/">
-  <span class="label">{e(r['season'])} · serves {r['serves']} · {r['prep'] + r['cook']} min</span>
-  <strong>{e(r['name'])}</strong><span>{e(r['blurb'])}</span></a>""" for r in RECIPES)
+    cards = "".join(recipe_card(r, f"{r['slug']}/") for r in RECIPES)
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">the kitchen</p><h1>recipes</h1><p class="tag">what we're cooking.</p>
+  <p class="label kicker"><a href="{base}make/">make</a> · the kitchen</p><h1>recipes</h1><p class="tag">what we're cooking.</p>
   <p class="def">Nothing fancy. Mostly made by feel, then written down after so friends can make it too.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "the recipe box", f"{len(RECIPES)} so far")}
   <div class="rcards">{cards}</div>
 </div></section>"""
     return page("Recipes | Same Old Samsara", "Simple, cozy recipes from Chad and Daniel, mostly made by feel and written down after.",
-                base, "recipes/", body, here="recipes/")
+                base, "recipes/", body, here="make/")
 
 def recipe_detail(r):
     base = "../../"
@@ -903,7 +976,7 @@ def recipe_detail(r):
   </div>
 </div></section>"""
     return page(f"{r['name'].title()} | Same Old Samsara Recipes", r["blurb"].capitalize(), base, f"recipes/{r['slug']}/", body,
-                here="recipes/", jsonld=[recipe_ld(r)])
+                here="make/", jsonld=[recipe_ld(r)])
 
 def notfound():
     base = "/"
@@ -925,7 +998,7 @@ def llms_txt():
              "Headings on this site are lowercase on purpose. Prices are in USD.", "",
              "## Films", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
-    lines += ["", "## Beading patterns", f"PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy]({DIGITALS}). Full library: {SITE}/patterns/", ""]
+    lines += ["", "## Make", f"- [Make]({SITE}/make/): everything we make in one place, beading patterns and recipes so far.", "", "## Beading patterns", f"PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy]({DIGITALS}). Full library: {SITE}/patterns/", ""]
     for p in PATTERNS:
         if p.get("free"):
             lines.append(f"- [{p['name']}]({SITE}/assets/{p['file']}.pdf): free {p['type']} pattern. {p['blurb']}")
@@ -934,7 +1007,7 @@ def llms_txt():
     lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
-              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and creek in central New York, bought September 4, 2026. The exact location is private.",
+              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in central New York, bought September 4, 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
               "## Social", f"- YouTube: {YT}", f"- Instagram: {IG}", f"- TikTok: {TT}", f"- Pinterest: {PIN}", ""]
     return "\n".join(lines)
@@ -979,6 +1052,7 @@ if __name__ == "__main__":
     for v in ("ig", "yt", "pin"): write(f"{v}/index.html", home(v))
     write("land/index.html", land_page())
     write("films/index.html", films_page())
+    write("make/index.html", make_page())
     write("patterns/index.html", patterns_page())
     paid = [p for p in PATTERNS if not p.get("free") and p.get("live")]
     for p in paid: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
@@ -992,5 +1066,5 @@ if __name__ == "__main__":
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "patterns/", "bead-lab/", "about/", "road/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paid] + [f"recipes/{r['slug']}/" for r in RECIPES]))
-    print("built", 11 + len(paid) + len(RECIPES), "pages")
+    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "make/", "patterns/", "bead-lab/", "about/", "road/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paid] + [f"recipes/{r['slug']}/" for r in RECIPES]))
+    print("built", 12 + len(paid) + len(RECIPES), "pages")

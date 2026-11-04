@@ -179,5 +179,5 @@
     els.forEach(function (el) { io.observe(el); });
   } else { root.classList.add("static"); els.forEach(function (el) { el.classList.add("in"); }); }
 
-  var y = document.getElementById("year"); if (y) y.textContent = now.getFullYear();
+  var y = document.getElementById("foot-year"); if (y) y.textContent = now.getFullYear();
 })();
