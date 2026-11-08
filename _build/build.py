@@ -8,7 +8,7 @@ Copies pattern images from Same Old Samsara/Patterns/<design>/UPLOAD TO ETSY/ wh
 
 To update: change EPISODES / FEATURED / PATTERNS / SPOTS below and rerun.
   - a pattern gets relisted on Etsy → set its "live" to True
-  - rotate the seasonal freebie → move "free": True to another pattern (and make sure its PDF has the end page)
+  - rotate the seasonal freebie → move "featured": True to another free pattern (free ones with a design get their own page, pdf at assets/<file>.pdf)
 """
 import datetime, html, json, pathlib, shutil, subprocess
 
@@ -59,6 +59,9 @@ FEATURED = [
 # file = old card image assets/<file>.jpg (and assets/<file>.pdf when free). design = folder in Patterns/ with the v2 chart.
 # one entry per Etsy listing. live = listing is active right now. free = pdf on this site.
 PATTERNS = [
+    {"file": "christmastree", "design": "christmastree", "slug": "christmas-tree", "name": "christmas tree", "type": "brick stitch", "cats": ["christmas"],
+     "free": True, "featured": True,
+     "blurb": "A three tier pine with a gold star and a few lights. One piece worked up from the widest row, so it's a good first pattern. Free for the holidays."},
     {"file": "pumpkin", "name": "pumpkin", "type": "brick stitch", "cats": ["halloween"], "free": True,
      "blurb": "A little round pumpkin with a curly stem. Quick, cute and free."},
     {"file": "rainbowdiamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
@@ -460,7 +463,9 @@ def patterns_grid(base, items, show_filters=True):
     cards = []
     for p in items:
         tags = " ".join(c.replace(" ", "-") for c in p["cats"]) + " " + p["type"].replace(" ", "-") + (" free" if p.get("free") else "")
-        if p.get("free"):
+        if p.get("free") and p.get("design"):
+            href, pill, tgt = f"{base}patterns/{slug(p)}/", '<span class="pill free">free pdf</span>', ""
+        elif p.get("free"):
             href, pill = f'{base}assets/{p["file"]}.pdf', '<span class="pill free">free pdf</span>'
             tgt = ' target="_blank" rel="noopener"'
         else:
@@ -472,7 +477,7 @@ def patterns_grid(base, items, show_filters=True):
     filt = ""
     if show_filters:
         f = [("all", "all"), ("free", "free"), ("brick-stitch", "brick stitch"), ("loom", "loom"), ("animals", "animals"), ("rainbow", "rainbow"),
-             ("wavy-fringe", "wavy fringe"), ("space", "space"), ("symbols", "symbols"), ("halloween", "halloween")]
+             ("wavy-fringe", "wavy fringe"), ("space", "space"), ("symbols", "symbols"), ("christmas", "christmas"), ("halloween", "halloween")]
         btns = "".join(f'<button type="button" data-f="{k}" aria-pressed="{"true" if k == "all" else "false"}">{t}</button>' for k, t in f)
         filt = f"""<div class="pfilters"><input type="search" id="psearch" placeholder="search patterns" aria-label="search patterns">
   <div class="chips" role="group" aria-label="filter patterns">{btns}</div></div>"""
@@ -529,8 +534,8 @@ MAKE_INTRO = "Beadwork, food, and whatever else we're making at the time. When s
 def make_shelves(base, full=False):
     """everything we make, one shelf per kind, on the home page and the make page. list order is page order.
     a new kind (how-to guides, say) is one more dict here, once it has a page to link to. full = the make page, which shows more of each."""
-    free = [p for p in PATTERNS if p.get("free")]
-    picks = [p for p in PATTERNS if p.get("design")][:10 if full else 5]
+    free = sorted([p for p in PATTERNS if p.get("free") and (p.get("featured") or "halloween" not in p["cats"])], key=lambda p: not p.get("featured"))
+    picks = [p for p in PATTERNS if p.get("design") and not p.get("free")][:10 if full else 5]
     return [
         {"id": "patterns", "name": "beading patterns", "count": f"{len(PATTERNS)} patterns", "feature": True,
          "note": "Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.",
@@ -635,10 +640,10 @@ def films_page():
 
 def patterns_page():
     base = "../"
-    order = sorted(PATTERNS, key=lambda p: (not p.get("free"), "halloween" in p["cats"], not p.get("design"), p["name"]))
+    order = sorted(PATTERNS, key=lambda p: (not p.get("featured"), not p.get("free"), "halloween" in p["cats"], not p.get("design"), p["name"]))
     ld = [{"@context": "https://schema.org", "@type": "ItemList", "name": "Same Old Samsara beading patterns",
            "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"],
-                                "url": f'{SITE}/assets/{p["file"]}.pdf' if p.get("free") else f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
+                                "url": f'{SITE}/assets/{p["file"]}.pdf' if p.get("free") and not p.get("design") else f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">a few free. the rest at samsara digitals.</p>
   <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. Instant download from Etsy.</p>
@@ -657,12 +662,14 @@ def pattern_detail(p):
     img_abs = f"{SITE}/{pattern_img(p)}"
     title_name = p["name"].replace(" (wavy fringe)", "").replace(" (3 sizes)", "")
     kind = "Bead Loom" if p["type"] == "loom" else "Brick Stitch"
+    free = bool(p.get("free"))
+    pdf_abs = f'{SITE}/assets/{p["file"]}.pdf'
     product = {"@context": "https://schema.org", "@type": "Product",
                "name": f"{title_name.title()} {kind} Beading Pattern (PDF)",
-               "description": p["blurb"], "image": [img_abs], "sku": f'SD-{p["etsy"]}',
+               "description": p["blurb"], "image": [img_abs], "sku": f'SD-{p.get("etsy") or p["file"]}',
                "brand": {"@type": "Brand", "name": "Same Old Samsara"}, "category": "Arts & Crafts > Beading Patterns",
-               "offers": {"@type": "Offer", "price": p["price"], "priceCurrency": "USD", "availability": "https://schema.org/InStock",
-                          "url": listing(p["etsy"]), "seller": {"@type": "Organization", "name": "Samsara Digitals"}}}
+               "offers": {"@type": "Offer", "price": "0" if free else p["price"], "priceCurrency": "USD", "availability": "https://schema.org/InStock",
+                          "url": pdf_abs if free else listing(p["etsy"]), "seller": {"@type": "Organization", "name": "Samsara Digitals"}}}
     crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "home", "item": SITE + "/"},
         {"@type": "ListItem", "position": 2, "name": "patterns", "item": SITE + "/patterns/"},
@@ -678,6 +685,7 @@ def pattern_detail(p):
               "Stitch guide with thread paths", "Step by step how-to"] if d else ["Bead diagram", "Word chart", "Color legend"]
     if d and d.get("wave"): inside.insert(0, "The wave: how the wavy fringe works")
     related = [q for q in PATTERNS if q is not p and not q.get("free") and set(q["cats"]) & set(p["cats"])][:3]
+    related = related or [q for q in PATTERNS if not q.get("free") and q.get("design") and q.get("live")][:3]
     rel = patterns_grid(base, related, show_filters=False) if related else ""
     body = f"""<section class="section pdetail"><div class="wrap">
   <p class="label crumbs"><a href="{base}patterns/">patterns</a> / {e(p['type'])}</p>
@@ -686,17 +694,17 @@ def pattern_detail(p):
     <div class="pd-info">
       <h1>{e(title_name)}</h1><p class="label">{e(p['type'])} beading pattern · pdf</p>
       <p class="pd-blurb">{e(p['blurb'])}</p>
-      <div class="btns"><a class="btn solid big" href="{listing(p['etsy'])}" target="_blank" rel="noopener">get it on etsy · ${p['price']}</a></div>
+      <div class="btns">{f'<a class="btn solid big" href="{base}assets/{p["file"]}.pdf" target="_blank" rel="noopener" download>download the free pdf</a>' if free else f'<a class="btn solid big" href="{listing(p["etsy"])}" target="_blank" rel="noopener">get it on etsy · ${p["price"]}</a>'}</div>
       <table class="facts">{rows}</table>
       {swatches}
       <h3 class="mini">what's inside</h3><ul class="inside">{''.join(f'<li>{e(x)}</li>' for x in inside)}</ul>
-      <p class="label">sold through samsara digitals, our pattern shop on etsy. you can sell what you make from it.</p>
+      <p class="label">{"free to download and stitch. it works as earrings, a pendant, a keychain, a pin or a sew-on patch. you can sell what you make from it." if free else "sold through samsara digitals, our pattern shop on etsy. you can sell what you make from it."}</p>
     </div>
   </div>
   {f'<div class="related">{section_head("·", "you might also like")}{rel}</div>' if rel else ''}
 </div></section>"""
-    desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} ${p['price']}, instant download."
-    return page(f"{title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
+    desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} {'Free download.' if free else '$' + p['price'] + ', instant download.'}"
+    return page(f"{'Free ' if free else ''}{title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
                 here="make/", jsonld=[product, crumbs], image=img_abs)
 
 def beadlab_page():
@@ -1066,7 +1074,7 @@ if __name__ == "__main__":
     write("films/index.html", films_page())
     write("make/index.html", make_page())
     write("patterns/index.html", patterns_page())
-    paid = [p for p in PATTERNS if not p.get("free") and p.get("live")]
+    paid = [p for p in PATTERNS if (not p.get("free") and p.get("live")) or (p.get("free") and p.get("design"))]
     for p in paid: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
     write("bead-lab/index.html", beadlab_page())
     write("field-guide/index.html", fieldguide_page())
