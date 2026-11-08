@@ -37,11 +37,15 @@ PN_COFFEE = "https://buymeacoffee.com/pneumanomads"
 ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Salem, Massachusetts", "label": "vlog 18", "len": "8:20",
                "img": "images/road/latest-vlog.jpg"}
 
-# newest first
+# newest first. a new episode = one dict here + its thumbnail at images/epN-name.jpg (1280x720). date = the day it went live.
 EPISODES = [
-    {"id": "YDUcJU_dp78", "title": "our first month on 34 acres.", "label": "season 1 · episode 2", "len": "23:33",
+    {"id": "UhMJZrZttDI", "title": "hunting for a lost well.", "label": "season 1 · episode 4", "len": "26:41", "date": "2026-11-07",
+     "img": "images/ep4-lost-well.jpg", "blurb": "A neighbor says there's an old well somewhere on the land, so Chad builds a contraption out of a pipe and some wire and goes looking. We move the house site, find a giant sycamore leaf on an island in the river, and the trail cam catches its first raccoon."},
+    {"id": "SDIN5Jiadio", "title": "peak fall. then the cold came.", "label": "season 1 · episode 3", "len": "25:51", "date": "2026-10-31",
+     "img": "images/ep3-peak-fall.jpg", "blurb": "Red maples, gold goldenrod, then frost and the first snow. Four RV tires changed on soft ground, two bear stories, one tree that had to come down, and a few 28 degree nights that made the call for us."},
+    {"id": "YDUcJU_dp78", "title": "our first month on 34 acres.", "label": "season 1 · episode 2", "len": "23:33", "date": "2026-10-26",
      "img": "images/ep2-month-one.jpg", "blurb": "No tractor and no brush hog, just a scythe, a push mower and a lot of goldenrod. We cut a path to the old shed, move the RV onto the land and ride out the first thunderstorm."},
-    {"id": "xSpspkCw9og", "title": "we bought land.", "label": "season 1 · episode 1", "len": "41:24",
+    {"id": "xSpspkCw9og", "title": "we bought land.", "label": "season 1 · episode 1", "len": "41:24", "date": "2026-10-17",
      "img": "images/ep1-we-bought-land.jpg", "blurb": "34 acres of goldenrod and woods in Central New York. How we found it, the rough perc test, and the first walk as owners."},
 ]
 
@@ -198,6 +202,11 @@ TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patter
 e = html.escape
 TODAY = datetime.date.today().isoformat()
 
+def ver(rel):
+    """short content hash, so browsers pick up a changed style.css or script right away"""
+    import hashlib
+    return hashlib.md5((ROOT / rel).read_bytes()).hexdigest()[:8]
+
 def listing(id_):
     return f"https://www.etsy.com/listing/{id_}"
 
@@ -315,8 +324,8 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..800,0..100;1,9..144,300..700,0..100&family=Work+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="{base}style.css">
-<script>try{{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")document.documentElement.dataset.theme=t;}}catch(_){{}}</script>
+<link rel="stylesheet" href="{base}style.css?v={ver('style.css')}">
+<script>var R=document.documentElement;R.classList.add("js");setTimeout(function(){{if(!window.SOS_READY)R.classList.remove("js");}},3000);try{{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")R.dataset.theme=t;}}catch(_){{}}</script>
 <style>:root{{--ring-url:url("{base}images/ring-norules-pepper.svg");--mark-url:url("{base}images/mark-pepper.svg");}}</style>
 {ld}</head>
 <body>
@@ -363,7 +372,7 @@ def films_block(base, all_eps=False, lede="A documentary about our first year on
     rest = EPISODES if all_eps else EPISODES[1:]
     others = "".join(f"""<a class="ep reveal" href="https://www.youtube.com/watch?v={x['id']}" target="_blank" rel="noopener">
       <img src="{base}{x['img']}" alt="" width="640" height="360" loading="lazy">
-      <div><span class="label">{e(x['label'])} · {x['len']}</span><h3>{e(x['title'])}</h3>{f'<p>{e(x["blurb"])}</p>' if all_eps else ''}</div></a>""" for x in rest)
+      <div><span class="label">{e(x['label'].split(' · ')[-1])} · {x['len']}</span><h3>{e(x['title'])}</h3>{f'<p>{e(x["blurb"])}</p>' if all_eps else ''}</div></a>""" for x in rest)
     return f"""<div class="films">
   <div class="film-main reveal">{yt_embed(ep, base)}
     <div class="film-meta"><span class="label">newest · {e(ep['label'])}</span><h3>{e(ep['title'])}</h3><p>{e(ep['blurb'])}</p>
@@ -482,7 +491,7 @@ def footer(base):
   <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}make/">make</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}recipes/">recipes</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
   <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="foot-year">2026</span> same old samsara</p>
 </div></footer>
-<script src="{base}js/site.js" defer></script>
+<script src="{base}js/site.js?v={ver('js/site.js')}" defer></script>
 </body>
 </html>
 """
@@ -496,7 +505,7 @@ def page(title, desc, base, path, body, here="", noindex=False, jsonld=None, ima
 ORG = {
     "@context": "https://schema.org", "@type": "Organization", "name": "Same Old Samsara", "url": SITE + "/",
     "logo": SITE + "/favicon/web-app-manifest-512x512.png",
-    "description": "Same Old Samsara is the creative outlet of Chad and Daniel: a documentary about building a homestead on 34 acres in central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
+    "description": "Same Old Samsara is the creative outlet of Chad and Daniel: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
     "sameAs": [YT, IG, TT, PIN, SHOP, DIGITALS],
 }
 
@@ -508,6 +517,9 @@ def hero_block(base, kicker=""):
     <h1>same old samsara</h1>
     <p class="tag">the same old cycle.</p>
     <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. Two guys, 34 acres in Central New York, learning as we go.</p>
+    <div class="btns center hero-btns"><a class="btn solid" href="#films" data-newest="{EPISODES[0]['id']}">watch the newest episode</a>
+      <a class="btn" href="https://www.youtube.com/watch?v={EPISODES[-1]['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
+    <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
   </div>
   <div class="wrap">{almanac_strip()}</div>
 </section>"""
@@ -588,7 +600,7 @@ def home(variant="home"):
     body = hero_block(base, kicker) + "".join(order)
     path = "" if variant == "home" else f"{variant}/"
     return page("Same Old Samsara | Films From the Land, Handmade Jewelry, Beading Patterns",
-                "Same Old Samsara: a documentary about building a homestead on 34 acres in central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
+                "Same Old Samsara: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
                 base, path, body, noindex=variant != "home", jsonld=[ORG, {"@context": "https://schema.org", "@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}] if variant == "home" else None)
 
 def land_page():
@@ -603,13 +615,13 @@ def land_page():
 <section class="section"><div class="wrap">{section_head("·", "field notes", "photos from the land")}<div class="fieldgrid">{strip}</div>
 <div class="btns reveal"><a class="btn solid" href="{base}field-guide/">play the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",
-                "34 acres of meadow, woods and river in central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
+                "34 acres of meadow, woods and river in Central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
                 base, "land/", body, here="land/")
 
 def films_page():
     base = "../"
     ld = [{"@context": "https://schema.org", "@type": "VideoObject", "name": f'{x["title"]} ({x["label"]})', "description": x["blurb"],
-           "thumbnailUrl": f'{SITE}/{x["img"]}', "uploadDate": "2026-10-17" if x["id"] == "xSpspkCw9og" else "2026-10-24",
+           "thumbnailUrl": f'{SITE}/{x["img"]}', "uploadDate": x["date"],
            "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": f'https://www.youtube.com/watch?v={x["id"]}'} for x in EPISODES]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 02</p><h1>films</h1><p class="tag">a season a year.</p>
@@ -618,7 +630,7 @@ def films_page():
 <section class="section"><div class="wrap">{section_head("·", "season 1", "2026")}{films_block(base, all_eps=True, lede="new episodes as the year turns. start at episode 1, it's a story.")}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "between episodes", "shorts + the rest")}{follow_block(("etsy · jewelry", "etsy · patterns"))}</div></section>"""
     return page("Films | A Documentary From Our Land | Same Old Samsara",
-                "Same Old Samsara is a documentary series about our first years building a homestead on 34 acres in central New York. Season 1, 2026.",
+                "Same Old Samsara is a documentary series about our first years building a homestead on 34 acres in Central New York. Season 1, 2026.",
                 base, "films/", body, here="films/", jsonld=ld)
 
 def patterns_page():
@@ -748,7 +760,7 @@ def fieldguide_page():
   <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}land/">walk the land</a></div>
 </div></section>"""
     return page("The Field Guide: Who Lives on the Land | Same Old Samsara",
-                "A little interactive field guide to our 34 acres in central New York: guess the animals from a close-up, and turn over the mushrooms, moss and plants we've found.",
+                "A little interactive field guide to our 34 acres in Central New York: guess the animals from a close-up, and turn over the mushrooms, moss and plants we've found.",
                 base, "field-guide/", body, here="field-guide/", extra_js=f'<script src="{base}js/fieldguide.js" defer></script>')
 
 def about_page():
@@ -769,7 +781,7 @@ def about_page():
   </ul>
   <h2>say hi</h2><p>The easiest way is a message on <a href="{SHOP}" target="_blank" rel="noopener">Etsy</a> or <a href="{IG}" target="_blank" rel="noopener">Instagram</a>.</p>
 </div></section>"""
-    return page("About | Same Old Samsara", "Same Old Samsara is the creative outlet of Chad and Daniel: films from their land in central New York, handmade beaded jewelry and beading patterns.",
+    return page("About | Same Old Samsara", "Same Old Samsara is the creative outlet of Chad and Daniel: films from their land in Central New York, handmade beaded jewelry and beading patterns.",
                 base, "about/", body, here="about/", jsonld=[ORG])
 
 PN_MARK = ('<svg viewBox="0 99 375 198" aria-hidden="true"><g fill="currentColor" transform="translate(1,99)">'
@@ -788,7 +800,7 @@ def road_page():
     """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html). self-contained css."""
     base = "../"; v = ROAD_LATEST
     title = "Pneuma Nomads | Chad & Daniel on the Road"
-    desc = "Chad and Daniel's winter travel videos. Summers on our land in central New York, winters in the fifth wheel following the warm air south."
+    desc = "Chad and Daniel's winter travel videos. Summers on our land in Central New York, winters in the fifth wheel following the warm air south."
     links = [("youtube", PN_YT, "the road videos"), ("instagram", PN_IG, "photos from the road"), ("tiktok", PN_TT, "short clips"),
              ("spotify", PN_SPOTIFY, "what we play in the truck"), ("buy us a coffee", PN_COFFEE, "fuel for the truck")]
     btns = "".join(f'<a class="lnk" href="{u}" target="_blank" rel="noopener"><b>{e(n)}</b><span>{e(d)}</span><i aria-hidden="true">&gt;</i></a>' for n, u, d in links)
@@ -994,7 +1006,7 @@ def old_patterns_redirect():
 
 def llms_txt():
     lines = ["# Same Old Samsara", "",
-             "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
+             "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in Central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
              "Headings on this site are lowercase on purpose. Prices are in USD.", "",
              "## Films", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
@@ -1007,7 +1019,7 @@ def llms_txt():
     lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
-              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in central New York, bought September 4, 2026. The exact location is private.",
+              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in Central New York, bought September 4, 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
               "## Social", f"- YouTube: {YT}", f"- Instagram: {IG}", f"- TikTok: {TT}", f"- Pinterest: {PIN}", ""]
     return "\n".join(lines)

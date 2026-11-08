@@ -3,6 +3,7 @@
    wheel of the year, the land map, click-to-play films, pattern search, reveal on scroll. */
 (function () {
   "use strict";
+  window.SOS_READY = true;
   var LAT = 43.1, LON = -75.2;            // central new york, roughly. not the land.
   var DAY_ONE = Date.UTC(2026, 8, 4);      // sept 4, 2026: we got the keys
   var TZ = "America/New_York";
@@ -68,6 +69,25 @@
     set("moonicon", moonSVG(age));
     set("sun", clock(sun.rise) + " · " + clock(sun.set));
     set("season", ["deep winter", "deep winter", "mud season", "early spring", "spring", "early summer", "high summer", "late summer", "goldenrod season", now.getDate() < 20 ? "peak fall" : "late fall", "late fall", "early winter"][now.getMonth()]);
+  });
+
+  /* ---------- right now: on the land (May 1 to Nov 14) or on the road for winter ---------- */
+  var nowEl = document.querySelector("[data-now]");
+  if (nowEl) {
+    var md = (now.getMonth() + 1) * 100 + now.getDate(), onRoad = md >= 1115 || md < 501;
+    nowEl.querySelector("[data-now-text]").innerHTML = onRoad
+      ? 'on the road now. <a href="' + nowEl.dataset.now + '">the road videos</a>'
+      : md >= 1101 ? "on the land till mid november" : "on the land now";
+    nowEl.classList.toggle("road", onRoad);
+    nowEl.hidden = false;
+  }
+
+  /* ---------- "watch the newest episode" plays it right there ---------- */
+  document.querySelectorAll("[data-newest]").forEach(function (a) {
+    a.addEventListener("click", function () {
+      var b = document.querySelector('.film-main .yt[data-id="' + a.dataset.newest + '"]');
+      if (b) setTimeout(function () { b.click(); }, reduce ? 0 : 600);
+    });
   });
 
   /* ---------- the ring turns as you scroll (and slowly on its own) ---------- */
