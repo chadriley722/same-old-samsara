@@ -16,6 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 COWORK = ROOT.parent.parent                       # Claude CoWork/
 PATTERN_SRC = COWORK / "Same Old Samsara/Patterns"
 SITE = "https://sameoldsamsara.xyz"
+GOOGLE_VERIFY = ""  # Search Console token: paste only the content="..." value from the HTML tag, then rebuild + push
 
 YT = "https://www.youtube.com/@sameoldsamsara"
 SHOP = "https://sameoldsamsara.etsy.com"
@@ -310,6 +311,7 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
     canonical = SITE + "/" + path
     robots = "noindex, follow" if noindex else "index, follow, max-image-preview:large"
     img = image or f"{SITE}/images/og-sameoldsamsara.jpg"
+    gverify = f'<meta name="google-site-verification" content="{e(GOOGLE_VERIFY)}">\n' if GOOGLE_VERIFY else ""
     ld = "".join(f'<script type="application/ld+json">{json.dumps(j, ensure_ascii=False)}</script>\n' for j in (jsonld or []))
     return f"""<!DOCTYPE html>
 <html lang="en" data-theme="day">
@@ -319,7 +321,7 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <title>{e(title)}</title>
 <meta name="description" content="{e(desc)}">
 <meta name="robots" content="{robots}">
-<link rel="canonical" href="{canonical}">
+{gverify}<link rel="canonical" href="{canonical}">
 <meta name="theme-color" content="#4f5232">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="Same Old Samsara">
