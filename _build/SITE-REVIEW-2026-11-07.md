@@ -5,9 +5,9 @@ Looked at every page as a first time visitor (YouTube viewer, Etsy buyer, beader
 ## top 10 (ranked by impact)
 
 1. **The films are two episodes behind.** Home and /films said episode 2 was the newest. E3 (peak fall) and E4 (the lost well, out today) were missing. A YouTube viewer who clicks the link in the channel lands on old news. FIXED: all four episodes are in, newest first, with the real thumbnails, and each has its own upload date in the video schema.
-2. **The first screen on a phone has no way in.** It's the logo ring, the name, the tagline and a paragraph. No video, no button, no picture of the land. The name shows up three times (header, ring, headline) before anything else. FIXED: the ring is smaller on phones and the hero now has "watch the newest episode" and "start at episode 1" right under the intro.
+2. **The first screen on a phone has no way in.** It's the logo ring, the name, the tagline and a paragraph. No video, no button, no picture of the land. The name shows up three times (header, ring, headline) before anything else. FIXED: the ring now sizes to the screen height (it was 440px on every laptop), and the hero has "watch the newest episode" (jumps to the films and starts playing it) and "start at episode 1" right under the intro. Both show on the first screen on a phone and a laptop.
 3. **Photos were way too heavy.** The land strip alone pulled about 3.3 MB on the home page. Single photos were 600 to 800 KB (creek 791 KB, canopy 640 KB, toad 636 KB, monarch 2160x3840). FIXED: every land photo resized to 1280 max and recompressed. images/land went from 8.3 MB to 4.1 MB, same look.
-4. **Nothing says where Chad + Daniel are right now.** The site is built around the land, but from Nov 15 you're on the road until May 1, and the almanac still says "day 80 on the land". FIXED: a small "right now" line under the hero that reads "on the land" in season and "on the road for winter, see the road videos" (linking /road) from Nov 15 to May 1. It flips on its own, no rebuild.
+4. **Nothing says where Chad + Daniel are right now.** The site is built around the land, but from Nov 15 you're on the road until May 1, and the almanac still says "day 80 on the land". FIXED: a small line under the hero buttons: "on the land now" in season, "on the land till mid november" in early November, and "on the road now. the road videos" (links /road) from Nov 15 to May 1. It flips on its own, no rebuild.
 5. **If the JavaScript fails or loads slow, most of the page is invisible.** Everything with the scroll fade starts at opacity 0 and only shows once site.js runs. Bad for slow phone connections and for anything that reads the page without running scripts. FIXED: the fade only arms once the script marks the page as ready. Without JS, everything just shows.
 6. **Phone nav is cut off.** "jewel" hangs off the right edge and there's no hint it scrolls. FIXED: the links fit on one line at 375 wide.
 7. **Episode updates are manual in three places** (EPISODES list, the thumbnail file, the hardcoded upload dates). That's why the site fell behind. FIXED: one EPISODES entry per episode now carries its own date. Adding E5 = one dict + one thumbnail. Added a note to the Video Editor workflow suggestion below.
@@ -70,6 +70,13 @@ Looked at every page as a first time visitor (YouTube viewer, Etsy buyer, beader
 ## voice check (CLAUDE.md rules)
 - No dashes found in copy. Display text lowercase, reading text sentence case. No "farm". No place names. No charity claims. Good.
 - "A creative outlet:" hero line kept as is.
+
+## also changed
+- style.css and site.js links carry a short version stamp (`?v=`), so returning visitors get new styles right away instead of a cached old copy.
+- The field guide's trail cam card now says the cam is up and caught a raccoon (E4), instead of "coming soon". It was also lowercase reading text, now sentence case.
+- Home land blurb no longer says "right now it's goldenrod" (it's November). It's season neutral now.
+- Small episode cards say "episode 3 · 25:51" instead of the full "season 1 · episode 3 · 25:51", which wrapped.
+- Screenshots: `_build/review-shots/` (before + after).
 
 ## second pass (not done tonight)
 - Swap the seasonal freebie (needs a winter PDF with the end page).
