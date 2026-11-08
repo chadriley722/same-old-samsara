@@ -4,8 +4,8 @@
 (function () {
   "use strict";
   window.SOS_READY = true;
-  var LAT = 43.1, LON = -75.2;            // central new york, roughly. not the land.
-  var DAY_ONE = Date.UTC(2026, 8, 4);      // sept 4, 2026: we got the keys
+  var LAT = 43.05, LON = -76.15;          // syracuse, on purpose. sunrise is close enough and it points nowhere near the land.
+  var FIRST_FALL = 2026;                   // the year we got the land (month level only, no exact date in public)
   var TZ = "America/New_York";
   var root = document.documentElement;
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -61,10 +61,10 @@
   }
 
   /* ---------- almanac strip ---------- */
-  var day = Math.floor((Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()) - DAY_ONE) / 864e5) + 1;
+  var year = now.getFullYear() - FIRST_FALL + (now.getMonth() >= 8 ? 1 : 0);  // year 1 starts september 2026
   document.querySelectorAll("[data-almanac]").forEach(function (a) {
     var set = function (k, html) { var el = a.querySelector('[data-a="' + k + '"]'); if (el) el.innerHTML = html; };
-    set("day", day > 0 ? "day " + day + " on the land" : "not ours yet");
+    set("day", year > 0 ? "year " + year + " on the land" : "not ours yet");
     set("moon", phaseName);
     set("moonicon", moonSVG(age));
     set("sun", clock(sun.rise) + " · " + clock(sun.set));
@@ -137,7 +137,7 @@
     svg.appendChild(orbit);
     var hub = document.createElementNS(NS, "text");
     hub.setAttribute("x", C); hub.setAttribute("y", C); hub.setAttribute("style", "font:italic 30px Fraunces, serif");
-    hub.textContent = "day " + Math.max(day, 1);
+    hub.textContent = "year " + Math.max(year, 1);
     svg.appendChild(hub);
     w.appendChild(svg);
     slices[cur].dispatchEvent(new Event("click"));

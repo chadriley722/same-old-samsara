@@ -26,7 +26,7 @@ TT = "https://tiktok.com/@sameoldsamsara"
 PIN = "https://pinterest.com/sameoldsamsara"
 PN = SITE + "/road/"
 NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header"
-LAND_DAY_ONE = "2026-09-04"
+LAND_DAY_ONE = "2026-09"  # month only in public, never the exact day
 
 # /road = pneuma nomads (winter travel), in the PN look, not the almanac. pneumanomads.xyz points here.
 PN_YT = "https://youtube.com/@pneumanomads"
@@ -120,7 +120,7 @@ MONTHS = [  # year one. what the land does, plus our plans marked as plans. no c
     ("jun", "Long days. Everything grows a foot overnight. The plan for 2027: the first garden beds."),
     ("jul", "Fireflies over the meadow. The plan someday: fruit off our own food forest."),
     ("aug", "Hot and green. The goldenrod starts to turn."),
-    ("sep", "Goldenrod everywhere. September 4, 2026 is the day we got the keys."),
+    ("sep", "Goldenrod everywhere. September 2026 is when we got the keys."),
     ("oct", "Peak color, then the leaves come down. Mushrooms after every rain."),
     ("nov", "Bare trees, first frost. We close up and head south for the winter."),
     ("dec", "First real snow. The land sleeps."),
@@ -364,7 +364,7 @@ def nav(base, here=""):
 
 def almanac_strip():
     return """<div class="almanac" data-almanac>
-  <div><span class="label">today on the land</span><strong data-a="day">day –</strong></div>
+  <div><span class="label">today on the land</span><strong data-a="day">year –</strong></div>
   <div><span class="label">the moon</span><strong><i class="moon" data-a="moonicon" aria-hidden="true"></i><span data-a="moon">–</span></strong></div>
   <div><span class="label">sunrise · sunset</span><strong data-a="sun">–</strong></div>
   <div><span class="label">the season</span><strong data-a="season">–</strong></div>
@@ -588,7 +588,7 @@ def home(variant="home"):
       <img src="{base}{p['img']}" alt="{e(p['name'])}" width="600" height="600" loading="lazy"><div><h3>{e(p['name'])}</h3><span class="label">{p['price']}</span></div></a>""" for p in FEATURED)
     strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
-  {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
+  {section_head("01", "the land", "34 acres · central new york · since fall 2026")}
   <p class="lede reveal">Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
@@ -623,7 +623,7 @@ def land_page():
     strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
-  <p class="def">We bought it on September 4, 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
+  <p class="def">We bought it in September 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
@@ -1037,7 +1037,7 @@ def llms_txt():
     lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
-              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in Central New York, bought September 4, 2026. The exact location is private.",
+              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in Central New York, bought in September 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
               "## Social", f"- YouTube: {YT}", f"- Instagram: {IG}", f"- TikTok: {TT}", f"- Pinterest: {PIN}", ""]
     return "\n".join(lines)
