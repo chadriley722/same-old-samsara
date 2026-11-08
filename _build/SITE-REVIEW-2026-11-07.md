@@ -12,7 +12,7 @@ Looked at every page as a first time visitor (YouTube viewer, Etsy buyer, beader
 6. **Phone nav is cut off.** "jewel" hangs off the right edge and there's no hint it scrolls. FIXED: the links fit on one line at 375 wide.
 7. **Episode updates are manual in three places** (EPISODES list, the thumbnail file, the hardcoded upload dates). That's why the site fell behind. FIXED: one EPISODES entry per episode now carries its own date. Adding E5 = one dict + one thumbnail. Added a note to the Video Editor workflow suggestion below.
 8. **Free pattern is off season.** The pumpkin (Halloween) is the first thing in the make section in November. NOT CHANGED, Chad's call: swap the freebie to something winter or neutral (needs a PDF with the end page). Until then it's fine, it's just a little stale.
-9. **Who you are is buried.** Research says nobody owns gay homestead YouTube, but the site never says you're a couple. Home says "two guys", about says "Chad and Daniel". NOT CHANGED, Chad's call. Suggestion: one plain line on home and about, like "We're Chad and Daniel, a couple who'd never homesteaded a day in our lives." Same words as the YouTube about, which already works.
+9. **Who you are is buried.** Research says nobody owns gay homestead YouTube, but the site never says you're a couple. Home says "two guys", about says "Chad and Daniel". FIXED (Chad said yes): home hero, /films and /about now say it. Line used: one plain line on home and about, like "We're Chad and Daniel, a couple who'd never homesteaded a day in our lives." Same words as the YouTube about, which already works.
 10. **Lowercase place names in reading text.** Meta descriptions, the organization schema, llms.txt and the road page said "central New York". Reading text is sentence case, so FIXED to "Central New York" everywhere.
 
 ## everything else, by page
@@ -80,9 +80,9 @@ Looked at every page as a first time visitor (YouTube viewer, Etsy buyer, beader
 
 ## second pass (not done tonight)
 - Swap the seasonal freebie (needs a winter PDF with the end page).
-- One line about being a couple, and a photo of you two on about (Chad's call).
+- A photo of you two on about (Chad's call).
 - Raccoon from the trail cam into the field guide.
 - Season 1 playlist link, wavy fringe tutorial link on squid/jellyfish.
 - Newsletter: real block or remove.
 - Check FEATURED jewelry ids still live when Etsy reopens.
-- Workflow: when an episode goes live, the Video Editor upload step should also add it to EPISODES in build.py (copy the thumbnail to images/epN-*.jpg, 1280x720). That's what kept this behind.
+- Workflow: done, see `_build/README.md` "when an episode goes live". The Video Editor upload step should point to it.

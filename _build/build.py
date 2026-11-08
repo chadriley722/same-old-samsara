@@ -516,7 +516,7 @@ def hero_block(base, kicker=""):
     {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
     <h1>same old samsara</h1>
     <p class="tag">the same old cycle.</p>
-    <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. Two guys, 34 acres in Central New York, learning as we go.</p>
+    <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
     <div class="btns center hero-btns"><a class="btn solid" href="#films" data-newest="{EPISODES[0]['id']}">watch the newest episode</a>
       <a class="btn" href="https://www.youtube.com/watch?v={EPISODES[-1]['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
     <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
@@ -625,7 +625,7 @@ def films_page():
            "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": f'https://www.youtube.com/watch?v={x["id"]}'} for x in EPISODES]
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <p class="label kicker">no. 02</p><h1>films</h1><p class="tag">a season a year.</p>
-  <p class="def">A documentary about our first years on 34 acres in Central New York. Two guys, no homesteading background, one camera. Season 1 is 2026.</p>
+  <p class="def">A documentary about our first years on 34 acres in Central New York. Chad and Daniel, a couple with no homesteading background and one camera. Season 1 is 2026.</p>
 </div></section>
 <section class="section"><div class="wrap">{section_head("·", "season 1", "2026")}{films_block(base, all_eps=True, lede="new episodes as the year turns. start at episode 1, it's a story.")}</div></section>
 <section class="section band soft"><div class="wrap">{section_head("·", "between episodes", "shorts + the rest")}{follow_block(("etsy · jewelry", "etsy · patterns"))}</div></section>"""
@@ -771,7 +771,7 @@ def about_page():
 <section class="section"><div class="wrap prose reveal">
   <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
   <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
-  <p>In September 2026 we (Chad and Daniel) bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
+  <p>We're Chad and Daniel, a couple who'd never homesteaded a day in our lives. In September 2026 we bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
