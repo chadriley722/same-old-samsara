@@ -192,6 +192,16 @@ FINDS = [
      "note": "Tall trees in the back woods. Lie down and look up."},
     {"id": "river", "img": "images/land/creek.jpg", "name": "the river", "hint": "Keep walking through the woods until the trees stop.",
      "note": "The land runs down to the river. This is early October from the bank."},
+    {"id": "asters", "img": "images/land/asters.jpg", "name": "new england asters", "hint": "Purple in the meadow, right when the goldenrod is going.",
+     "note": "The monarchs stop on these in September to fuel up for the trip south."},
+    {"id": "milkweed", "img": "images/land/milkweed.jpg", "name": "common milkweed", "hint": "Pods that split open into white silk in the fall.",
+     "note": "The only plant monarch caterpillars eat. We saved a plate of the seeds and threw the rest to the wind."},
+    {"id": "turkey-tail", "img": "images/land/turkey-tail.jpg", "name": "turkey tail, we think", "hint": "Thin striped shelves on a mossy log.",
+     "note": "A bracket fungus that breaks dead wood back down into soil. We're not experts, so we only look."},
+    {"id": "sycamore", "img": "images/land/sycamore.jpg", "name": "a sycamore leaf", "hint": "A leaf bigger than your hand, down by the water.",
+     "note": "Sycamores like wet ground by the river. Their leaves get huge."},
+    {"id": "bear-sign", "img": "images/land/bear-tree.jpg", "name": "bear sign", "hint": "Torn bark on a dead tree in the woods.",
+     "note": "We think a young bear climbed this one. So far we've seen more bear than deer."},
 ]
 
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
@@ -745,12 +755,12 @@ def beadlab_page():
 
 def fieldguide_page():
     base = "../"
-    crit = "".join(f"""<button class="critter reveal" type="button" data-id="{c['id']}" aria-label="who's this? tap to see">
+    crit = "".join(f"""<button class="critter reveal" type="button" id="{c['id']}" data-id="{c['id']}" aria-label="who's this? tap to see">
   <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}"></span>
   <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>""" for c in CRITTERS)
     crit += """<div class="critter soon reveal"><span class="cframe"><span class="cam" aria-hidden="true"></span></span>
   <span class="ans show"><strong>on the trail cam</strong><span>The trail cam is up. First night, a raccoon. Whoever walks past next ends up here.</span></span></div>"""
-    finds = "".join(f"""<button class="find reveal" type="button" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
+    finds = "".join(f"""<button class="find reveal" type="button" id="{f['id']}" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
   <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
   <span class="face front"><img src="{base}{f['img']}" alt="{e(f['name'])}" loading="lazy"><strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
     body = f"""<section class="hero small"><div class="wrap hero-text">

@@ -49,5 +49,12 @@
     tally();
     window.scrollTo({ top: 0, behavior: "smooth" });
   });
+  // a link like field-guide/#goldenrod (from a pin) opens that card and scrolls to it
+  var h = decodeURIComponent(location.hash.slice(1));
+  var hit = h && document.querySelector('[data-id="' + h.replace(/"/g, "") + '"]');
+  if (hit) {
+    if (hit.classList.contains("find")) setFind(hit, true); else setCritter(hit, true);
+    setTimeout(function () { hit.scrollIntoView({ block: "center" }); }, 50);
+  }
   tally();
 })();
