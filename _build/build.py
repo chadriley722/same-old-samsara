@@ -574,7 +574,7 @@ def home(variant="home"):
     strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
     s_land = f"""<section class="section" id="land"><div class="wrap">
   {section_head("01", "the land", "34 acres · central new york · since sept 4, 2026")}
-  <p class="lede reveal">Meadow, woods and a river. Right now it's goldenrod, mushrooms and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
+  <p class="lede reveal">Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
 </div>
 <div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
 <div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
@@ -682,8 +682,8 @@ def pattern_detail(p):
     body = f"""<section class="section pdetail"><div class="wrap">
   <p class="label crumbs"><a href="{base}patterns/">patterns</a> / {e(p['type'])}</p>
   <div class="pd">
-    <div class="pd-img reveal"><img src="{base}{pattern_img(p)}" alt="{e(p['name'])} {p['type']} beading pattern, every bead charted" width="1400" height="1050"></div>
-    <div class="pd-info reveal">
+    <div class="pd-img"><img src="{base}{pattern_img(p)}" alt="{e(p['name'])} {p['type']} beading pattern, every bead charted" width="1400" height="1050"></div>
+    <div class="pd-info">
       <h1>{e(title_name)}</h1><p class="label">{e(p['type'])} beading pattern · pdf</p>
       <p class="pd-blurb">{e(p['blurb'])}</p>
       <div class="btns"><a class="btn solid big" href="{listing(p['etsy'])}" target="_blank" rel="noopener">get it on etsy · ${p['price']}</a></div>
@@ -741,7 +741,7 @@ def fieldguide_page():
   <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}"></span>
   <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>""" for c in CRITTERS)
     crit += """<div class="critter soon reveal"><span class="cframe"><span class="cam" aria-hidden="true"></span></span>
-  <span class="ans show"><strong>coming soon</strong><span>a trail cam is going up on the land. whoever walks past ends up here.</span></span></div>"""
+  <span class="ans show"><strong>on the trail cam</strong><span>The trail cam is up. First night, a raccoon. Whoever walks past next ends up here.</span></span></div>"""
     finds = "".join(f"""<button class="find reveal" type="button" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
   <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
   <span class="face front"><img src="{base}{f['img']}" alt="{e(f['name'])}" loading="lazy"><strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))

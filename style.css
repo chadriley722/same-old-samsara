@@ -84,9 +84,9 @@ p { margin: 0; }
 }
 
 /* ---------- hero with the turning ring ---------- */
-.hero { position: relative; padding: 70px 0 40px; text-align: center; overflow: hidden; }
+.hero { position: relative; padding: clamp(28px, 6vh, 70px) 0 40px; text-align: center; overflow: hidden; }
 .hero.small { padding: 64px 0 30px; }
-.ring-wrap { position: relative; width: min(440px, 78vw); aspect-ratio: 1; margin: 0 auto -10px; display: grid; place-items: center; }
+.ring-wrap { position: relative; width: min(440px, 78vw, 44vh); aspect-ratio: 1; margin: 0 auto -10px; display: grid; place-items: center; }
 .ring { position: absolute; inset: 0; background: currentColor; opacity: .92;
   -webkit-mask: var(--ring-url) center / contain no-repeat; mask: var(--ring-url) center / contain no-repeat;
   transform: rotate(var(--turn, 0deg)); will-change: transform; }
