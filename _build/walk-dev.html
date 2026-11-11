@@ -4,12 +4,14 @@
 <style>html,body{margin:0;height:100%;background:#fff4d9;overflow:hidden}canvas{position:fixed;left:0;top:0;width:100vw;height:100vh;display:block}
 #hud{position:fixed;left:8px;bottom:8px;font:12px/1.3 monospace;background:#fffc;padding:4px 6px;color:#333;white-space:pre}</style></head>
 <body><canvas id="c"></canvas><div id="hud"></div>
-<!-- A workbench for the world on its own, without the page around it. Not linked from anywhere.
+<!-- A workbench for the world on its own, without the page around it. Lives in _build, so it never goes live.
+     Open it through the preview server: http://127.0.0.1:8811/_build/walk-dev.html
      ?u=3.5 where on the walk · ?night=1 the walk that starts in the dark · ?tier=0..2 · ?t=12 freeze the clock
      arrow keys walk, n flips night, drag looks around.
-     ?shoot=1 saves the still prints the plain page uses (needs _build/serve.py --shots <folder>). -->
+     ?shoot=1 saves the still prints the plain page uses (needs _build/serve.py --shots <folder>).
+     ?shoot=og&w=2400&h=1260 saves the scene for the share picture. -->
 <script type="module">
-import { World, STOP_IDS } from "./world.js";
+import { World, STOP_IDS } from "../walk/world.js";
 const q = new URLSearchParams(location.search), num = (k, d) => (q.has(k) ? +q.get(k) : d);
 const hud = document.getElementById("hud"), canvas = document.getElementById("c");
 let world;
@@ -20,8 +22,9 @@ window.S = S;
 
 if (q.has("shoot")) {
   // each stop as a 1600 x 1000 picture. the gate keeps the framing the live page uses, so it can stand in while the world loads.
-  const shots = STOP_IDS.map((id, i) => ({ name: i + "-" + id, u: i, night: 0, slide: i === 0 ? 1 : 0 }));
+  let shots = STOP_IDS.map((id, i) => ({ name: i + "-" + id, u: i, night: 0, slide: i === 0 ? 1 : 0 }));
   shots.push({ name: "0-gate-night", u: 0, night: 1, slide: 1 });
+  if (q.get("shoot") === "og") shots = [{ name: "og-scene", u: 0, night: 0, slide: 1 }];      // the share picture: ?shoot=og&w=2400&h=1260
   const W = num("w", 1600), H = num("h", 1000);
   canvas.style.width = W / 2 + "px"; canvas.style.height = H / 2 + "px";
   world.resize(W / 2, H / 2, 2);

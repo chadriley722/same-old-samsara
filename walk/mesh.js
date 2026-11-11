@@ -235,7 +235,7 @@ export function screen() {
   const g = new Geo(), wood = P(INK.WOOD, STYLE.PLANK);
   for (const x of [-1.85, 1.85]) g.add(cyl(0.055, 0.045, 2.75, 6, wood, 1), { pos: [x, 0, 0], roll: x > 0 ? -0.04 : 0.04 });
   g.add(tube([-1.9, 2.66, 0], [1.9, 2.66, 0], 0.012, 0.012, 4, P(INK.PEPPER, STYLE.PLAIN), 2, false));
-  const sheet = plane(3.4, 2.05, P(INK.WHITE, STYLE.CLOTH), 3, 10, 6);
+  const sheet = plane(3.4, 2.05, P(INK.WHITE, STYLE.FILM), 3, 10, 6);
   sheet.sway((x, y) => (1 - Math.abs(x) / 1.7) * (0.5 - y / 2.05) * 0.5);        // pinned along the top, loose at the bottom
   g.add(sheet, { pos: [0, 1.62, 0] });
   for (const x of [-1.9, 1.9]) g.add(tube([x, 2.3, 0], [x * 1.9, 0, 1.3], 0.008, 0.008, 3, P(INK.PEPPER, STYLE.PLAIN), 2, false));  // guy lines

@@ -46,9 +46,18 @@ async function start() {
   const dpr = window.devicePixelRatio || 1;
   const baseScale = tier === 2 ? (dpr < 1.5 ? 1.5 : Math.min(dpr, 2)) : tier === 1 ? Math.min(dpr, 1.6) : Math.min(dpr, 1.1);
   let governor = 1;
+  // never draw more pixels than this, however big or sharp the screen is. the print look does not need them.
+  const BUDGET = [0.8e6, 1.7e6, 3.4e6][tier];
+  const fit = () => {
+    const w = view.clientWidth, h = view.clientHeight;
+    let scale = baseScale * governor;
+    if (w * h * scale * scale > BUDGET) scale = Math.sqrt(BUDGET / (w * h));
+    world.resize(w, h, scale);
+  };
 
   const world = new World(canvas, { tier, capture: q.has("keep") });       // throws when there is no WebGL2, and we fall back
   let lost = false;
+  if (walk.dataset.film) { const im = new Image(); im.onload = () => { world.setFilm(im); wake(); }; im.src = walk.dataset.film; }
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); lost = true; });
   canvas.addEventListener("webglcontextrestored", () => { try { world.build(); lost = false; wake(); } catch (err) { goPlain(err); } });
 
@@ -67,7 +76,7 @@ async function start() {
     for (let i = 1; i < anchors.length; i++) anchors[i] = Math.max(anchors[i], anchors[i - 1] + 1);
     const head = document.querySelector("header.top");
     walk.style.setProperty("--top-h", (head ? head.offsetHeight : 60) + "px");
-    world.resize(view.clientWidth, view.clientHeight, baseScale * governor);
+    fit();
     wake();
   }
   const uAt = (y) => {
@@ -109,7 +118,7 @@ async function start() {
     wake();
   }
   const HOT = [
-    { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); } },
+    { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(); } },
     { id: "fire", label: "poke the fire", range: 30, when: () => world.fire > 0.3, act: () => { world.fireKick = 0.9; say("sparks.", "fire"); } },
     { id: "apple", label: "shake the apple tree", range: 26, when: () => Math.abs(uS - 3) < 0.7, act: () => { world.beadKick = 1; say("they don't fall off. we tried.", "apple"); } },
     { id: "cam", label: "the trail cam", range: 22, when: () => Math.abs(uS - 4) < 0.6, act: () => { flash(); say("the trail cam got you. now you're in the field guide.", "cam"); } },
@@ -134,6 +143,23 @@ async function start() {
       if (p) sayEl.style.transform = `translate(${clamp(p[0], 110, world.cssW - 110).toFixed(1)}px, ${Math.max(p[1] - 34, 90).toFixed(1)}px) translate(-50%, -100%)`;
     }
   }
+
+  /* ---------- sound: off until asked for, and made on the spot (walk/sound.js) ---------- */
+  const soundBtn = walk.querySelector(".walk-sound");
+  let sound = null, soundOn = false, soundTimer = 0;
+  if (soundBtn && (window.AudioContext || window.webkitAudioContext)) {
+    soundBtn.hidden = false;
+    soundBtn.addEventListener("click", async () => {
+      if (!sound) { try { sound = (await import("./sound.js")).startSound(); } catch (_) { sound = null; } if (!sound) { soundBtn.hidden = true; return; } }
+      soundOn = !soundOn;
+      soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
+      soundBtn.firstElementChild.textContent = soundOn ? "sound on" : "sound off";
+      clearInterval(soundTimer);
+      if (soundOn) { sound.on(); hear(); soundTimer = setInterval(() => { hear(); sound.tick(); }, 300); } else sound.off();
+    });
+    document.addEventListener("visibilitychange", () => { if (sound && soundOn) (document.hidden ? sound.off() : sound.on()); });
+  }
+  function hear() { if (sound && soundOn && world.cam) sound.set({ ...world.ears(), walking: Math.min(gust, 1) }); }
 
   /* ---------- looking around a little ---------- */
   const head = [0, 0], headTo = [0, 0];
@@ -179,21 +205,19 @@ async function start() {
     const tick = Math.floor(now / 1000 * 12);                     // things that sway are redrawn 12 times a second
     if (moving || dirty || tick !== lastTick) {
       const t0 = performance.now();
-      world.render({ u: uS, time: now / 1000, head, night: nS, gust, moonPhase });
+      world.render({ u: uS, time: now / 1000, head, night: nS, gust, moonPhase, seen: clamp(window.innerHeight / (view.clientHeight || 1), 0.6, 1) });
       placeHot();
       lastTick = tick; dirty = false;
       // if this device can't keep up while you're walking, soften the picture a step
       if (moving && !first) {
         slow = dt > 0.034 ? slow + dt : Math.max(0, slow - dt * 0.5);
-        if (slow > 1.2 && governor > 0.56) { governor *= 0.82; slow = 0; world.resize(view.clientWidth, view.clientHeight, baseScale * governor); }
+        if (slow > 1.2 && governor > 0.56) { governor *= 0.82; slow = 0; fit(); }
       }
       if (first) { first = false; root.classList.add("walk-ready"); }
       void t0;
     }
     const k = Math.round(uS);
     markTrail(k);
-    const L = world.light;
-    if (L) walk.classList.toggle("dark", L.paper[0] * 0.3 + L.paper[1] * 0.6 + L.paper[2] * 0.1 < 0.5);
     if (moving) awakeUntil = now + 45000;
     if (now < awakeUntil) raf = requestAnimationFrame(frame);     // after a while with nobody there, stop and hold the picture
   }

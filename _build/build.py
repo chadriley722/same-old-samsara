@@ -585,7 +585,7 @@ def hero_block(base, kicker=""):
 # Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
 
 WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
-<script>(function(){{var d=document.documentElement,ok=false;try{{ok=!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/[?&]plain\\b/.test(location.search)&&!!document.createElement("canvas").getContext("webgl2");}}catch(_){{}}if(/[?&]walk\\b/.test(location.search))ok=true;d.classList.add(ok?"walk-on":"walk-plain");}})();</script>
+<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");}})();</script>
 """
 
 def walk_stops(base):
@@ -627,7 +627,7 @@ def walk_stops(base):
          "alt": "A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees.",
          "body": "<p>Sign up for the newsletter and we'll write when there's something worth saying. If you like what we make, you can buy us a coffee.</p>",
          "links": ext("the newsletter", NEWSLETTER, True) + ext("buy us a coffee", COFFEE) + loc("who we are", "about/")},
-        {"id": "road", "name": "the road", "light": "first light", "side": "right",
+        {"id": "road", "name": "the road", "light": "first light", "side": "left",
          "alt": "A print of a country road at sunrise running past a mailbox and a goldenrod meadow, with a raven flying off down the road.",
          "body": "<p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads.</p>",
          "links": loc("the road videos", "road/", True) + ext("pneuma nomads on youtube", PN_YT) + ext("instagram", PN_IG) + ext("tiktok", PN_TT) + ext("spotify", PN_SPOTIFY)},
@@ -649,7 +649,7 @@ def walk_block(base, kicker=""):
       <div class="btns">{st['links']}</div>
     </div>
   </article>""" for i, st in enumerate(stops, 1))
-    return f"""<section class="walk" id="walk" aria-label="a walk around the land">
+    return f"""<section class="walk" id="walk" aria-label="a walk around the land" data-film="{base}{ep['img']}">
 <nav class="trail" aria-label="stops on the walk"><div class="trail-in">
   <ol id="trail-list">
     <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
@@ -675,7 +675,8 @@ def walk_block(base, kicker=""):
       <div class="btns hero-btns"><a class="btn solid" href="#stop-films" data-walk-play="{ep['id']}">watch the newest episode</a>
         <a class="btn" href="https://www.youtube.com/watch?v={first['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
     </div>
-    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#everything">or skip to the plain page</a></p>
+    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#everything"><span class="on">skip the walk</span><span class="off">skip to the rest</span></a>
+      <span class="try">this is the still version, because your device asks for less motion. <a href="?walk">show the moving one</a></span></p>
   </header>{cards}
   <div class="stop end" id="stop-end">
     <div class="end-text">

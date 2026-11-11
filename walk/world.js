@@ -18,7 +18,7 @@ const at = (x, z, dy = 0) => [x, land.height(x, z) + dy, z];
 /* where the camera looks at each stop, and how far the picture is slid over to leave room for the words.
    side: which side the card sits on (wide screens). on narrow screens the card is underneath and the picture slides up. */
 const VIEWS = [
-  { look: at(19, 82, 1.3), lookN: at(24, 82, 1.3), shift: [0.1, -0.22], shiftN: [0, -0.24] },
+  { look: at(19, 82, 1.3), lookN: at(24, 82, 1.3), shift: [0.1, -0.22], shiftN: [0, -0.4] },
   { look: at(P.screen[0], P.screen[1], 1.55), shift: [0.27, 0], shiftN: [0, 0.42] },
   { look: at(11.4, 19.2, 1.8), shift: [-0.27, 0], shiftN: [0, 0.42] },
   { look: at(P.apple[0], P.apple[1], 2.9), shift: [0.27, 0.04], shiftN: [0, 0.42] },
@@ -26,7 +26,7 @@ const VIEWS = [
   { look: at(-42, land.riverZ(-42) + 2, 2.6), shift: [0.25, -0.04], shiftN: [0, 0.36] },
   { look: at(P.fire[0], P.fire[1], 1.0), shift: [-0.27, 0.02], shiftN: [0, 0.42] },
   { look: at(P.mailbox[0], P.mailbox[1], 1.2), shift: [0.27, 0.02], shiftN: [0, 0.42] },
-  { look: at(46, 105, 1.5), lookN: at(40, 100, 1.5), shift: [-0.22, -0.08], shiftN: [0, 0.3] },
+  { look: at(40, 96, 1.5), lookN: at(36, 97, 1.5), shift: [0.25, -0.06], shiftN: [0, 0.3] },
 ];
 const STOP_S = STOP_IDS.map((id) => land.trail.stops[id]);
 
@@ -90,7 +90,7 @@ export class World {
       obj: new Prog(gl, OBJ_VS, OBJ_FS, "obj"), ground: new Prog(gl, GROUND_VS, GROUND_FS, "ground"),
       plant: new Prog(gl, PLANT_VS, PLANT_FS, "plant"), mote: new Prog(gl, MOTE_VS, MOTE_FS, "mote"), print: new Prog(gl, PRINT_VS, PRINT_FS, "print"),
     };
-    const q = tier === 2 ? 1 : tier === 1 ? 0.62 : 0.4;
+    const q = tier === 2 ? 1 : tier === 1 ? 0.55 : 0.35;      // how much is planted: phones get about half
 
     // the ground and the ribbons on it
     const G = land.buildGround(tier === 2 ? 220 : tier === 1 ? 180 : 150);
@@ -215,8 +215,24 @@ export class World {
       if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { this.shadowRes = 0; }
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
+    // the film on the bedsheet: blank until the thumbnail arrives
+    this.blankTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, this.blankTex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
+    this.filmTex = null;
+    if (this.filmImg) this.setFilm(this.filmImg);
     this.fbo = null;
     if (this.w) this.targets();
+  }
+
+  /** put a picture on the bedsheet screen (the newest episode's thumbnail) */
+  setFilm(img) {
+    const gl = this.gl; this.filmImg = img;
+    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
+    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+    try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); } catch (_) { gl.deleteTexture(t); return; }
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    this.filmTex = t;
   }
 
   mesh(geo) {
@@ -315,7 +331,8 @@ export class World {
 
   /* ---------- the camera ---------- */
   /** u: stop progress (0 = the gate, 8 = the road). head: [yaw, pitch] a small look-around, in radians. */
-  camera(u, head, slide = 1) {
+  /** seen: how much of the canvas height is in view, from the top (phone toolbars hide the bottom of it). */
+  camera(u, head, slide = 1, seen = 1) {
     const aspect = this.cssW / this.cssH, last = STOP_IDS.length - 1;
     u = clamp(u, 0, last);
     const k = Math.min(Math.floor(u), last - 1), f = u - k, e = f * f * (3 - 2 * f);
@@ -334,7 +351,7 @@ export class World {
     const fwd = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
     const va = VIEWS[k], vb = VIEWS[k + 1];
     const sh = (v) => [lerp(v.shift[0], v.shiftN[0], narrow), lerp(v.shift[1], v.shiftN[1], narrow)];
-    const sa = sh(va), sb = sh(vb), shift = [lerp(sa[0], sb[0], e) * (1 - ww * 0.8) * slide, lerp(sa[1], sb[1], e) * (1 - ww * 0.5) * slide];
+    const sa = sh(va), sb = sh(vb), shift = [lerp(sa[0], sb[0], e) * (1 - ww * 0.8) * slide, lerp(sa[1], sb[1], e) * (1 - ww * 0.5) * slide * seen + (1 - seen)];
     const hfov = lerp(46, 80, smooth(0.5, 1.8, aspect)) * DEG;
     const vfov = clamp(2 * Math.atan(Math.tan(hfov / 2) / aspect), 42 * DEG, 82 * DEG);
     m4.lookAt(this.view, eye, v3.add(eye, fwd), [0, 1, 0]);
@@ -360,7 +377,7 @@ export class World {
     if (gl.isContextLost() || !this.fbo) return;
     const u = state.u, t = Math.floor(state.time * 12) / 12;          // everything that sways is drawn "on twos", like a flip book
     const L = (this.light = lightAt(u, state.night || 0, this.lit, this.shade));
-    const cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide);
+    const cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide, state.seen || 1);
     const P_ = this.prog;
 
     this.animate(u, state.time, L);
@@ -501,6 +518,12 @@ export class World {
     }
     // things
     const o = P_.obj.use(); this.surface(o, vp, L, t, state, depthOnly);
+    if (!depthOnly) {
+      const c = (i) => [this.lit[i * 3], this.lit[i * 3 + 1], this.lit[i * 3 + 2]], w = c(INK.WHITE), g = c(INK.GOLD);
+      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this.filmTex || this.blankTex);
+      o.i("tFilm", 4); o.f("uFilm", this.filmTex ? 1 : 0);
+      o.a3("uFilmInk", [...w, ...g.map((v, k) => v * 0.55 + w[k] * 0.45), ...c(INK.LEAF), this.shade[INK.RAVEN * 3], this.shade[INK.RAVEN * 3 + 1], this.shade[INK.RAVEN * 3 + 2]]);
+    }
     gl.vertexAttrib4f(3, 0, 0, 0, 1);
     for (const p of this.props) {
       if (p.hidden || (depthOnly && p.noShadow)) continue;
@@ -541,6 +564,14 @@ export class World {
       mo.f("uSpec", 1, state.time, fly, 0.11); mo.f("uMoteCol", 0.83, 0.42, 0.14);
       for (const [x, z] of [[-10, 62], [8, -4], [44, 70]]) { mo.v3("uOrigin", at(x, z, 0)); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 10); }
     }
+  }
+
+  /** what you would hear from where you stand, each 0..1 (for the optional sound) */
+  ears() {
+    const e = this.cam.eye, L = this.light;
+    const toRiver = Math.abs(e[2] - land.riverZ(e[0])), toFire = Math.hypot(e[0] - P.fire[0], e[2] - P.fire[1]);
+    return { wind: L.wind, river: 1 - smooth(14, 95, toRiver), fire: clamp(this.fire, 0, 1) * (1 - smooth(4, 38, toFire)),
+             night: L.stars, day: clamp(L.w[0] + L.w[1] * 0.8 + L.w[2] * 0.5, 0, 1) };
   }
 
   /** a PNG of what is on the canvas right now (only when made with capture: true) */

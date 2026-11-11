@@ -36,16 +36,19 @@
 .walk .still { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border: 1.5px solid var(--ink); border-radius: 4px; background: var(--bg2); }
 .walk .stop.gate { max-width: none; padding: 0 0 20px; display: block; text-align: center; }
 .walk .stop.gate .still { border-width: 0 0 1.5px; border-radius: 0; aspect-ratio: auto; height: min(56vh, 62vw); }
-.gate-text { max-width: 640px; margin: 26px auto 0; padding: 0 18px; }
+.gate-text { max-width: 760px; margin: 26px auto 0; padding: 0 18px; }
+.gate-text .def { max-width: 620px; }
 .gate-text h1 { font-size: clamp(44px, 9vw, 96px); font-weight: 650; font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144; }
 .gate-text .def { margin: 16px auto 0; }
 .gate-text .btns { justify-content: center; }
 .walk-hint { margin-top: 22px; }
-.walk-hint .on { display: none; }
+.walk-hint .on, .walk-hint .try { display: none; }
+.walk-can .walk-hint .try { display: block; margin-top: 6px; }
 .walk-hint a { color: var(--accent); }
 .walk .stop.end { display: block; text-align: center; padding: 34px 18px 20px; }
 .walk .stop.end [data-again] { display: none; }
-.end-text .def { margin-top: 10px; }
+.end-text .def { display: none; margin-top: 10px; }
+.walk-on .end-text .def { display: block; }
 .after-walk { padding: 34px 0 0; }
 .after-walk .almanac { margin-top: 14px; }
 .after-label { color: var(--accent); }
@@ -83,7 +86,7 @@
   background: color-mix(in srgb, var(--bg) 78%, transparent); color: var(--ink); }
 .walk-on .walk-hint .on { display: inline; }
 .walk-on .walk-hint .off { display: none; }
-.walk-on .walk-hint .on::after { content: " ↓"; display: inline-block; animation: walk-bob 1.8s ease-in-out infinite; }
+.walk-on .walk-hint > .on::after { content: " ↓"; display: inline-block; margin-right: 8px; animation: walk-bob 1.8s ease-in-out infinite; }
 @keyframes walk-bob { 50% { transform: translateY(4px); } }
 
 .walk-on .walk .stop.end { min-height: 96vh; align-items: flex-end; justify-content: center; padding: 0 16px 16vh; }
@@ -97,12 +100,21 @@
   .walk-on .walk .stop { min-height: 128vh; }
   .walk-on .walk .card, .walk-on .walk .stop.right .card { margin: 0 auto; padding: 16px 18px 18px; }
   .walk-on .walk .card p { font-size: 15.5px; }
-  .walk-on .walk .stop.gate { align-items: center; text-align: center; }
+  /* the first screen is the name, the line and two buttons. the "who we are" paragraph becomes the first card you pass. */
+  .walk-on .walk .stop.gate { position: relative; align-items: center; text-align: center; padding-bottom: 250px; min-height: calc(100svh + 250px); }
+  .walk-on .gate-text { margin: calc(var(--top-h) + 62px) 16px 0; }
   .walk-on .gate-text h1 { white-space: normal; }
-  .walk-on .gate-text { margin: calc(var(--top-h) + 46px) 16px 0; }
   .walk-on .gate-text .now { justify-content: center; }
-  .walk-on .gate-text .def { font-size: 15.5px; margin-left: auto; margin-right: auto; }
-  .walk-on .gate-text .btns { justify-content: center; }
+  .walk-on .gate-text .btns { justify-content: center; gap: 8px; }
+  .walk-on .gate-text .def { position: absolute; top: calc(100svh + 8px); left: 14px; right: 14px; max-width: none; margin: 0; padding: 16px 18px; text-align: left; text-shadow: none;
+    font-size: 15.5px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 4px; box-shadow: 6px 6px 0 var(--block); }
+  .walk-on .walk .walk-sound { top: calc(100svh - 100px); }
+}
+/* very short windows (a phone on its side): keep the first screen to the name and the buttons */
+@media (max-height: 560px) and (min-width: 761px) {
+  .walk-on .gate-text { margin-top: calc(var(--top-h) + 44px); }
+  .walk-on .gate-text .def { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .walk-on .walk .stop { min-height: 190vh; }
 }
 
 /* ---------- the trail list ---------- */
@@ -133,7 +145,6 @@
   .trail a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .trail li + li:not(.plain) a i::before { left: auto; right: calc(100% + 2px); bottom: 50%; height: 0; width: 9px; border-left: 0; border-top: 1.5px dotted currentColor; transform: translateY(50%); }
   .trail .plain { display: none; }
-  .walk-on .gate-text { margin-top: calc(var(--top-h) + 62px); }
 }
 
 /* ---------- little buttons on things in the picture ---------- */
@@ -150,11 +161,13 @@
 .walk-flash { position: absolute; inset: 0; z-index: 5; background: #fffdf2; opacity: 0; pointer-events: none; }
 .walk-flash.go { animation: walk-flash .5s ease-out; }
 @keyframes walk-flash { 0% { opacity: .92; } 100% { opacity: 0; } }
-.walk-sound { position: absolute; z-index: 4; left: 14px; bottom: auto; top: calc(100svh - 54px); padding: 8px 13px; border-radius: 999px; border: 1px solid var(--rule); cursor: pointer;
-  background: color-mix(in srgb, var(--bg) 84%, transparent); color: var(--ink); font-family: var(--label); font-size: 12.5px; pointer-events: auto; }
+.walk-sound { position: absolute; z-index: 4; left: 14px; top: calc(100svh - 54px); padding: 8px 13px; border-radius: 999px; border: 1px solid var(--rule); cursor: pointer;
+  background: color-mix(in srgb, var(--bg) 84%, transparent); color: var(--ink); font-family: var(--label); font-size: 12.5px; }
+.walk-sound[aria-pressed="true"] { border-color: var(--ink); }
+.walk-sound span::before { content: "♪ "; }
 .walk-sound[hidden] { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .hot::after, .walk-on .walk-hint .on::after { animation: none; }
+  .hot::after, .walk-on .walk-hint > .on::after { animation: none; }
   .walk-gl { transition: none; }
 }

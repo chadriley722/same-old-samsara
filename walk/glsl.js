@@ -14,7 +14,7 @@ export const INK = {              // palette slots. the numbers are used by mesh
   COUNT: 32,
   FOLIAGE: 255,                   // "use this tree's own leaf ink" (LEAF + the instance's variant)
 };
-export const STYLE = { NONE: 0, BARK: 1, CANOPY: 2, PLANK: 3, STONE: 4, CLOTH: 5, NEEDLE: 6, TIN: 7, PALE: 8, PLAIN: 9 };
+export const STYLE = { NONE: 0, BARK: 1, CANOPY: 2, PLANK: 3, STONE: 4, CLOTH: 5, NEEDLE: 6, TIN: 7, PALE: 8, PLAIN: 9, FILM: 10 };
 
 const COMMON = /* glsl */`
 float hash12(vec2 p){ vec3 p3 = fract(vec3(p.xyx) * .1031); p3 += dot(p3, p3.yzx + 33.33); return fract((p3.x + p3.y) * p3.z); }
@@ -137,6 +137,9 @@ in vec3 vWorld, vNor, vObj, vLit, vShade;
 in vec4 vInfo;
 uniform mat4 uView;
 uniform float uDepthOnly;
+uniform sampler2D tFilm;                // the newest episode's thumbnail, for the bedsheet screen
+uniform float uFilm;
+uniform vec3 uFilmInk[4];
 layout(location=0) out vec4 oPlate;
 layout(location=1) out vec4 oAux;
 void main(){
@@ -144,6 +147,24 @@ void main(){
   vec3 n = normalize(vNor);
   if (!gl_FrontFacing) n = -n;
   int style = int(vInfo.x + .5);
+  vec3 cLit = vLit, cShade = vShade;
+  float filmKey = 0.;
+  if (style == 10){
+    // the film on the sheet, cut down to four inks like a reduction print
+    vec2 uv = vec2((vObj.x + 1.55) / 3.1, (2.492 - vObj.y) / 1.744);
+    if (uFilm > .5 && uv.x > 0. && uv.x < 1. && uv.y > 0. && uv.y < 1.){
+      float l = dot(texture(tFilm, uv).rgb, vec3(.299, .587, .114));
+      float w = fwidth(l) + .01;
+      vec3 c = mix(uFilmInk[3], uFilmInk[2], smoothstep(.26 - w, .26 + w, l));
+      c = mix(c, uFilmInk[1], smoothstep(.47 - w, .47 + w, l));
+      c = mix(c, uFilmInk[0], smoothstep(.7 - w, .7 + w, l));
+      cLit = c; cShade = c * vec3(.8, .8, .78);
+      filmKey = lines(vObj.y * 13. + vObj.x * 8., .32) * smoothstep(.47, .4, l) * smoothstep(.2, .3, l) * .6;
+      vec2 e = min(uv, 1. - uv);
+      filmKey = max(filmKey, 1. - smoothstep(.0, .012, min(e.x * 1.78, e.y)));     // a thin frame
+    }
+    style = 5;
+  }
   float ndl = dot(n, uLightDir);
   // the light and dark sides are two separate blocks, with a slightly ragged edge between them
   float rag = (vnoise3(vObj * (style == 2 ? 2.6 : 1.2)) - .5) * (style == 2 ? .55 : .12);
@@ -152,7 +173,7 @@ void main(){
   lit *= shadowVis(vWorld, ndl);
   float own = max(vInfo.y, 0.);                         // how much the thing glows by itself
   lit = max(lit, own);
-  vec3 col = mix(vShade, vLit, lit);
+  vec3 col = mix(cShade, cLit, lit);
   if (vInfo.y > -.5) col = glowPools(col, vWorld, n);   // the raven stays black by the fire
   float fog = fogAmt(vWorld);
   col = mix(col, uFogCol, fog * (1. - own * .6));
@@ -187,6 +208,7 @@ void main(){
   } else {
     key = lines((vObj.x + vObj.z) * 2.3 + vObj.y * 3.4, .15) * (1. - lit) * .6;
   }
+  key = max(key * (1. - step(.001, filmKey) * .7), filmKey);
   key *= near * (1. - fog) * uHatch * (1. - own);
 
   vec3 vn = mat3(uView) * n;
