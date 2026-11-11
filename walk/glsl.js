@@ -397,7 +397,7 @@ void main(){
     life = 1.;
     float a = t * (.25 + iSeed.x * .2) + iSeed.y * 6.283;
     vec2 c = (iSeed.zw - .5) * 2.;
-    p = uOrigin + vec3(c.x * 16. + cos(a) * 2.4, 1.5 + sin(a * 2.3 + iSeed.x * 9.) * .5 + iSeed.w * .8, c.y * 16. + sin(a * 1.3) * 2.4);
+    p = uOrigin + vec3(c.x * 9. + cos(a) * 2.2, 1.15 + sin(a * 2.3 + iSeed.x * 9.) * .35 + iSeed.w * .7, c.y * 9. + sin(a * 1.3) * 2.2);
     size *= .55 + .45 * abs(sin(t * 11. + iSeed.y * 40.));      // wings open and shut
     size *= step(iSeed.x, uSpec.z);
   }

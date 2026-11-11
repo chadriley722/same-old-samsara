@@ -3,7 +3,7 @@
    It is a formula for a meadow on a bench above a river, with woods around it and one loop trail,
    in the spirit of the place and in nobody's shape. Units are metres. "Up the page" is -z. */
 
-import { smooth, lerp, fbm, vnoise, hash2, rng, catmull, clamp } from "./m.js";
+import { smooth, lerp, fbm, vnoise, rng, catmull, clamp } from "./m.js";
 
 export const WATER_Y = -22;
 export const EYE = 1.62;                       // how high the camera rides above the trail
@@ -392,4 +392,3 @@ export function fencePosts() {
   return out;
 }
 
-export { hash2 };

@@ -81,6 +81,7 @@
 .walk-on .gate-text .btn { text-shadow: none; background: color-mix(in srgb, var(--bg) 70%, transparent); }
 .walk-on .gate-text .btn.solid { background: var(--ink); }
 .gate-text .now { margin: 0 auto 10px; }
+.gate-text .now[hidden] { display: none; }      /* stays hidden until the script fills it in */
 .walk-on .gate-text .now { justify-content: flex-start; margin: 0 0 8px; color: var(--ink); }
 .walk-on .walk-hint { pointer-events: auto; align-self: center; margin: 0 0 22px; padding: 7px 14px; border-radius: 999px; text-align: center;
   background: color-mix(in srgb, var(--bg) 78%, transparent); color: var(--ink); }
@@ -95,20 +96,20 @@
 .walk-on .end-text .tag { margin-top: 0; }
 .walk-on .after-walk { position: relative; z-index: 3; background: var(--bg) var(--grain); }
 
-@media (min-width: 900px) { .walk-on .walk .stop.right .card { margin-right: 178px; } }
+@media (min-width: 900px) { .walk-on .walk .stop.right .card { margin-right: 200px; } }
 @media (max-width: 760px) {
   .walk-on .walk .stop { min-height: 128vh; }
   .walk-on .walk .card, .walk-on .walk .stop.right .card { margin: 0 auto; padding: 16px 18px 18px; }
   .walk-on .walk .card p { font-size: 15.5px; }
   /* the first screen is the name, the line and two buttons. the "who we are" paragraph becomes the first card you pass. */
-  .walk-on .walk .stop.gate { position: relative; align-items: center; text-align: center; padding-bottom: 250px; min-height: calc(100svh + 250px); }
+  .walk-on .walk .stop.gate { position: relative; align-items: center; text-align: center; padding-bottom: 250px; min-height: calc(100vh + 250px); min-height: calc(100svh + 250px); }
   .walk-on .gate-text { margin: calc(var(--top-h) + 62px) 16px 0; }
   .walk-on .gate-text h1 { white-space: normal; }
   .walk-on .gate-text .now { justify-content: center; }
   .walk-on .gate-text .btns { justify-content: center; gap: 8px; }
-  .walk-on .gate-text .def { position: absolute; top: calc(100svh + 8px); left: 14px; right: 14px; max-width: none; margin: 0; padding: 16px 18px; text-align: left; text-shadow: none;
+  .walk-on .gate-text .def { position: absolute; top: calc(100vh + 8px); top: calc(100svh + 8px); left: 14px; right: 14px; max-width: none; margin: 0; padding: 16px 18px; text-align: left; text-shadow: none;
     font-size: 15.5px; background: var(--card); border: 1.5px solid var(--ink); border-radius: 4px; box-shadow: 6px 6px 0 var(--block); }
-  .walk-on .walk .walk-sound { top: calc(100svh - 100px); }
+  .walk-on .walk .walk-sound { top: calc(100vh - 100px); top: calc(100svh - 100px); }
 }
 /* very short windows (a phone on its side): keep the first screen to the name and the buttons */
 @media (max-height: 560px) and (min-width: 761px) {
@@ -161,7 +162,7 @@
 .walk-flash { position: absolute; inset: 0; z-index: 5; background: #fffdf2; opacity: 0; pointer-events: none; }
 .walk-flash.go { animation: walk-flash .5s ease-out; }
 @keyframes walk-flash { 0% { opacity: .92; } 100% { opacity: 0; } }
-.walk-sound { position: absolute; z-index: 4; left: 14px; top: calc(100svh - 54px); padding: 8px 13px; border-radius: 999px; border: 1px solid var(--rule); cursor: pointer;
+.walk-sound { position: absolute; z-index: 4; left: 14px; top: calc(100vh - 54px); top: calc(100svh - 54px); padding: 8px 13px; border-radius: 999px; border: 1px solid var(--rule); cursor: pointer;
   background: color-mix(in srgb, var(--bg) 84%, transparent); color: var(--ink); font-family: var(--label); font-size: 12.5px; }
 .walk-sound[aria-pressed="true"] { border-color: var(--ink); }
 .walk-sound span::before { content: "♪ "; }

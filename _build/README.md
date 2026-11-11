@@ -35,3 +35,14 @@ That one entry updates the home page hero button, the films section, /films, /yt
 - Road vlog: `ROAD_LATEST` in build.py + `images/road/latest-vlog.jpg` (960x540).
 - Pattern relisted on Etsy: set its `"live": True` in `PATTERNS`.
 - Seasonal freebie: move `"free": True` to another pattern (its PDF needs the end page).
+
+## the walk (the 3D home page, branch `redesign-3d-b`)
+
+The top of the home page is a loop trail you scroll along, drawn like a woodcut. All of it is in `walk/`, made in code, on made up ground (no model files, nothing from the real land). The html for the stops is in `build.py`: search for "the walk".
+
+- **A new episode needs nothing extra.** The first screen's button, the films stop and the picture on the bedsheet screen all read `EPISODES[0]`.
+- **Change a stop's words or links:** `walk_stops()` in `build.py`.
+- **Change the ground, the trail or where things stand:** `walk/land.js`. Shapes are in `walk/mesh.js`, the light through the day in `walk/light.js`.
+- **Preview:** `python3 _build/serve.py` then http://127.0.0.1:8811/ . Add `?plain` for the page without 3D, `?sky=night` for night, `?u=3` to stand at stop 3.
+- **The 3D on its own:** http://127.0.0.1:8811/_build/walk-dev.html (arrow keys walk, `n` flips night).
+- **If the look changes, redo the still prints** the plain page uses: run `python3 _build/serve.py 8811 127.0.0.1 --shots /tmp/walk-shots`, open `_build/walk-dev.html?shoot=1`, then turn each PNG into `images/walk/<name>.webp` at 1280 x 800 (`cwebp -q 80 -resize 1280 800 -metadata none`).

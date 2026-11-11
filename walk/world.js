@@ -20,7 +20,7 @@ const at = (x, z, dy = 0) => [x, land.height(x, z) + dy, z];
 const VIEWS = [
   { look: at(19, 82, 1.3), lookN: at(24, 82, 1.3), shift: [0.1, -0.22], shiftN: [0, -0.4] },
   { look: at(P.screen[0], P.screen[1], 1.55), shift: [0.27, 0], shiftN: [0, 0.42] },
-  { look: at(11.4, 19.2, 1.8), shift: [-0.27, 0], shiftN: [0, 0.42] },
+  { look: at(11.7, 18.0, 1.8), shift: [-0.27, 0], shiftN: [0, 0.42] },
   { look: at(P.apple[0], P.apple[1], 2.9), shift: [0.27, 0.04], shiftN: [0, 0.42] },
   { look: at(-26.6, -99.6, 0.75), shift: [-0.27, 0], shiftN: [0, 0.42] },
   { look: at(-42, land.riverZ(-42) + 2, 2.6), shift: [0.25, -0.04], shiftN: [0, 0.36] },
@@ -97,11 +97,11 @@ export class World {
     this.ground = this.groundMesh(G.pos, G.nor, G.mask, G.idx);
     const ribbon = (pts, hw, lift, flat) => {
       const r = land.buildRibbon(pts, hw, lift, flat), n = r.pos.length / 3, mask = new Float32Array(n * 4);
-      for (let k = 0; k < n; k++) { mask[k * 4] = r.uv[k * 2]; mask[k * 4 + 1] = r.uv[k * 2 + 1]; mask[k * 4 + 2] = flat === null || flat === undefined ? land.woodsAmt(r.pos[k * 3], r.pos[k * 3 + 2]) : 0; }
+      for (let k = 0; k < n; k++) { mask[k * 4] = r.uv[k * 2]; mask[k * 4 + 1] = r.uv[k * 2 + 1]; mask[k * 4 + 2] = flat == null ? land.woodsAmt(r.pos[k * 3], r.pos[k * 3 + 2]) : 0; }
       return this.groundMesh(r.pos, null, mask, r.idx);
     };
     const tp = land.trailRibbonPoints(), cut = Math.round((land.trail.stops.make + 14) / 2), back = Math.round((land.trail.stops["say-hi"] - 50) / 2);
-    this.track = ribbon(tp.slice(0, cut + 1).concat(), 1.45, 0.06);
+    this.track = ribbon(tp.slice(0, cut + 1), 1.45, 0.06);
     this.path = ribbon(tp.slice(cut, back + 1), 0.82, 0.06);
     this.track2 = ribbon(tp.slice(back), 1.45, 0.06);
     this.road = ribbon(land.roadPoints(), 3.1, 0.07);
@@ -131,6 +131,7 @@ export class World {
     // things
     this.props = [];
     let nextId = 16;
+    const standAt = (i) => land.trailAt(STOP_S[i]);          // where you stand at stop i: things are turned to face it
     const put = (geo, x, z, yaw = 0, dy = 0, extra = {}) => {
       const p = { mesh: this.mesh(geo.build()), model: rotY(m4.create(), x, land.height(x, z) + dy, z, yaw), id: nextId, x, z, yaw, y: land.height(x, z) + dy, ...extra };
       nextId = nextId >= 240 ? 16 : nextId + 8;
@@ -139,7 +140,7 @@ export class World {
     put(shapes.gate(), 0, 118);
     this.mailbox = put(shapes.mailbox(), P.mailbox[0], P.mailbox[1], 0);
     this.flagProp = put(shapes.mailboxFlag(), P.mailbox[0], P.mailbox[1], 0);
-    const scr = put(shapes.screen(), P.screen[0], P.screen[1], Math.atan2(-9 - P.screen[0], 72.2 - P.screen[1]));
+    const scr = put(shapes.screen(), P.screen[0], P.screen[1], Math.atan2(standAt(1)[0] - P.screen[0], standAt(1)[2] - P.screen[1]));
     put(shapes.tripod(), P.tripod[0], P.tripod[1], 2.3);
     const camperYaw = 0.965;       // the door and the awning face the morning sun, and the trail
     this.camper = put(shapes.camper(), P.camper[0], P.camper[1], camperYaw);
@@ -150,15 +151,15 @@ export class World {
     put(shapes.fireRing(), P.fire[0], P.fire[1]);
     this.chairA = put(shapes.chair(INK.LEAF_DARK), P.fire[0] + 1.8, P.fire[1] + 1.25, -1.2);
     put(shapes.chair(INK.RUST), P.fire[0] + 2.0, P.fire[1] - 1.1, -1.85);
-    this.flames = put(shapes.flames(), P.fire[0], P.fire[1], 0, 0, { dynamic: true });
+    this.flames = put(shapes.flames(), P.fire[0], P.fire[1]);
     this.apple = put(shapes.appleTree(), P.apple[0], P.apple[1], 0.4, -0.1);
     this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true });
     put(shapes.shed(), P.shed[0], P.shed[1], -1.3);
     this.log = put(shapes.mossyLog(), P.log[0], P.log[1], 0.55);
-    const camDir = Math.atan2(-19 - P.camTree[0], -97.2 - P.camTree[1]);
+    const camDir = Math.atan2(standAt(4)[0] - P.camTree[0], standAt(4)[2] - P.camTree[1]);
     put(shapes.trailCam(), P.camTree[0] + Math.sin(camDir) * 0.36, P.camTree[1] + Math.cos(camDir) * 0.36, camDir, 1.05);
-    this.raccoon = put(shapes.raccoon(), P.camTree[0] + Math.sin(camDir + 1.35) * 0.62, P.camTree[1] + Math.cos(camDir + 1.35) * 0.62, camDir - 0.5, 0, { dynamic: true });
-    this.rocks = put(shapes.riverRocks(), P.riverRock[0], P.riverRock[1], 0.2, 0.25);
+    this.raccoon = put(shapes.raccoon(), P.camTree[0] + Math.sin(camDir + 1.35) * 0.62, P.camTree[1] + Math.cos(camDir + 1.35) * 0.62, camDir - 0.5);
+    put(shapes.riverRocks(), P.riverRock[0], P.riverRock[1], 0.2, 0.25);
     put(shapes.stakes(), P.stakes[0], P.stakes[1], 0.5);
     // a fence along the front, either side of the gate
     const posts = land.fencePosts(), fence = new shapes.Geo(), wire = [INK.PEPPER, 0, 9, 0];
@@ -195,6 +196,7 @@ export class World {
     const seeds = new Float32Array(64 * 4), r2 = rng(3);
     for (let k = 0; k < seeds.length; k++) seeds[k] = r2();
     this.motes = this.moteMesh(seeds);
+    this.monarchs = [70, 180, 262, 1090, 1170].map((i) => land.trailAt(i));     // a few spots along the meadow stretches of the trail
 
     // the shadow block
     const sres = (this.shadowRes = tier === 2 ? 2048 : tier === 1 ? 1024 : 0);
@@ -330,8 +332,9 @@ export class World {
   }
 
   /* ---------- the camera ---------- */
-  /** u: stop progress (0 = the gate, 8 = the road). head: [yaw, pitch] a small look-around, in radians. */
-  /** seen: how much of the canvas height is in view, from the top (phone toolbars hide the bottom of it). */
+  /** u: stop progress (0 = the gate, 8 = the road). head: [yaw, pitch] a small look-around, in radians.
+      slide: 0 turns off the sideways slide that makes room for the cards (used for the still prints).
+      seen: how much of the canvas height is in view, from the top (phone toolbars hide the bottom of it). */
   camera(u, head, slide = 1, seen = 1) {
     const aspect = this.cssW / this.cssH, last = STOP_IDS.length - 1;
     u = clamp(u, 0, last);
@@ -346,7 +349,8 @@ export class World {
     const walkYaw = far > 1 ? Math.atan2(ahead[0] - g[0], -(ahead[2] - g[2])) : A[0];
     const ww = Math.pow(Math.sin(Math.PI * f), 2) * clamp((STOP_S[k + 1] - STOP_S[k]) / 70, 0, 1) * 0.92;
     let yaw = angLerp(angLerp(A[0], B[0], e), walkYaw, ww) + head[0];
-    let pitch = lerp(lerp(A[1], B[1], e), -0.035, ww) + head[1];
+    const walkPitch = clamp(Math.atan2(ahead[1] - g[1], Math.max(far, 1)) * 0.85 - 0.02, -0.3, 0.3);   // up the slope when it climbs
+    let pitch = lerp(lerp(A[1], B[1], e), walkPitch, ww) + head[1];
     pitch = clamp(pitch, -1.2, 1.2);
     const fwd = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
     const va = VIEWS[k], vb = VIEWS[k + 1];
@@ -379,8 +383,10 @@ export class World {
     const L = (this.light = lightAt(u, state.night || 0, this.lit, this.shade));
     const cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide, state.seen || 1);
     const P_ = this.prog;
+    const dt = state.still ? 1 : clamp(state.time - (this.lastTime === undefined ? state.time : this.lastTime), 0, 0.1);
+    this.lastTime = state.time;
 
-    this.animate(u, state.time, L);
+    this.animate(u, state.time, L, dt);
 
     // --- the shadow block ---
     const shadowOn = this.shadowRes > 0 && L.shadow > 0.02;
@@ -439,7 +445,7 @@ export class World {
   }
 
   /* the things that move on their own: the raven, the fire, the flag, the geese */
-  animate(u, time, L) {
+  animate(u, time, L, dt) {
     const k = clamp(Math.floor(u), 0, STOP_IDS.length - 2), f = u - k;
     // the raven leaves a little after you do, and is there before you arrive
     const a = this.perches[k], b = this.perches[k + 1], ft = smooth(0.1, 0.62, f), R = this.raven;
@@ -450,20 +456,19 @@ export class World {
     if (k + 1 === STOP_IDS.length - 1 && ft >= 0.999) { R.flying = true; const c = time * 0.35; pos[0] += Math.cos(c) * 7; pos[2] += Math.sin(c) * 7; R.yaw = Math.atan2(-Math.sin(c), Math.cos(c)); }
     else if (R.flying) R.yaw = Math.atan2(b[0] - a[0], b[2] - a[2]);
     else { const c = this.cam; R.yaw = c ? Math.atan2(c.eye[0] - pos[0], c.eye[2] - pos[2]) + 0.7 : 0; }
-    this.ravenHop *= 0.9;
+    this.ravenHop *= Math.exp(-dt * 6);
     pos[1] += Math.abs(Math.sin(time * 14)) * this.ravenHop * 0.25;
     R.pos = pos;
     rotY(R.model, pos[0], pos[1] + (R.flying ? 0 : 0.2), pos[2], R.yaw, 1.7);
     this.hot.raven = [pos[0], pos[1] + 0.15, pos[2]];
     // fire
-    this.fireKick *= 0.965; this.beadKick *= 0.97;
+    this.fireKick *= Math.exp(-dt * 2.2); this.beadKick *= Math.exp(-dt * 1.8);
     this.fire = clamp(L.fire + this.fireKick, 0, 1.6);
     const fl = this.flames, fs = 0.5 + this.fire * 0.7;
     rotY(fl.model, fl.x, fl.y, fl.z, time * 0.3, 1); fl.model[5] = fs; fl.hidden = this.fire < 0.03;
     this.hot.fire = [fl.x, fl.y + 0.7, fl.z];
     // the mailbox flag goes up when you get there
-    const want = smooth(6.55, 6.95, u) * (1 - smooth(7.6, 7.95, u) * 0);
-    this.flag += (want - this.flag) * 0.12;
+    this.flag += (smooth(6.55, 6.95, u) - this.flag) * (1 - Math.exp(-dt * 7));
     const m = this.flagProp.model, ang = (1 - this.flag) * -1.5708, c = Math.cos(ang), s = Math.sin(ang);
     m.set([1, 0, 0, 0, 0, c, s, 0, 0, -s, c, 0, this.mailbox.x + 0.112, this.mailbox.y + 1.19, this.mailbox.z + 0.22, 1]);
     this.hot.mailbox = [this.mailbox.x, this.mailbox.y + 1.25, this.mailbox.z + 0.1];
@@ -561,8 +566,8 @@ export class World {
     }
     const fly = clamp(L.w[0] * 1.4 + L.w[2] * 0.6, 0, 1);
     if (fly > 0.05) {
-      mo.f("uSpec", 1, state.time, fly, 0.11); mo.f("uMoteCol", 0.83, 0.42, 0.14);
-      for (const [x, z] of [[-10, 62], [8, -4], [44, 70]]) { mo.v3("uOrigin", at(x, z, 0)); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 10); }
+      mo.f("uSpec", 1, state.time, fly, 0.13); mo.f("uMoteCol", 0.86, 0.4, 0.12);
+      for (const o of this.monarchs) { mo.v3("uOrigin", o); gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, 18); }
     }
   }
 

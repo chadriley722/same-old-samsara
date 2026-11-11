@@ -8,6 +8,7 @@ const walk = document.getElementById("walk");
 const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches;
 const clamp = (x, a, b) => (x < a ? a : x > b ? b : x);
 
+window.SOS_WALK = true;            // tells the page this script arrived (the head gives up and shows the plain page if it never does)
 if (walk) {
   everyMode();
   if (root.classList.contains("walk-on")) start().catch(goPlain);
@@ -56,6 +57,8 @@ async function start() {
   };
 
   const world = new World(canvas, { tier, capture: q.has("keep") });       // throws when there is no WebGL2, and we fall back
+  const dbg = world.gl.getExtension("WEBGL_debug_renderer_info");
+  if (dbg && /swiftshader|llvmpipe|software/i.test(String(world.gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL))) && !q.has("walk")) throw new Error("software renderer");
   let lost = false;
   if (walk.dataset.film) { const im = new Image(); im.onload = () => { world.setFilm(im); wake(); }; im.src = walk.dataset.film; }
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); lost = true; });
@@ -191,7 +194,7 @@ async function start() {
   function wake() { awakeUntil = performance.now() + 45000; dirty = true; if (!raf && onScreen && !document.hidden) { last = 0; raf = requestAnimationFrame(frame); } }
   function frame(now) {
     raf = 0;
-    if (!onScreen || document.hidden || lost) return;
+    if (!onScreen || document.hidden || lost || !root.classList.contains("walk-on")) return;     // the last one: we fell back to the plain page
     const dt = last ? Math.min((now - last) / 1000, 0.1) : 0.016; last = now;
     const target = uAt(window.scrollY), prev = uS;
     uS += (target - uS) * (first ? 1 : 1 - Math.exp(-dt * 9));
@@ -204,7 +207,6 @@ async function start() {
     const moving = uS !== prev || nS !== pn || Math.abs(head[0] - ph0) + Math.abs(head[1] - ph1) > 1e-5 || world.fireKick > 0.02 || world.beadKick > 0.02 || world.ravenHop > 0.02 || gust > 0.02;
     const tick = Math.floor(now / 1000 * 12);                     // things that sway are redrawn 12 times a second
     if (moving || dirty || tick !== lastTick) {
-      const t0 = performance.now();
       world.render({ u: uS, time: now / 1000, head, night: nS, gust, moonPhase, seen: clamp(window.innerHeight / (view.clientHeight || 1), 0.6, 1) });
       placeHot();
       lastTick = tick; dirty = false;
@@ -212,9 +214,9 @@ async function start() {
       if (moving && !first) {
         slow = dt > 0.034 ? slow + dt : Math.max(0, slow - dt * 0.5);
         if (slow > 1.2 && governor > 0.56) { governor *= 0.82; slow = 0; fit(); }
+        else if (slow > 4 && dt > 0.09) return goPlain(new Error("too slow on this device"));
       }
       if (first) { first = false; root.classList.add("walk-ready"); }
-      void t0;
     }
     const k = Math.round(uS);
     markTrail(k);

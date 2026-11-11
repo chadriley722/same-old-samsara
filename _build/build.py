@@ -585,7 +585,7 @@ def hero_block(base, kicker=""):
 # Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
 
 WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
-<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");}})();</script>
+<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);}})();</script>
 """
 
 def walk_stops(base):

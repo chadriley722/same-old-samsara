@@ -30,8 +30,8 @@ if (q.has("shoot")) {
   world.resize(W / 2, H / 2, 2);
   (async () => {
     for (const s of shots) {
-      const st = { u: s.u, night: s.night, head: [0, 0], gust: 0, time: 7.3, moonPhase: 0.62, slide: s.slide };
-      for (let k = 0; k < 20; k++) world.render(st);            // let the flag, the fire and the raven settle
+      const st = { u: s.u, night: s.night, head: [0, 0], gust: 0, time: 7.3, moonPhase: 0.62, slide: s.slide, still: true };   // still: things that settle are already settled
+      world.render(st); world.render(st);
       const blob = await world.capture();
       await fetch("/__shot?name=" + s.name, { method: "POST", body: blob });
       hud.textContent = "saved " + s.name;
