@@ -36,6 +36,12 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         self.send_header("Cache-Control", "no-store, max-age=0")
         super().end_headers()
 
+    def send_head(self):
+        # on the wi-fi, serve only what GitHub Pages would: no dot files, no folders that start with _
+        if bind != "127.0.0.1" and re.search(r"(^|/)[._]", urllib.parse.urlparse(self.path).path.lstrip("/")):
+            self.send_error(404); return None
+        return super().send_head()
+
     def do_POST(self):
         url = urllib.parse.urlparse(self.path)
         if not shots or url.path != "/__shot":
