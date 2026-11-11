@@ -28,34 +28,141 @@
 <link rel="stylesheet" href="style.css?v=44ba58e7">
 <script>var R=document.documentElement;R.classList.add("js");setTimeout(function(){if(!window.SOS_READY)R.classList.remove("js");},3000);try{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")R.dataset.theme=t;}catch(_){}</script>
 <style>:root{--ring-url:url("images/ring-norules-pepper.svg");--mark-url:url("images/mark-pepper.svg");}</style>
+<link rel="stylesheet" href="walk/walk.css?v=b8e70457">
+<script>(function(){var d=document.documentElement,ok=false;try{ok=!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/[?&]plain\b/.test(location.search)&&!!document.createElement("canvas").getContext("webgl2");}catch(_){}if(/[?&]walk\b/.test(location.search))ok=true;d.classList.add(ok?"walk-on":"walk-plain");})();</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "Organization", "name": "Same Old Samsara", "url": "https://sameoldsamsara.xyz/", "logo": "https://sameoldsamsara.xyz/favicon/web-app-manifest-512x512.png", "description": "Same Old Samsara is the creative outlet of Chad and Daniel: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.", "sameAs": ["https://www.youtube.com/@sameoldsamsara", "https://instagram.com/sameoldsamsara", "https://tiktok.com/@sameoldsamsara", "https://pinterest.com/sameoldsamsara", "https://sameoldsamsara.etsy.com", "https://samsaradigitals.etsy.com"]}</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebSite", "name": "Same Old Samsara", "url": "https://sameoldsamsara.xyz/"}</script>
 </head>
-<body>
+<body class="has-walk">
 <a class="skip" href="#main">skip to the good part</a>
 <header class="top"><div class="wrap top-in">
   <a class="brand" href="index.html" aria-label="same old samsara, home"><i class="mark" aria-hidden="true"></i><span>same old samsara</span></a>
   <nav class="links" aria-label="sections"><a href="land/">the land</a><a href="films/">films</a><a href="make/">make</a><a href="field-guide/">field guide</a><a href="https://sameoldsamsara.etsy.com" target="_blank" rel="noopener">jewelry</a></nav>
   <button class="sky" type="button" aria-label="switch day or night" title="day or night"><span class="sun" aria-hidden="true"></span></button>
 </div></header>
-<main id="main"><section class="hero">
-  <div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
-  <div class="wrap hero-text">
-    
-    <h1>same old samsara</h1>
-    <p class="tag">the same old cycle.</p>
-    <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
-    <div class="btns center hero-btns"><a class="btn solid" href="#films" data-newest="UhMJZrZttDI">watch the newest episode</a>
-      <a class="btn" href="https://www.youtube.com/watch?v=xSpspkCw9og" target="_blank" rel="noopener">start at episode 1</a></div>
-    <p class="label now" data-now="road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
+<main id="main"><section class="walk" id="walk" aria-label="a walk around the land">
+<nav class="trail" aria-label="stops on the walk"><div class="trail-in">
+  <ol id="trail-list">
+    <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
+    <li><a href="#stop-films" data-go="1"><i aria-hidden="true"></i><span>films</span></a></li><li><a href="#stop-make" data-go="2"><i aria-hidden="true"></i><span>make</span></a></li><li><a href="#stop-jewelry" data-go="3"><i aria-hidden="true"></i><span>jewelry</span></a></li><li><a href="#stop-field-guide" data-go="4"><i aria-hidden="true"></i><span>the field guide</span></a></li><li><a href="#stop-land" data-go="5"><i aria-hidden="true"></i><span>the land</span></a></li><li><a href="#stop-follow" data-go="6"><i aria-hidden="true"></i><span>follow along</span></a></li><li><a href="#stop-say-hi" data-go="7"><i aria-hidden="true"></i><span>say hi</span></a></li><li><a href="#stop-road" data-go="8"><i aria-hidden="true"></i><span>the road</span></a></li>
+    <li class="plain"><a href="#everything">everything, as a plain page</a></li>
+  </ol>
+</div></nav>
+<div class="walk-view">
+  <canvas class="walk-gl" aria-hidden="true"></canvas>
+  <div class="walk-hot"></div>
+  <p class="walk-say label" role="status"></p>
+  <button class="walk-sound" type="button" aria-pressed="false" hidden><span>sound off</span></button>
+</div>
+<div class="walk-stops">
+  <header class="stop gate" id="stop-gate" data-stop="0">
+    <img class="still" src="images/walk/0-gate.webp" alt="A print of an open gate at sunrise. A raven sits on the gate post, goldenrod grows on both sides of the track, and a camper is parked far off in the meadow." width="1280" height="800">
+    <div class="gate-text">
+      
+      <p class="label now" data-now="road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
+      <h1>same old samsara</h1>
+      <p class="tag">the same old cycle.</p>
+      <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
+      <div class="btns hero-btns"><a class="btn solid" href="#stop-films" data-walk-play="UhMJZrZttDI">watch the newest episode</a>
+        <a class="btn" href="https://www.youtube.com/watch?v=xSpspkCw9og" target="_blank" rel="noopener">start at episode 1</a></div>
+    </div>
+    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#everything">or skip to the plain page</a></p>
+  </header>
+  <article class="stop left" id="stop-films" data-stop="1">
+    <img class="still" src="images/walk/1-films.webp" alt="A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow, a camera on a tripod in front of it, and a raven on one of the poles." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 1 of 8</span><span class="light">morning</span></p>
+      <h2>films</h2>
+      <p>A documentary about our first year out here. It follows the whole process of getting the land. Episode 1 is from before we bought it.</p>
+      <button class="yt" type="button" data-id="UhMJZrZttDI" aria-label="play hunting for a lost well.">
+  <img src="images/ep4-lost-well.jpg" alt="hunting for a lost well., thumbnail" width="1280" height="720" loading="lazy">
+  <span class="play" aria-hidden="true"></span><span class="len label">26:41</span>
+</button>
+      <p class="label ep-line">newest · season 1 · episode 4 · hunting for a lost well.</p>
+      <div class="btns"><a class="btn solid" href="https://www.youtube.com/watch?v=xSpspkCw9og" target="_blank" rel="noopener">start at episode 1</a><a class="btn" href="films/">all the films</a><a class="btn" href="https://www.youtube.com/@sameoldsamsara?sub_confirmation=1" target="_blank" rel="noopener">subscribe</a></div>
+    </div>
+  </article>
+  <article class="stop right" id="stop-make" data-stop="2">
+    <img class="still" src="images/walk/2-make.webp" alt="A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a raven on the roof." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 2 of 8</span><span class="light">late morning</span></p>
+      <h2>make</h2>
+      <p>Beadwork, food, and whatever else we&#x27;re making at the time. When something turns out good, we share how we made it so you can try it too.</p>
+      <div class="btns"><a class="btn solid" href="patterns/christmas-tree/">free pattern: christmas tree</a><a class="btn" href="patterns/">every pattern</a><a class="btn" href="bead-lab/">the bead lab</a><a class="btn" href="recipes/">recipes</a><a class="btn" href="https://samsaradigitals.etsy.com" target="_blank" rel="noopener">samsara digitals on etsy</a><a class="btn" href="make/">everything we make</a></div>
+    </div>
+  </article>
+  <article class="stop left" id="stop-jewelry" data-stop="3">
+    <img class="still" src="images/walk/3-jewelry.webp" alt="A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a raven on top." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 3 of 8</span><span class="light">noon</span></p>
+      <h2>jewelry</h2>
+      <p>Beaded by hand, one bead at a time. This is the shop that keeps the films going. The earrings don't really grow on the apple tree. We checked.</p>
+      <div class="wear-row"><a href="https://www.etsy.com/listing/4448169054" target="_blank" rel="noopener" title="opossum earrings, $49.99"><img src="images/shop/opossum.jpg" alt="opossum earrings, $49.99" width="160" height="160" loading="lazy"></a><a href="https://www.etsy.com/listing/4448186827" target="_blank" rel="noopener" title="jellyfish earrings, $39.99"><img src="images/shop/jellyfish.jpg" alt="jellyfish earrings, $39.99" width="160" height="160" loading="lazy"></a><a href="https://www.etsy.com/listing/4426089724" target="_blank" rel="noopener" title="cream + olive fringe, $29.99"><img src="images/shop/cream-olive.jpg" alt="cream + olive fringe, $29.99" width="160" height="160" loading="lazy"></a><a href="https://www.etsy.com/listing/4448132656" target="_blank" rel="noopener" title="green stone + hex nut bracelet, $19.99"><img src="images/shop/green-stone.jpg" alt="green stone + hex nut bracelet, $19.99" width="160" height="160" loading="lazy"></a></div>
+      <div class="btns"><a class="btn solid" href="https://sameoldsamsara.etsy.com" target="_blank" rel="noopener">the jewelry shop on etsy</a><a class="btn" href="https://depop.com/sameoldsamsara" target="_blank" rel="noopener">also on depop</a></div>
+    </div>
+  </article>
+  <article class="stop right" id="stop-field-guide" data-stop="4">
+    <img class="still" src="images/walk/4-field-guide.webp" alt="A print of the woods: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 4 of 8</span><span class="light">afternoon</span></p>
+      <h2>the field guide</h2>
+      <p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>
+      <div class="btns"><a class="btn solid" href="field-guide/">open the field guide</a></div>
+    </div>
+  </article>
+  <article class="stop left" id="stop-land" data-stop="5">
+    <img class="still" src="images/walk/5-land.webp" alt="A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a raven on a rock, and geese flying over." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 5 of 8</span><span class="light">golden hour</span></p>
+      <h2>the land</h2>
+      <p>34 acres in Central New York. Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p><p class="label">this walk is a made up version. the real map stays with us.</p>
+      <div class="btns"><a class="btn solid" href="land/">about the land</a><a class="btn" href="#year">the wheel of the year</a></div>
+    </div>
+  </article>
+  <article class="stop right" id="stop-follow" data-stop="6">
+    <img class="still" src="images/walk/6-follow.webp" alt="A print of a campfire at nightfall with two camp chairs, a raven on one of them, and a camper with its windows lit in the distance." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 6 of 8</span><span class="light">dusk</span></p>
+      <h2>follow along</h2>
+      <p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>
+      <div class="btns"><a class="btn solid" href="https://www.youtube.com/@sameoldsamsara" target="_blank" rel="noopener">youtube</a><a class="btn" href="https://instagram.com/sameoldsamsara" target="_blank" rel="noopener">instagram</a><a class="btn" href="https://tiktok.com/@sameoldsamsara" target="_blank" rel="noopener">tiktok</a><a class="btn" href="https://pinterest.com/sameoldsamsara" target="_blank" rel="noopener">pinterest</a></div>
+    </div>
+  </article>
+  <article class="stop left" id="stop-say-hi" data-stop="7">
+    <img class="still" src="images/walk/7-say-hi.webp" alt="A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 7 of 8</span><span class="light">night</span></p>
+      <h2>say hi</h2>
+      <p>Sign up for the newsletter and we'll write when there's something worth saying. If you like what we make, you can buy us a coffee.</p>
+      <div class="btns"><a class="btn solid" href="https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header" target="_blank" rel="noopener">the newsletter</a><a class="btn" href="https://buymeacoffee.com/sameoldsamsara" target="_blank" rel="noopener">buy us a coffee</a><a class="btn" href="about/">who we are</a></div>
+    </div>
+  </article>
+  <article class="stop right" id="stop-road" data-stop="8">
+    <img class="still" src="images/walk/8-road.webp" alt="A print of a country road at sunrise running past a mailbox and a goldenrod meadow, with a raven flying off down the road." width="1280" height="800" loading="lazy">
+    <div class="card">
+      <p class="label where"><span>stop 8 of 8</span><span class="light">first light</span></p>
+      <h2>the road</h2>
+      <p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads.</p>
+      <div class="btns"><a class="btn solid" href="road/">the road videos</a><a class="btn" href="https://youtube.com/@pneumanomads" target="_blank" rel="noopener">pneuma nomads on youtube</a><a class="btn" href="https://instagram.com/pneumanomads" target="_blank" rel="noopener">instagram</a><a class="btn" href="https://tiktok.com/@pneumanomads" target="_blank" rel="noopener">tiktok</a><a class="btn" href="https://open.spotify.com/user/chadriley722" target="_blank" rel="noopener">spotify</a></div>
+    </div>
+  </article>
+  <div class="stop end" id="stop-end">
+    <div class="end-text">
+      <p class="tag">the same old cycle.</p>
+      <p class="def">That's the loop. You're back where you started.</p>
+      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="#everything">the rest of the page</a></div>
+    </div>
   </div>
-  <div class="wrap"><div class="almanac" data-almanac>
+</div>
+</section><section class="section after-walk" id="everything"><div class="wrap">
+  <p class="label after-label">everything, the plain way</p>
+  <div class="almanac" data-almanac>
   <div><span class="label">today on the land</span><strong data-a="day">year –</strong></div>
   <div><span class="label">the moon</span><strong><i class="moon" data-a="moonicon" aria-hidden="true"></i><span data-a="moon">–</span></strong></div>
   <div><span class="label">sunrise · sunset</span><strong data-a="sun">–</strong></div>
   <div><span class="label">the season</span><strong data-a="season">–</strong></div>
-</div></div>
-</section><section class="section" id="land"><div class="wrap">
+</div>
+</div></section><section class="section" id="land"><div class="wrap">
   <div class="shead reveal"><span class="no label">no. 01</span><h2>the land</h2><span class="label sub">34 acres · central new york · since fall 2026</span></div>
   <p class="lede reveal">Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
 </div>
@@ -120,7 +227,7 @@
   <div class="wheel" id="wheel" data-months='[{&quot;m&quot;: &quot;jan&quot;, &quot;note&quot;: &quot;Snow on the meadow. The land rests and we&#x27;re south for the winter.&quot;}, {&quot;m&quot;: &quot;feb&quot;, &quot;note&quot;: &quot;The deepest cold. Somewhere out there the maples are getting ready.&quot;}, {&quot;m&quot;: &quot;mar&quot;, &quot;note&quot;: &quot;Mud season. The snow pulls back off the meadow.&quot;}, {&quot;m&quot;: &quot;apr&quot;, &quot;note&quot;: &quot;Peepers in the wet spots. First green under last year&#x27;s grass.&quot;}, {&quot;m&quot;: &quot;may&quot;, &quot;note&quot;: &quot;Back on the land May 1. Leaves out, black flies out.&quot;}, {&quot;m&quot;: &quot;jun&quot;, &quot;note&quot;: &quot;Long days. Everything grows a foot overnight. The plan for 2027: the first garden beds.&quot;}, {&quot;m&quot;: &quot;jul&quot;, &quot;note&quot;: &quot;Fireflies over the meadow. The plan someday: fruit off our own food forest.&quot;}, {&quot;m&quot;: &quot;aug&quot;, &quot;note&quot;: &quot;Hot and green. The goldenrod starts to turn.&quot;}, {&quot;m&quot;: &quot;sep&quot;, &quot;note&quot;: &quot;Goldenrod everywhere. September 2026 is when we got the keys.&quot;}, {&quot;m&quot;: &quot;oct&quot;, &quot;note&quot;: &quot;Peak color, then the leaves come down. Mushrooms after every rain.&quot;}, {&quot;m&quot;: &quot;nov&quot;, &quot;note&quot;: &quot;Bare trees, first frost. We close up and head south for the winter.&quot;}, {&quot;m&quot;: &quot;dec&quot;, &quot;note&quot;: &quot;First real snow. The land sleeps.&quot;}]' role="group" aria-label="the wheel of the year"></div>
   <div class="wheel-note"><span class="label" id="wheel-m">this month</span><p id="wheel-text"></p>
   <p class="label hint">tap a month. this is year one, so we're still learning what the land does.</p></div>
-</div></div></section><section class="section" id="follow"><div class="wrap"><div class="shead reveal"><span class="no label">no. 06</span><h2>follow along</h2><span class="label sub">@sameoldsamsara everywhere</span></div><div class="follow reveal"><a href="https://www.youtube.com/@sameoldsamsara" target="_blank" rel="noopener"><strong>youtube</strong><span class="label">the films</span></a><a href="https://instagram.com/sameoldsamsara" target="_blank" rel="noopener"><strong>instagram</strong><span class="label">the land + what i'm making</span></a><a href="https://tiktok.com/@sameoldsamsara" target="_blank" rel="noopener"><strong>tiktok</strong><span class="label">short clips</span></a><a href="https://pinterest.com/sameoldsamsara" target="_blank" rel="noopener"><strong>pinterest</strong><span class="label">jewelry + patterns</span></a><a href="https://sameoldsamsara.etsy.com" target="_blank" rel="noopener"><strong>etsy · jewelry</strong><span class="label">handmade pieces</span></a><a href="https://samsaradigitals.etsy.com" target="_blank" rel="noopener"><strong>etsy · patterns</strong><span class="label">samsara digitals</span></a></div></div></section></main><footer class="foot"><div class="wrap">
+</div></div></section><section class="section" id="follow"><div class="wrap"><div class="shead reveal"><span class="no label">no. 06</span><h2>follow along</h2><span class="label sub">@sameoldsamsara everywhere</span></div><div class="follow reveal"><a href="https://www.youtube.com/@sameoldsamsara" target="_blank" rel="noopener"><strong>youtube</strong><span class="label">the films</span></a><a href="https://instagram.com/sameoldsamsara" target="_blank" rel="noopener"><strong>instagram</strong><span class="label">the land + what i'm making</span></a><a href="https://tiktok.com/@sameoldsamsara" target="_blank" rel="noopener"><strong>tiktok</strong><span class="label">short clips</span></a><a href="https://pinterest.com/sameoldsamsara" target="_blank" rel="noopener"><strong>pinterest</strong><span class="label">jewelry + patterns</span></a><a href="https://sameoldsamsara.etsy.com" target="_blank" rel="noopener"><strong>etsy · jewelry</strong><span class="label">handmade pieces</span></a><a href="https://samsaradigitals.etsy.com" target="_blank" rel="noopener"><strong>etsy · patterns</strong><span class="label">samsara digitals</span></a></div></div></section></main><script type="module" src="walk/walk.js?v=7721ae2d"></script><footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
   <p class="foot-links"><a href="land/">the land</a> · <a href="films/">films</a> · <a href="make/">make</a> · <a href="patterns/">patterns</a> · <a href="field-guide/">field guide</a> · <a href="recipes/">recipes</a> · <a href="bead-lab/">bead lab</a> · <a href="about/">about</a> · <a href="https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header" target="_blank" rel="noopener">newsletter</a></p>

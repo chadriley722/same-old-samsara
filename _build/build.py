@@ -16,7 +16,7 @@ ROOT = pathlib.Path(__file__).resolve().parent.parent
 COWORK = ROOT.parent.parent                       # Claude CoWork/
 PATTERN_SRC = COWORK / "Same Old Samsara/Patterns"
 SITE = "https://sameoldsamsara.xyz"
-GOOGLE_VERIFY = ""  # Search Console token: paste only the content="..." value from the HTML tag, then rebuild + push
+GOOGLE_VERIFY = "y7ndACI0Ppc_jZEAmxNFMrK5n-c8N7hskw8efVKoxJQ"  # Search Console token: paste only the content="..." value from the HTML tag, then rebuild + push
 
 YT = "https://www.youtube.com/@sameoldsamsara"
 SHOP = "https://sameoldsamsara.etsy.com"
@@ -27,6 +27,7 @@ TT = "https://tiktok.com/@sameoldsamsara"
 PIN = "https://pinterest.com/sameoldsamsara"
 PN = SITE + "/road/"
 NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header"
+COFFEE = "https://buymeacoffee.com/sameoldsamsara"
 LAND_DAY_ONE = "2026-09"  # month only in public, never the exact day
 
 # /road = pneuma nomads (winter travel), in the PN look, not the almanac. pneumanomads.xyz points here.
@@ -34,7 +35,7 @@ PN_YT = "https://youtube.com/@pneumanomads"
 PN_IG = "https://instagram.com/pneumanomads"
 PN_TT = "https://tiktok.com/@pneumanomads"
 PN_SPOTIFY = "https://open.spotify.com/user/chadriley722"
-PN_COFFEE = "https://buymeacoffee.com/pneumanomads"
+PN_COFFEE = "https://buymeacoffee.com/sameoldsamsara"
 ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Salem, Massachusetts", "label": "vlog 18", "len": "8:20",
                "img": "images/road/latest-vlog.jpg"}
 
@@ -345,7 +346,7 @@ def color_names(p):
 
 # ---------------- page parts ----------------
 
-def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
+def head(title, desc, base, path, noindex=False, jsonld=None, image=None, extra_head="", body_class=""):
     canonical = SITE + "/" + path
     robots = "noindex, follow" if noindex else "index, follow, max-image-preview:large"
     img = image or f"{SITE}/images/og-sameoldsamsara.jpg"
@@ -380,8 +381,8 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None):
 <link rel="stylesheet" href="{base}style.css?v={ver('style.css')}">
 <script>var R=document.documentElement;R.classList.add("js");setTimeout(function(){{if(!window.SOS_READY)R.classList.remove("js");}},3000);try{{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")R.dataset.theme=t;}}catch(_){{}}</script>
 <style>:root{{--ring-url:url("{base}images/ring-norules-pepper.svg");--mark-url:url("{base}images/mark-pepper.svg");}}</style>
-{ld}</head>
-<body>
+{extra_head}{ld}</head>
+<body{f' class="{body_class}"' if body_class else ''}>
 <a class="skip" href="#main">skip to the good part</a>
 """
 
@@ -551,8 +552,8 @@ def footer(base):
 </html>
 """
 
-def page(title, desc, base, path, body, here="", noindex=False, jsonld=None, image=None, extra_js=""):
-    return (head(title, desc, base, path, noindex, jsonld, image) + nav(base, here)
+def page(title, desc, base, path, body, here="", noindex=False, jsonld=None, image=None, extra_js="", extra_head="", body_class=""):
+    return (head(title, desc, base, path, noindex, jsonld, image, extra_head, body_class) + nav(base, here)
             + f'<main id="main">{body}</main>' + extra_js + footer(base))
 
 # ---------------- pages ----------------
@@ -577,6 +578,113 @@ def hero_block(base, kicker=""):
     <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
   </div>
   <div class="wrap">{almanac_strip()}</div>
+</section>"""
+
+# ---------------- the walk: the home page as a loop trail (walk/, made up ground) ----------------
+# One stop per part of the site. Order = the order you meet them on the trail. The 3D picture is drawn by walk/walk.js.
+# Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
+
+WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
+<script>(function(){{var d=document.documentElement,ok=false;try{{ok=!matchMedia("(prefers-reduced-motion: reduce)").matches&&!/[?&]plain\\b/.test(location.search)&&!!document.createElement("canvas").getContext("webgl2");}}catch(_){{}}if(/[?&]walk\\b/.test(location.search))ok=true;d.classList.add(ok?"walk-on":"walk-plain");}})();</script>
+"""
+
+def walk_stops(base):
+    ep, first = EPISODES[0], EPISODES[-1]
+    free = next(p for p in PATTERNS if p.get("featured"))
+    ext = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{u}" target="_blank" rel="noopener">{e(t)}</a>'
+    loc = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{base}{u}">{e(t)}</a>'
+    wear = "".join(f"""<a href="{listing(p['id'])}" target="_blank" rel="noopener" title="{e(p['name'])}, {p['price']}"><img src="{base}{p['img']}" alt="{e(p['name'])}, {p['price']}" width="160" height="160" loading="lazy"></a>""" for p in FEATURED)
+    return [
+        {"id": "films", "name": "films", "light": "morning", "side": "left",
+         "alt": "A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow, a camera on a tripod in front of it, and a raven on one of the poles.",
+         "body": f"""<p>A documentary about our first year out here. It follows the whole process of getting the land. Episode 1 is from before we bought it.</p>
+      {yt_embed(ep, base)}
+      <p class="label ep-line">newest · {e(ep['label'])} · {e(ep['title'])}</p>""",
+         "links": ext("start at episode 1", f"https://www.youtube.com/watch?v={first['id']}", True) + loc("all the films", "films/") + ext("subscribe", f"{YT}?sub_confirmation=1")},
+        {"id": "make", "name": "make", "light": "late morning", "side": "right",
+         "alt": "A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a raven on the roof.",
+         "body": f"<p>{e(MAKE_INTRO)}</p>",
+         "links": loc(f"free pattern: {free['name']}", f"patterns/{slug(free)}/", True) + loc("every pattern", "patterns/") + loc("the bead lab", "bead-lab/") + loc("recipes", "recipes/")
+                  + ext("samsara digitals on etsy", DIGITALS) + loc("everything we make", "make/")},
+        {"id": "jewelry", "name": "jewelry", "light": "noon", "side": "left",
+         "alt": "A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a raven on top.",
+         "body": f"""<p>Beaded by hand, one bead at a time. This is the shop that keeps the films going. The earrings don't really grow on the apple tree. We checked.</p>
+      <div class="wear-row">{wear}</div>""",
+         "links": ext("the jewelry shop on etsy", SHOP, True) + ext("also on depop", DEPOP)},
+        {"id": "field-guide", "name": "the field guide", "light": "afternoon", "side": "right",
+         "alt": "A print of the woods: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera.",
+         "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
+         "links": loc("open the field guide", "field-guide/", True)},
+        {"id": "land", "name": "the land", "light": "golden hour", "side": "left",
+         "alt": "A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a raven on a rock, and geese flying over.",
+         "body": "<p>34 acres in Central New York. Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p><p class=\"label\">this walk is a made up version. the real map stays with us.</p>",
+         "links": loc("about the land", "land/", True) + '<a class="btn" href="#year">the wheel of the year</a>'},
+        {"id": "follow", "name": "follow along", "light": "dusk", "side": "right",
+         "alt": "A print of a campfire at nightfall with two camp chairs, a raven on one of them, and a camper with its windows lit in the distance.",
+         "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
+         "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN)},
+        {"id": "say-hi", "name": "say hi", "light": "night", "side": "left",
+         "alt": "A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees.",
+         "body": "<p>Sign up for the newsletter and we'll write when there's something worth saying. If you like what we make, you can buy us a coffee.</p>",
+         "links": ext("the newsletter", NEWSLETTER, True) + ext("buy us a coffee", COFFEE) + loc("who we are", "about/")},
+        {"id": "road", "name": "the road", "light": "first light", "side": "right",
+         "alt": "A print of a country road at sunrise running past a mailbox and a goldenrod meadow, with a raven flying off down the road.",
+         "body": "<p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads.</p>",
+         "links": loc("the road videos", "road/", True) + ext("pneuma nomads on youtube", PN_YT) + ext("instagram", PN_IG) + ext("tiktok", PN_TT) + ext("spotify", PN_SPOTIFY)},
+    ]
+
+def walk_block(base, kicker=""):
+    ep, first = EPISODES[0], EPISODES[-1]
+    stops = walk_stops(base)
+    LAZY = ' loading="lazy"'
+    still = lambda n, sid, alt, lazy=True: f'<img class="still" src="{base}images/walk/{n}-{sid}.webp" alt="{e(alt)}" width="1280" height="800"{LAZY if lazy else ""}>'
+    trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
+    cards = "".join(f"""
+  <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
+    {still(i, st['id'], st['alt'])}
+    <div class="card">
+      <p class="label where"><span>stop {i} of {len(stops)}</span><span class="light">{e(st['light'])}</span></p>
+      <h2>{e(st['name'])}</h2>
+      {st['body']}
+      <div class="btns">{st['links']}</div>
+    </div>
+  </article>""" for i, st in enumerate(stops, 1))
+    return f"""<section class="walk" id="walk" aria-label="a walk around the land">
+<nav class="trail" aria-label="stops on the walk"><div class="trail-in">
+  <ol id="trail-list">
+    <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
+    {trail}
+    <li class="plain"><a href="#everything">everything, as a plain page</a></li>
+  </ol>
+</div></nav>
+<div class="walk-view">
+  <canvas class="walk-gl" aria-hidden="true"></canvas>
+  <div class="walk-hot"></div>
+  <p class="walk-say label" role="status"></p>
+  <button class="walk-sound" type="button" aria-pressed="false" hidden><span>sound off</span></button>
+</div>
+<div class="walk-stops">
+  <header class="stop gate" id="stop-gate" data-stop="0">
+    {still(0, "gate", "A print of an open gate at sunrise. A raven sits on the gate post, goldenrod grows on both sides of the track, and a camper is parked far off in the meadow.", lazy=False)}
+    <div class="gate-text">
+      {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
+      <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
+      <h1>same old samsara</h1>
+      <p class="tag">the same old cycle.</p>
+      <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
+      <div class="btns hero-btns"><a class="btn solid" href="#stop-films" data-walk-play="{ep['id']}">watch the newest episode</a>
+        <a class="btn" href="https://www.youtube.com/watch?v={first['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
+    </div>
+    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#everything">or skip to the plain page</a></p>
+  </header>{cards}
+  <div class="stop end" id="stop-end">
+    <div class="end-text">
+      <p class="tag">the same old cycle.</p>
+      <p class="def">That's the loop. You're back where you started.</p>
+      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="#everything">the rest of the page</a></div>
+    </div>
+  </div>
+</div>
 </section>"""
 
 MAKE_INTRO = "Beadwork, food, and whatever else we're making at the time. When something turns out good, we share how we made it so you can try it too."
@@ -652,11 +760,18 @@ def home(variant="home"):
              "ig": [s_films, s_wear, s_make, s_land, s_wheel, s_follow],
              "yt": [s_films, s_land, s_wear, s_make, s_wheel, s_follow],
              "pin": [s_make, s_wear, s_land, s_films, s_wheel, s_follow]}[variant]
-    body = hero_block(base, kicker) + "".join(order)
+    intro = f"""<section class="section after-walk" id="everything"><div class="wrap">
+  <p class="label after-label">everything, the plain way</p>
+  {almanac_strip()}
+</div></section>"""
+    body = walk_block(base, kicker) + intro + "".join(order)
     path = "" if variant == "home" else f"{variant}/"
     return page("Same Old Samsara | Films From the Land, Handmade Jewelry, Beading Patterns",
                 "Same Old Samsara: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
-                base, path, body, noindex=variant != "home", jsonld=[ORG, {"@context": "https://schema.org", "@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}] if variant == "home" else None)
+                base, path, body, noindex=variant != "home", jsonld=[ORG, {"@context": "https://schema.org", "@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}] if variant == "home" else None,
+                image=f"{SITE}/images/og-walk.jpg" if (ROOT / "images/og-walk.jpg").exists() else None,
+                extra_head=WALK_HEAD.format(base=base, v=ver("walk/walk.css")), body_class="has-walk",
+                extra_js=f'<script type="module" src="{base}walk/walk.js?v={ver("walk/walk.js")}"></script>')
 
 def land_page():
     base = "../"
