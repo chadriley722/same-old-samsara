@@ -20,6 +20,10 @@ const HITCH = -1.7, NOSE = 3.65, AXLE = 5.4;                // the truck's bed (
 const TURN = 0.13, INBOUND = 0.92, R_TURN = 6.5, R_GATE = 8, GATE_RUN = 3.6;
 /* how the rig sits at each stop: [the truck's turn off the road's own heading, the camper's turn off the truck's]. + is to its left */
 const POSE = [[0.3, 0.72], [-0.2, -0.07], [-0.1, -0.04], [-0.12, -0.05], [-0.62, -0.12]];
+/* at the pump it does not cut across to its spot and back out (the fifth wheel would swing through the pump). it comes over onto the
+   gravel well back, rolls along it to the pump, and after, rolls on along it before it swings back out to its lane:
+   [metres it rolls along the gravel coming in, metres going out, metres it takes to come over from its lane or go back to it] */
+const PULL = { 3: [14, 13, 26] };
 
 /** a place by the road, as a world point */
 const spot = (name, dy = 0) => { const [d, z] = P[name], p = land.beside(z, d); return [p[0], land.height(p[0], p[1]) + dy, p[1]]; };
@@ -53,13 +57,28 @@ function lane(z, dir, off = 0) {
   const hitch = local({ x: p[0], y: p[1], z: p[2], yaw }, [HITCH, 0, 0]), ax = onRoad(z + (AXLE - HITCH) * dir, d);
   return { x: p[0], y: p[1], z: p[2], yaw, cyaw: Math.atan2(-(hitch[2] - ax[2]), hitch[0] - ax[0]), park: 0 };
 }
+/** a stop it pulls through (the pump). it keeps to one track: over from its lane onto the gravel, along the gravel to its spot, on
+    along it, and back out to its lane. the truck points the way the track goes and the fifth wheel follows the truck's own track, so
+    nothing swings sideways. it gets as far along the track as it would get anywhere else (park), and stands still at the stop the same */
+function pullThrough(n, zl, park) {
+  const [d, z0] = P["park" + n], [inLen, outLen, over] = PULL[n];
+  const at = (z) => { const s = z - z0, off = s > 0 ? smooth(inLen, inLen + over, s) : smooth(outLen, outLen + over, -s); return onRoad(z, lerp(d, land.LANE, off)); };
+  const z = z0 + (zl - z0) * (1 - park), p = at(z), ahead = at(z - 0.5), yaw = Math.atan2(-(ahead[2] - p[2]), ahead[0] - p[0]);
+  const hitch = local({ x: p[0], y: p[1], z: p[2], yaw }, [HITCH, 0, 0]), ax = at(z + (AXLE - HITCH)), cyaw = Math.atan2(-(hitch[2] - ax[2]), hitch[0] - ax[0]);
+  // over the last few metres in, it takes up the way it sits at the stop, and lets go of it over the first few out
+  const w = 1 - smooth(0, 4, Math.abs(z - z0)), pyaw = yawOf(land.heading(z0)) + POSE[n][0];
+  return { x: p[0], y: land.height(p[0], p[2]) + 0.05, z: p[2], yaw: angLerp(yaw, pyaw, w), cyaw: angLerp(cyaw, pyaw + POSE[n][1], w), park };
+}
 /** where the truck is and which way it and the fifth wheel point, at stop-progress u: { x, y, z, yaw, cyaw, park }.
     (y is only roughly the ground there. settle() is what sets the rig down on its wheels.) */
 export function rigAt(u) {
   if (u <= 4) {
     // heading south. it eases away from each stop and up to the next, and pulls over where it stops
-    const k = Math.min(Math.floor(u), 3), r = lane(lerp(RZ[k], RZ[k + 1], ease(u - k)), 1);
-    const n = Math.round(u), park = n === 4 ? smooth(3.45, 3.95, u) : 1 - smooth(0.04, 0.3, Math.abs(u - n));
+    const k = Math.min(Math.floor(u), 3), zl = lerp(RZ[k], RZ[k + 1], ease(u - k));
+    // (the camp's pull starts at 3.5, where the camp becomes the stop it is heading for. any earlier and the rig hops forward there)
+    const n = Math.round(u), park = n === 4 ? smooth(3.5, 3.95, u) : 1 - smooth(0.04, 0.3, Math.abs(u - n));
+    if (PULL[n]) return pullThrough(n, zl, park);
+    const r = lane(zl, 1);
     if (park > 0) {
       const name = n === 4 ? "camp" : "park" + n, at = spot(name, 0.05), pyaw = yawOf(land.heading(P[name][1])) + POSE[n][0];
       r.x = lerp(r.x, at[0], park); r.y = lerp(r.y, at[1], park); r.z = lerp(r.z, at[2], park);
@@ -77,8 +96,10 @@ export function rigAt(u) {
   const zIn = P.gate[1] - R_GATE;                                           // where it starts the turn in at the gate
   if (f < INBOUND) {
     // the drive home. it settles into its lane over the first stretch
-    const g = (f - TURN) / (INBOUND - TURN), off = (land.lateral(end[0], end[1]) + land.LANE) * (1 - smooth(0, 0.05, g));
-    return lane(lerp(end[1], zIn, ease(g)), -1, off);
+    // (it starts from the road's own z for where the turn left it, not the world z, or it hops sideways as it sets off)
+    const dEnd = land.lateral(end[0], end[1]), zEnd = end[1] - land.heading(end[1])[0] * dEnd;
+    const g = (f - TURN) / (INBOUND - TURN), off = (dEnd + land.LANE) * (1 - smooth(0, 0.05, g));
+    return lane(lerp(zEnd, zIn, ease(g)), -1, off);
   }
   // turning in: a quarter turn to the left across the road, then straight at the gate. it stops with the truck's nose in the gateway
   const g = ease((f - INBOUND) / (1 - INBOUND)), from = lane(zIn, -1), run = R_GATE * Math.PI / 2, s = g * (run + GATE_RUN);
@@ -106,6 +127,47 @@ export function settle(rig) {
   const hx = rig.x + F[0] * HITCH, hz = rig.z + F[1] * HITCH, hy = y + HITCH * Math.sin(tip);            // the hitch rides up and down with the truck's bed
   const C = [Math.cos(rig.cyaw), -Math.sin(rig.cyaw)], ya = axle(hx - C[0] * BACK, hz - C[1] * BACK, rig.cyaw, 1.13);
   return { truck: [rig.x, y, rig.z, rig.yaw, tip], camper: [hx - C[0] * NOSE, ya + (hy - ya) * (AXLES / BACK), hz - C[1] * NOSE, rig.cyaw, Math.atan2(hy - ya, BACK)] };
+}
+
+/* ---------- what stands by the road ---------- */
+/** everything that stands by the road, and where. nothing is drawn here, so a check can ask the same thing the scene does:
+    what is where (tools/rigcheck.mjs, in the notes folder, uses it to see that the rig drives through none of it).
+    things: [{ name, geo, pos, yaw, s }] in the order they are drawn. pins: [[x, y, z, size]], one over each stop's thing. */
+export function layout() {
+  const things = [], put = (name, geo, pos, yaw = 0, s = 1) => { things.push({ name, geo, pos, yaw, s }); return pos; };
+  const eyes = STOP_IDS.map((_, k) => onRoad(RZ[k] + land.CAM[k][0], land.CAM[k][1], land.CAM[k][2]));       // where the camera stands at each stop
+  // the land's gate and mailbox: where the trip starts, and where it ends
+  const gate = put("the gate", walkShapes.gate(), spot("gate"), yawOf(land.heading(P.gate[1])) + Math.PI);    // its leaf swung open, away from the road
+  put("the mailbox", walkShapes.mailbox(), spot("mailbox"), yawOf(land.heading(P.mailbox[1])) + Math.PI);
+  // the screen: the engine's film goes on its sheet. it is as big as a drive-in's, with its feet well into the ground
+  const scr = spot("screen", 3.1); put("the screen", shapes.roadScreen(), scr, facing(scr, eyes[1]), SCREEN);
+  const post = spot("signpost"); put("the signpost", shapes.signpost(), post, facing(post, eyes[2]) + 0.25, POST);
+  const pump = spot("pump"); put("pump", shapes.gasPump(), pump, facing(pump, eyes[3]) + 0.3, PUMP);
+  const cup = spot("cup"); put("the big cup", shapes.cupSign(), cup, facing(cup, eyes[3]) - 0.3, CUP);
+  // the camp: two chairs turned to the water, the sign that points home
+  const sea = land.beside(P.chairs[1] - 6, 90), west = [sea[0], 0, sea[1]];
+  const ch = spot("chairs"), seat = (ink, dx, dz) => { const at = [ch[0] + dx, ch[1], ch[2] + dz]; put("a camp chair", walkShapes.chair(ink), at, facing(at, west), 1.25); };
+  seat(INK.BEAD4, 0, 0); seat(INK.BEAD2, -0.5, -1.9);
+  const north = spot("north"); put("the sign at the camp", shapes.northSign(), north, facing(north, eyes[4]), 1.3);
+  // the wire that follows the road out of the north. it is built where it stands, so it is not moved or turned
+  const poles = land.poles(), line = new walkShapes.Geo(), wire = [INK.PEPPER, 0, 9, 0];
+  poles.forEach((p, k) => {
+    const yaw = yawOf(land.heading(p[2])) + Math.PI / 2, c = Math.cos(yaw), s = Math.sin(yaw);
+    line.add(shapes.pole(), { pos: p, yaw });
+    const n = poles[k + 1];
+    if (n) {
+      const y2 = yawOf(land.heading(n[2])) + Math.PI / 2, c2 = Math.cos(y2), s2 = Math.sin(y2);
+      for (const [ax, ay] of shapes.POLE_WIRE) {
+        const a = [p[0] + c * ax, p[1] + ay, p[2] - s * ax], b = [n[0] + c2 * ax, n[1] + ay, n[2] - s2 * ax];
+        const mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.55 * (Math.hypot(b[0] - a[0], b[2] - a[2]) / 46) ** 2, (a[2] + b[2]) / 2];      // a longer span hangs lower
+        line.add(walkShapes.tube(a, mid, 0.012, 0.012, 3, wire, 4, false)).add(walkShapes.tube(mid, b, 0.012, 0.012, 3, wire, 4, false));
+      }
+    }
+  });
+  things.push({ name: "the poles and the wire", geo: line, pos: [0, 0, 0], yaw: 0, s: 1, fixed: true });
+  const pins = [[scr[0], scr[1] + 12.2, scr[2], 1.7], [post[0], post[1] + 3.5 * POST + 0.7, post[2], 1.3], [pump[0], pump[1] + 2.3 * PUMP + 0.7, pump[2], 1.15],
+                [ch[0] - 0.3, ch[1] + 3.4, ch[2] - 1, 1.1], [gate[0], gate[1] + 3.3, gate[2], 1.1]];
+  return { things, pins };
 }
 
 export class RoadWorld extends Printer {
@@ -147,54 +209,26 @@ export class RoadWorld extends Printer {
     for (let k = 0; k < plants.length; k += 6) (plants[k + 5] === 0 ? heads : blades).push(plants[k], plants[k + 1], plants[k + 2], plants[k + 3], plants[k + 4], plants[k + 5]);
     this.plants.push(this.plantMesh(new Float32Array(heads), 0), this.plantMesh(new Float32Array(blades), 1));
 
-    // things by the road
+    // things by the road (layout() says what stands where)
     let nextId = 16;
     const add = (geo, pos, yaw = 0, s = 1, extra = {}) => {
       const p = { mesh: this.mesh(geo.build()), model: rotY(m4.create(), pos[0], pos[1], pos[2], yaw, s), id: nextId, x: pos[0], y: pos[1], z: pos[2], yaw, s, ...extra };
       nextId = nextId >= 232 ? 16 : nextId + 8;
       this.props.push(p); return p;
     };
-    const eyes = STOP_IDS.map((_, k) => onRoad(RZ[k] + land.CAM[k][0], land.CAM[k][1], land.CAM[k][2]));       // where the camera stands at each stop
-    // the land's gate and mailbox: where the trip starts, and where it ends
-    const gate = spot("gate");
-    add(walkShapes.gate(), gate, yawOf(land.heading(P.gate[1])) + Math.PI);                   // its leaf swung open, away from the road
-    add(walkShapes.mailbox(), spot("mailbox"), yawOf(land.heading(P.mailbox[1])) + Math.PI);
-    // the screen: the engine's film goes on its sheet. it is as big as a drive-in's, with its feet well into the ground
-    const scr = spot("screen", 3.1);
-    this.screen = add(shapes.roadScreen(), scr, facing(scr, eyes[1]), SCREEN);
-    const post = spot("signpost"); add(shapes.signpost(), post, facing(post, eyes[2]) + 0.25, POST);
-    const pump = spot("pump"); this.pump = add(shapes.gasPump(), pump, facing(pump, eyes[3]) + 0.3, PUMP);
-    const cup = spot("cup"); add(shapes.cupSign(), cup, facing(cup, eyes[3]) - 0.3, CUP);
-    // the camp: two chairs turned to the water, the sign that points home
-    const sea = land.beside(P.chairs[1] - 6, 90), west = [sea[0], 0, sea[1]];
-    const ch = spot("chairs"), seat = (ink, dx, dz) => { const at = [ch[0] + dx, ch[1], ch[2] + dz]; return add(walkShapes.chair(ink), at, facing(at, west), 1.25); };
-    seat(INK.BEAD4, 0, 0); seat(INK.BEAD2, -0.5, -1.9);
-    const north = spot("north"); add(shapes.northSign(), north, facing(north, eyes[4]), 1.3);
-    // the wire that follows the road out of the north
-    const poles = land.poles(), line = new walkShapes.Geo(), wire = [INK.PEPPER, 0, 9, 0];
-    poles.forEach((p, k) => {
-      const yaw = yawOf(land.heading(p[2])) + Math.PI / 2, c = Math.cos(yaw), s = Math.sin(yaw);
-      line.add(shapes.pole(), { pos: p, yaw });
-      const n = poles[k + 1];
-      if (n) {
-        const y2 = yawOf(land.heading(n[2])) + Math.PI / 2, c2 = Math.cos(y2), s2 = Math.sin(y2);
-        for (const [ax, ay] of shapes.POLE_WIRE) {
-          const a = [p[0] + c * ax, p[1] + ay, p[2] - s * ax], b = [n[0] + c2 * ax, n[1] + ay, n[2] - s2 * ax], mid = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2 - 0.55 * (Math.hypot(b[0] - a[0], b[2] - a[2]) / 46) ** 2, (a[2] + b[2]) / 2];      // a longer span hangs lower
-          line.add(walkShapes.tube(a, mid, 0.012, 0.012, 3, wire, 4, false)).add(walkShapes.tube(mid, b, 0.012, 0.012, 3, wire, 4, false));
-        }
-      }
-    });
-    this.props.push({ mesh: this.mesh(line.build()), model: m4.create(), id: 240, noShadow: true });
-
+    const lay = layout();
+    for (const t of lay.things) {
+      if (t.fixed) { this.props.push({ mesh: this.mesh(t.geo.build()), model: m4.create(), id: 240, noShadow: true }); continue; }
+      const p = add(t.geo, t.pos, t.yaw, t.s);
+      if (t.name === "pump") this.pump = p;
+    }
     // the rig: the truck and the fifth wheel. they are placed every frame (see animate).
     this.truck = add(walkShapes.truck(), [0, 0, 0]);
     this.camper = add(walkShapes.camper(true), [0, 0, 0]);
     this.trim = add(shapes.rigTrim(), [0, 0, 0], 0, 1, { noShadow: true });
     // a pixel pin over each stop's thing, and over the gate
     const pinGeo = shapes.pixelPin(0.12);
-    this.pins = [[scr[0], scr[1] + 12.2, scr[2], 1.7], [post[0], post[1] + 3.5 * POST + 0.7, post[2], 1.3], [pump[0], pump[1] + 2.3 * PUMP + 0.7, pump[2], 1.15],
-                 [ch[0] - 0.3, ch[1] + 3.4, ch[2] - 1, 1.1], [gate[0], gate[1] + 3.3, gate[2], 1.1]]
-      .map((at, k) => ({ ...add(pinGeo, at, 0, 1, { noShadow: true }), at, k, size: at[3] }));
+    this.pins = lay.pins.map((at, k) => ({ ...add(pinGeo, at, 0, 1, { noShadow: true }), at, k, size: at[3] }));
 
     const seeds = new Float32Array(16 * 4);
     this.motes = this.moteMesh(seeds);
