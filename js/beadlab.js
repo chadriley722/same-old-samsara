@@ -18,7 +18,10 @@
   function load() {
     var s = null; try { s = JSON.parse(store("sos_lab") || "null"); } catch (_) {}
     if (s && s.cells) { state = s; sizeSel.value = s.cols + "x" + s.rows; }
-    else { var p = sizeSel.value.split("x"); state = fresh(+p[0], +p[1]); }
+    else {
+      if (window.matchMedia && matchMedia("(max-width: 600px)").matches) sizeSel.value = "14x18";   // a phone starts on the small grid, so the beads are big enough to hit
+      var p = sizeSel.value.split("x"); state = fresh(+p[0], +p[1]);
+    }
   }
   function save() { store("sos_lab", JSON.stringify(state)); }
 
@@ -89,7 +92,9 @@
   var down = false;
   svg.addEventListener("pointerdown", function (ev) { down = true; snapshot(); svg.setPointerCapture(ev.pointerId); act(ev.target); ev.preventDefault(); });
   svg.addEventListener("pointermove", function (ev) { if (!down || tool === "fill") return; act(document.elementFromPoint(ev.clientX, ev.clientY)); });
-  ["pointerup", "pointercancel"].forEach(function (t) { svg.addEventListener(t, function () { if (down) { down = false; save(); count(); } }); });
+  svg.addEventListener("pointerup", function () { if (down) { down = false; save(); count(); } });
+  // a second finger came down to pinch: that first touch wasn't meant as paint, so take it back
+  svg.addEventListener("pointercancel", function () { if (down) { down = false; if (undo.length) { state.cells = JSON.parse(undo.pop()); render(); } } });
 
   /* ---------- palette + buttons ---------- */
   var pal = document.getElementById("palette");

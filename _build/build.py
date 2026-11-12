@@ -2,15 +2,18 @@
 """Builds sameoldsamsara.xyz, the almanac (v3, Oct 28 2026).
 
 Run from anywhere: python3 _build/build.py   (Jekyll skips folders starting with _, so this never goes live)
-Writes: index.html, land/, films/, patterns/ (+ one page per pattern), bead-lab/, about/, road/ (pneuma nomads, PN look), ig/ yt/ pin/ (link-in-bio
-versions, noindex), 404.html, beadingpatterns.html (old url, points to patterns/), llms.txt, robots.txt, sitemap.xml.
+Writes: index.html, land/, films/, jewelry/, patterns/ (+ one page per pattern), bead-lab/, about/, road/ (pneuma nomads, PN look), ig/ yt/ pin/
+(link-in-bio versions, noindex), shop/ and contact/ (addresses people guess, they point at jewelry/ and about/), 404.html,
+beadingpatterns.html (old url, points to patterns/), llms.txt, robots.txt, sitemap.xml.
 Copies pattern images from Same Old Samsara/Patterns/<design>/UPLOAD TO ETSY/ when they exist.
+Makes the phone sized copies of every picture in images/r/ (see pic() below). Commit that folder with the rest.
 
-To update: change EPISODES / FEATURED / PATTERNS / SPOTS below and rerun.
+To update: change EPISODES / JEWELRY / PATTERNS / SPOTS below and rerun.
+  - a new episode → one dict at the top of EPISODES. While you're there, check the JEWELRY pieces are still for sale and bump JEWELRY_CHECKED
   - a pattern gets relisted on Etsy → set its "live" to True
-  - rotate the seasonal freebie → move "featured": True to another free pattern (free ones with a design get their own page, pdf at assets/<file>.pdf)
+  - rotate the free pattern → move "featured": True to another free pattern (every free one has its own page, pdf at assets/<file>.pdf)
 """
-import datetime, html, json, pathlib, shutil, subprocess
+import datetime, html, json, pathlib, shutil, struct, subprocess
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 COWORK = ROOT.parent.parent                       # Claude CoWork/
@@ -34,7 +37,10 @@ LAND_DAY_ONE = "2026-09"  # month only in public, never the exact day
 PN_YT = "https://youtube.com/@pneumanomads"
 PN_IG = "https://instagram.com/pneumanomads"
 PN_TT = "https://tiktok.com/@pneumanomads"
+# this is the profile, not one playlist. it has six public playlists and none is named for the road, so Chad has to say which
+# one is "what we play in the truck" (asked Nov 12). then this becomes https://open.spotify.com/playlist/<id>
 PN_SPOTIFY = "https://open.spotify.com/user/chadriley722"
+PN_SPOTIFY_TEXT = "spotify"
 PN_COFFEE = "https://buymeacoffee.com/sameoldsamsara"
 ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Salem, Massachusetts", "label": "vlog 18", "len": "8:20",
                "img": "images/road/latest-vlog.jpg"}
@@ -51,22 +57,49 @@ EPISODES = [
      "img": "images/ep1-we-bought-land.jpg", "blurb": "34 acres of goldenrod and woods in Central New York. How we found it, the rough perc test, and the first walk as owners."},
 ]
 
-FEATURED = [
-    {"name": "opossum earrings", "price": "$49.99", "id": "4448169054", "img": "images/shop/opossum.jpg"},
-    {"name": "jellyfish earrings", "price": "$39.99", "id": "4448186827", "img": "images/shop/jellyfish.jpg"},
-    {"name": "cream + olive fringe", "price": "$29.99", "id": "4426089724", "img": "images/shop/cream-olive.jpg"},
-    {"name": "green stone + hex nut bracelet", "price": "$19.99", "id": "4448132656", "img": "images/shop/green-stone.jpg"},
+# the jewelry page, in page order. the first four are also the little row at the jewelry stop on the home page.
+# No prices here on purpose: they change on Etsy and nobody remembers to change them here. Each piece links to its own listing.
+# id = the Etsy listing number. img = a square photo in images/shop/. alt = what's in the photo.
+# When a piece sells out for good, take its line out. JEWELRY_CHECKED = the last day someone looked: the build nags when it's old.
+# Nov 12, 2026: all twelve opened on Etsy, each still listed with an "add to cart" button.
+JEWELRY_CHECKED = "2026-11-12"
+JEWELRY = [
+    {"name": "opossum earrings", "kind": "earrings", "id": "4448169054", "img": "images/shop/opossum.jpg",
+     "alt": "a pair of beaded opossum earrings hanging from a plant stem"},
+    {"name": "jellyfish earrings", "kind": "earrings", "id": "4448186827", "img": "images/shop/jellyfish.jpg",
+     "alt": "turquoise beaded jellyfish earrings with long wavy fringe"},
+    {"name": "cream + olive fringe", "kind": "earrings", "id": "4426089724", "img": "images/shop/cream-olive.jpg",
+     "alt": "long cream and olive beaded fringe earrings"},
+    {"name": "green stone + hex nut bracelet", "kind": "bracelet", "id": "4448132656", "img": "images/shop/green-stone.jpg",
+     "alt": "a bracelet of green stone beads and steel hex nuts on a wrist"},
+    {"name": "squid earrings", "kind": "earrings", "id": "4446242488", "img": "images/shop/squid.jpg",
+     "alt": "turquoise beaded squid earrings with wavy fringe on a kraft card"},
+    {"name": "rainbow fringe earrings", "kind": "earrings", "id": "4441796123", "img": "images/shop/rainbow-fringe.jpg",
+     "alt": "a long white and rainbow beaded fringe earring, worn"},
+    {"name": "alien head earrings", "kind": "earrings", "id": "4446213329", "img": "images/shop/alien-head.jpg",
+     "alt": "green beaded alien head earrings on a kraft card"},
+    {"name": "monstera leaf huggies", "kind": "earrings", "id": "4438493438", "img": "images/shop/monstera.jpg",
+     "alt": "three monstera leaf charm huggie earrings in an open hand"},
+    {"name": "key huggie", "kind": "earrings", "id": "4440654558", "img": "images/shop/key-huggie.jpg",
+     "alt": "a small antique bronze key charm on a huggie hoop, in an open hand"},
+    {"name": "cream spiral rope bracelet", "kind": "bracelet", "id": "4445038667", "img": "images/shop/cream-spiral.jpg",
+     "alt": "a cream spiral rope beaded bracelet in an open hand"},
+    {"name": "wavy rainbow loom bracelet", "kind": "bracelet", "id": "1698489768", "img": "images/shop/wavy-rainbow.jpg",
+     "alt": "a black bead loom bracelet with a wavy rainbow pattern, in an open hand"},
+    {"name": "matte black bracelet", "kind": "bracelet", "id": "4444516925", "img": "images/shop/matte-black.jpg",
+     "alt": "a matte black seed bead bracelet with a few strands, in an open hand"},
 ]
+FEATURED = JEWELRY[:4]
 
 # file = old card image assets/<file>.jpg (and assets/<file>.pdf when free). design = folder in Patterns/ with the v2 chart.
 # one entry per Etsy listing. live = listing is active right now. free = pdf on this site.
 PATTERNS = [
     {"file": "christmastree", "design": "christmastree", "slug": "christmas-tree", "name": "christmas tree", "type": "brick stitch", "cats": ["christmas"],
-     "free": True, "featured": True,
+     "free": True, "hold": True,       # v1 hasn't been test stitched and the ornaments need a redo (Chad, Nov 12). don't feature it till then
      "blurb": "A three tier pine with a gold star and a few lights. One piece worked up from the widest row, so it's a good first pattern. Free for the holidays."},
-    {"file": "pumpkin", "name": "pumpkin", "type": "brick stitch", "cats": ["halloween"], "free": True,
+    {"file": "pumpkin", "slug": "pumpkin", "name": "pumpkin", "type": "brick stitch", "cats": ["halloween"], "free": True, "featured": True,
      "blurb": "A little round pumpkin with a curly stem. Quick, cute and free."},
-    {"file": "rainbowdiamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
+    {"file": "rainbowdiamonds", "slug": "rainbow-diamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
      "blurb": "A rainbow diamond band for the bead loom. Free."},
     {"file": "parrot", "design": "parrot", "slug": "rainbow-parrot", "name": "rainbow parrot", "type": "brick stitch", "cats": ["animals", "rainbow"],
      "etsy": "4456758738", "price": "2.99", "live": True,
@@ -162,7 +195,7 @@ PHOTOS = [  # (image, caption, crop focus for the 4:5 strip)
 ]
 
 # field guide: who lives here (zoom in, guess, tap to see it whole). focus = where the close-up starts.
-# add trail cam photos here as they come in.
+# add trail cam photos here as they come in. clip = a short silent loop that plays once the card is open (keep the place out of frame).
 CRITTERS = [
     {"id": "grasshopper", "img": "images/land/grasshopper.jpg", "focus": "70% 42%", "name": "a grasshopper",
      "note": "Posing on the RV hitch like it owned the place."},
@@ -180,6 +213,8 @@ CRITTERS = [
      "note": "A present for Daniel in October. It spends the winter frozen solid, then turns into an Isabella tiger moth."},
     {"id": "geese", "img": "images/land/geese.jpg", "focus": "50% 45%", "zoom": 2.5, "name": "canada geese",
      "note": "A V of them heading south in late September. We followed in November."},
+    {"id": "raccoon", "img": "images/land/raccoon.jpg", "clip": "images/land/raccoon.mp4", "focus": "75% 43%", "zoom": 5, "name": "a raccoon",
+     "note": "The trail cam's first night. It stared at the camera, then ducked under the gate. Whoever walks past next ends up here too."},
 ]
 
 # field guide: things to find. starts face down with a hint, tap to turn it over.
@@ -263,6 +298,92 @@ def ver(rel):
 def listing(id_):
     return f"https://www.etsy.com/listing/{id_}"
 
+# ---------------- pictures: phone sized copies, made when the site is built ----------------
+# A phone shows most photos 165 to 350 pixels wide, so it has no use for a 1280 wide file. Every picture gets smaller WebP copies in
+# images/r/ and pic() writes the <picture> tag that offers them. The original stays as the fallback for a browser with no WebP.
+# Where the page shows a picture cut to a shape (a square card, a 4:5 strip), the copy is cut to that shape first, so no bytes
+# are spent on the part that's cropped away, and a wide photo in a tall frame still comes out sharp.
+LADDER = (240, 360, 480, 600, 720)     # copy widths. past these, the picture's own full width is offered, as a WebP
+
+def image_size(rel, _seen={}):
+    """(width, height) of a jpg, png or webp in the site folder, read from the file's header"""
+    if rel in _seen: return _seen[rel]
+    b = (ROOT / rel).read_bytes()
+    size = None
+    if b[:8] == b"\x89PNG\r\n\x1a\n":
+        size = struct.unpack(">II", b[16:24])
+    elif b[:4] == b"RIFF" and b[8:12] == b"WEBP":
+        kind = b[12:16]
+        if kind == b"VP8 ": size = tuple(v & 0x3fff for v in struct.unpack("<HH", b[26:30]))
+        elif kind == b"VP8L": n = struct.unpack("<I", b[21:25])[0]; size = ((n & 0x3fff) + 1, ((n >> 14) & 0x3fff) + 1)
+        elif kind == b"VP8X": size = (int.from_bytes(b[24:27], "little") + 1, int.from_bytes(b[27:30], "little") + 1)
+    elif b[:2] == b"\xff\xd8":
+        i = 2
+        while i + 9 < len(b):
+            if b[i] != 0xFF: i += 1; continue
+            m = b[i + 1]
+            if 0xC0 <= m <= 0xCF and m not in (0xC4, 0xC8, 0xCC):       # a start of frame marker: height, then width
+                h, w = struct.unpack(">HH", b[i + 5:i + 9]); size = (w, h); break
+            if m == 0xFF: i += 1; continue
+            if m in (0x00, 0x01, 0xD8) or 0xD0 <= m <= 0xD7: i += 2; continue
+            i += 2 + struct.unpack(">H", b[i + 2:i + 4])[0]
+    if not size: raise ValueError(f"can't read the size of {rel}")
+    _seen[rel] = size
+    return size
+
+def crop_box(rel, shape, pos=(50, 50)):
+    """(x, y, w, h) of the part of a picture that css `object-fit: cover` shows in a frame of that shape. shape = (wide, tall), pos = object-position in percent."""
+    w0, h0 = image_size(rel)
+    if not shape: return 0, 0, w0, h0
+    r = shape[0] / shape[1]
+    if w0 / h0 > r: w = round(h0 * r); return round((w0 - w) * pos[0] / 100), 0, w, h0
+    h = round(w0 / r); return 0, round((h0 - h) * pos[1] / 100), w0, h
+
+def variant(rel, w, shape=None, pos=(50, 50)):
+    """site path of the w pixel wide WebP copy of a picture (cut to `shape` first, if given). made on first use, and again when the original changes."""
+    src = ROOT / rel
+    x, y, cw, ch = crop_box(rel, shape, pos)
+    whole = (cw, ch) == image_size(rel)
+    if rel.endswith(".webp") and whole and w >= cw: return rel             # already a WebP, and no smaller copy is wanted
+    stem = pathlib.Path(rel).with_suffix("")
+    stem = stem.relative_to("images") if stem.parts[0] == "images" else stem
+    cut = "" if whole else f"-{shape[0]}x{shape[1]}" + ("" if tuple(pos) == (50, 50) else f"-at{pos[0]}-{pos[1]}")
+    out_rel = f"images/r/{stem.as_posix()}-{w}{cut}.webp"
+    out = ROOT / out_rel
+    if not out.exists() or src.stat().st_mtime > out.stat().st_mtime:
+        out.parent.mkdir(parents=True, exist_ok=True)
+        crop = [] if whole else ["-crop", str(x), str(y), str(cw), str(ch)]
+        size = ["-resize", str(w), "0"] if w < cw else []
+        subprocess.run(["nice", "-n", "15", "cwebp", "-quiet", "-q", "78" if w <= 240 else "72", "-m", "6", "-sharp_yuv", "-metadata", "none",
+                        *crop, *size, str(src), "-o", str(out)], check=True)
+    return out_rel
+
+def widths(rel, slot, shape=None, pos=(50, 50)):
+    """the copy widths worth offering for a picture shown `slot` css pixels wide: the one that's sharp on a good screen, and the one below it"""
+    cw = crop_box(rel, shape, pos)[2]
+    have = [w for w in LADDER if w < cw] + [cw]
+    top = next((i for i, w in enumerate(have) if w >= slot * 1.8), len(have) - 1)       # 1.8 dots per css pixel is sharp to the eye on a phone held in a hand
+    return have[max(top - 1, 0):top + 1]
+
+def pic(base, rel, alt, slot=360, cls="", lazy=True, style="", extra="", shape=None, pos=(50, 50), hold=False):
+    """<picture> for a photo. slot = how wide it's shown in css pixels: one number, or (on a phone, on a computer).
+    shape = (wide, tall) when the css cuts it to a frame of that shape with object-fit: cover, pos = its object-position in percent.
+    hold = don't fetch anything yet: the addresses go in data- attributes and a script fills them in when the picture is wanted.
+    The <img> inside keeps its class, so the css that styles an img still applies (style.css sets picture to display: contents)."""
+    phone, desk = slot if isinstance(slot, tuple) else (slot, slot)
+    w0, h0 = image_size(rel)
+    srcset = lambda ws: ", ".join(f"{base}{variant(rel, w, shape, pos)} {w}w" for w in ws)
+    wp, wd = widths(rel, phone, shape, pos), widths(rel, desk, shape, pos)
+    d = "data-" if hold else ""
+    if wp == wd:
+        sources = f'<source type="image/webp" {d}srcset="{srcset(wp)}" sizes="(max-width: 760px) {phone}px, {desk}px">'
+    else:
+        sources = (f'<source type="image/webp" media="(max-width: 760px)" {d}srcset="{srcset(wp)}" sizes="{phone}px">'
+                   f'<source type="image/webp" {d}srcset="{srcset(wd)}" sizes="{desk}px">')
+    attrs = (f' class="{cls}"' if cls else "") + f' {d}src="{base}{rel}" alt="{e(alt)}" width="{w0}" height="{h0}"'
+    attrs += (' loading="lazy"' if lazy else ' fetchpriority="high"') + ' decoding="async"' + (f' style="{style}"' if style else "") + extra
+    return f"<picture>{sources}<img{attrs}></picture>"
+
 # ---------------- pattern data from the design files ----------------
 
 def slug(p): return p.get("slug") or p["file"]
@@ -339,12 +460,16 @@ def facts(p):
     rows.append(("price", "free" if p.get("free") else f'${p["price"]}'))
     return rows
 
-def color_names(p):
-    d = design(p)
-    if not d: return []
-    return [c["name"] for c in d["colorways"][0]["colors"].values()]
-
 # ---------------- page parts ----------------
+
+# The italic is only ever used at one weight with no softness, so it's asked for that way: 42 KB instead of 149.
+# (Asking for a narrower range of the upright one doesn't make its file any smaller. Pinning an axis to one value does.)
+FONTS = ("https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700"
+         "&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..800,0..100;1,9..144,400,0&family=Work+Sans:wght@400;500;600&display=swap")
+# Runs in the head, before anything is drawn. data-app = this page is open inside an app's own little browser (the tip about that shows).
+# data-from="pin" = they came from Pinterest, so the first screen offers the jewelry and the patterns instead of the films.
+WHO_JS = ('var U=navigator.userAgent,A=/Instagram/.test(U)?"instagram":/FBAN|FBAV/.test(U)?"facebook":/musical_ly|Bytedance|TikTok/i.test(U)?"tiktok":'
+          '/Pinterest/.test(U)?"pinterest":"";if(A)R.dataset.app=A;if(A==="pinterest"||/pinterest\\./i.test(document.referrer))R.dataset.from="pin";')
 
 def head(title, desc, base, path, noindex=False, jsonld=None, image=None, extra_head="", body_class=""):
     canonical = SITE + "/" + path
@@ -377,16 +502,16 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None, extra_
 <link rel="alternate" type="text/plain" title="llms.txt" href="{base}llms.txt">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Courier+Prime:wght@400;700&family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..800,0..100;1,9..144,300..700,0..100&family=Work+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="{FONTS}">
 <link rel="stylesheet" href="{base}style.css?v={ver('style.css')}">
-<script>var R=document.documentElement;R.classList.add("js");setTimeout(function(){{if(!window.SOS_READY)R.classList.remove("js");}},3000);try{{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")R.dataset.theme=t;}}catch(_){{}}</script>
+<script>var R=document.documentElement;R.classList.add("js");setTimeout(function(){{if(!window.SOS_READY)R.classList.remove("js");}},3000);try{{var t=localStorage.getItem("sos_theme");if(t==="night"||t==="day")R.dataset.theme=t;}}catch(_){{}}{WHO_JS}</script>
 <style>:root{{--ring-url:url("{base}images/ring-norules-pepper.svg");--mark-url:url("{base}images/mark-pepper.svg");}}</style>
 {extra_head}{ld}</head>
 <body{f' class="{body_class}"' if body_class else ''}>
 <a class="skip" href="#main">skip to the good part</a>
 """
 
-NAV = [("the land", "land/"), ("films", "films/"), ("make", "make/"), ("field guide", "field-guide/"), ("jewelry", SHOP)]
+NAV = [("the land", "land/"), ("films", "films/"), ("make", "make/"), ("field guide", "field-guide/"), ("jewelry", "jewelry/")]
 
 def nav(base, here=""):
     def link(t, h):
@@ -405,53 +530,71 @@ def nav(base, here=""):
 
 def almanac_strip():
     return """<div class="almanac" data-almanac>
-  <div><span class="label">today on the land</span><strong data-a="day">year –</strong></div>
-  <div><span class="label">the moon</span><strong><i class="moon" data-a="moonicon" aria-hidden="true"></i><span data-a="moon">–</span></strong></div>
-  <div><span class="label">sunrise · sunset</span><strong data-a="sun">–</strong></div>
-  <div><span class="label">the season</span><strong data-a="season">–</strong></div>
+  <div><span class="label">today on the land</span><strong data-a="day">&nbsp;</strong></div>
+  <div><span class="label">the moon</span><strong><i class="moon" data-a="moonicon" aria-hidden="true"></i><span data-a="moon">&nbsp;</span></strong></div>
+  <div><span class="label">sunrise · sunset</span><strong data-a="sun">&nbsp;</strong></div>
+  <div><span class="label">the season</span><strong data-a="season">&nbsp;</strong></div>
 </div>"""
 
-def section_head(no, title, sub=""):
-    num = f'<span class="no label">no. {no}</span>' if no != "·" else '<span class="no label">·</span>'
-    return f"""<div class="shead reveal">{num}<h2>{e(title)}</h2>{f'<span class="label sub">{e(sub)}</span>' if sub else ''}</div>"""
+def section_head(title, sub=""):
+    return f"""<div class="shead reveal"><h2>{e(title)}</h2>{f'<span class="label sub">{e(sub)}</span>' if sub else ''}</div>"""
 
-def yt_embed(ep, base):
+def inapp_tip():
+    """one line that only shows inside the Instagram, TikTok, Facebook or Pinterest app, where YouTube and Etsy don't know who you are"""
+    return '<p class="label inapp">inside an app? youtube and etsy work better in your own browser. tap the ⋯ menu, then "open in browser".</p>'
+
+def yt_embed(ep, base, slot=(330, 640), lazy=True):
+    """an episode's picture with a play button. youtube itself only loads when someone presses play (js/site.js)."""
     return f"""<button class="yt" type="button" data-id="{ep['id']}" aria-label="play {e(ep['title'])}">
-  <img src="{base}{ep['img']}" alt="{e(ep['title'])}, thumbnail" width="1280" height="720" loading="lazy">
+  {pic(base, ep['img'], f"{ep['title']}, thumbnail", slot, lazy=lazy)}
   <span class="play" aria-hidden="true"></span><span class="len label">{ep['len']}</span>
 </button>"""
 
-def films_block(base, all_eps=False, lede="A documentary about our first year on 34 acres in Central New York. One season a year."):
+# the one way the series is described, everywhere
+DOC_LINE = "A documentary about our first year out here. It follows the whole process of getting the land. Episode 1 is from before we bought it."
+FILMS_NEXT = "New episodes through the winter. Season 2 starts spring 2027."     # nothing here goes stale before spring
+MONTH_NAMES = ["january", "february", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"]
+
+def month_of(iso):
+    y, m, _ = iso.split("-")
+    return f"{MONTH_NAMES[int(m) - 1]} {y}"
+
+def ep_no(x): return x["label"].split(" · ")[-1]          # "episode 4"
+def watch(x): return f"https://www.youtube.com/watch?v={x['id']}"
+
+def episode_list(base, eps, blurbs=False):
+    """a row per episode: little picture, number and length, title, the month it came out"""
+    rows = "".join(f"""<a class="ep reveal" href="{watch(x)}" target="_blank" rel="noopener">
+      {pic(base, x['img'], "", 120)}
+      <div><span class="label">{e(ep_no(x))} · {x['len']}</span><h3>{e(x['title'])}</h3><span class="label when">{month_of(x['date'])}</span>{f'<p>{e(x["blurb"])}</p>' if blurbs else ''}</div></a>""" for x in eps)
+    return f'<div class="eps">{rows}</div>'
+
+def film_main(base, lazy=True):
+    """the newest episode, big, with the way in for someone new right beside it"""
     ep = EPISODES[0]
-    rest = EPISODES if all_eps else EPISODES[1:]
-    others = "".join(f"""<a class="ep reveal" href="https://www.youtube.com/watch?v={x['id']}" target="_blank" rel="noopener">
-      <img src="{base}{x['img']}" alt="" width="640" height="360" loading="lazy">
-      <div><span class="label">{e(x['label'].split(' · ')[-1])} · {x['len']}</span><h3>{e(x['title'])}</h3>{f'<p>{e(x["blurb"])}</p>' if all_eps else ''}</div></a>""" for x in rest)
-    return f"""<div class="films">
-  <div class="film-main reveal">{yt_embed(ep, base)}
-    <div class="film-meta"><span class="label">newest · {e(ep['label'])}</span><h3>{e(ep['title'])}</h3><p>{e(ep['blurb'])}</p>
-      <div class="btns"><a class="btn solid" href="https://www.youtube.com/watch?v={EPISODES[-1]['id']}" target="_blank" rel="noopener">start from episode 1</a>
-      <a class="btn" href="{YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe</a></div></div>
-  </div>
-  <p class="lede reveal">{e(lede)}</p>
-  <div class="eps">{others}</div>
-</div>"""
+    return f"""<div class="film-main">{yt_embed(ep, base, lazy=lazy)}
+    <div class="film-meta"><span class="label">newest · {e(ep_no(ep))} · {month_of(ep['date'])}</span><h3>{e(ep['title'])}</h3><p>{e(ep['blurb'])}</p>
+      <div class="btns"><a class="btn solid" href="{watch(EPISODES[-1])}" target="_blank" rel="noopener">start at episode 1</a>
+      <a class="btn" href="{YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe</a></div>
+      {inapp_tip()}</div>
+  </div>"""
 
 def wheel_block():
     data = json.dumps([{"m": m, "note": n} for m, n in MONTHS])
     return f"""<div class="wheel-wrap reveal">
   <div class="wheel" id="wheel" data-months='{e(data)}' role="group" aria-label="the wheel of the year"></div>
   <div class="wheel-note"><span class="label" id="wheel-m">this month</span><p id="wheel-text"></p>
-  <p class="label hint">tap a month. this is year one, so we're still learning what the land does.</p></div>
+  <p class="label hint">tap a month to see what the land is doing. this is year one, so we're still learning.</p></div>
 </div>"""
 
 def map_block(base):
     pins = "".join(f"""<button class="pin" type="button" style="left:{s['x']/10}%;top:{s['y']/9}%" data-spot="{s['id']}" aria-label="{e(s['name'])}"><span></span></button>""" for s in SPOTS)
-    panels = json.dumps({s["id"]: {"name": s["name"], "note": s["note"], "img": base + s["img"]} for s in SPOTS})
+    small = lambda rel: ", ".join(f"{base}{variant(rel, w, (4, 3))} {w}w" for w in widths(rel, 330, (4, 3)))
+    panels = json.dumps({s["id"]: {"name": s["name"], "note": s["note"], "img": base + s["img"], "set": small(s["img"])} for s in SPOTS})
     return f"""<div class="map reveal">
   <div class="map-art">{land_svg()}{pins}</div>
   <aside class="map-card" id="map-card" data-spots='{e(panels)}' aria-live="polite">
-    <img id="map-img" src="{base}{SPOTS[0]['img']}" alt="" width="800" height="600" loading="lazy">
+    {pic(base, SPOTS[0]['img'], "", 330, shape=(4, 3), extra=' id="map-img"')}
     <span class="label">a spot on the land</span><h3 id="map-name">{e(SPOTS[0]['name'])}</h3><p id="map-note">{e(SPOTS[0]['note'])}</p>
   </aside>
   <p class="label map-foot">a cartoon, not to scale. the real map stays with us.</p>
@@ -510,20 +653,16 @@ def land_svg():
   <text class="mapword" x="205" y="520">goldenrod</text><text class="mapword" x="860" y="150">the river</text><text class="mapword" x="830" y="670">the road</text>
 </svg>"""
 
+def has_page(p): return bool(p.get("free") or p.get("live"))
+
 def patterns_grid(base, items, show_filters=True):
     cards = []
     for p in items:
         tags = " ".join(c.replace(" ", "-") for c in p["cats"]) + " " + p["type"].replace(" ", "-") + (" free" if p.get("free") else "")
-        if p.get("free") and p.get("design"):
-            href, pill, tgt = f"{base}patterns/{slug(p)}/", '<span class="pill free">free pdf</span>', ""
-        elif p.get("free"):
-            href, pill = f'{base}assets/{p["file"]}.pdf', '<span class="pill free">free pdf</span>'
-            tgt = ' target="_blank" rel="noopener"'
-        else:
-            href, pill, tgt = f"{base}patterns/{slug(p)}/", f'<span class="pill">${p["price"]}</span>', ""
-        cards.append(f"""<a class="pcard reveal" href="{href}"{tgt} data-tags="{tags}" data-name="{e(p['name'])}">
-      <div class="pimg"><img src="{base}{pattern_img(p)}" alt="{e(p['name'])} {p['type']} beading pattern" loading="lazy"></div>
-      <div class="pmeta"><h3>{e(p['name'])}</h3>{pill}</div><span class="label">{e(p['type'])}{" · free until halloween" if p.get("seasonal") else ""}</span>
+        pill = '<span class="pill free">free pdf</span>' if p.get("free") else f'<span class="pill">${p["price"]}</span>'
+        cards.append(f"""<a class="pcard reveal" href="{base}patterns/{slug(p)}/" data-tags="{tags}" data-name="{e(p['name'])}">
+      <div class="pimg">{pic(base, pattern_img(p), f"{p['name']} {p['type']} beading pattern", (170, 260))}</div>
+      <div class="pmeta"><h3>{e(p['name'])}</h3>{pill}</div><span class="label">{e(p['type'])}</span>
     </a>""")
     filt = ""
     if show_filters:
@@ -534,17 +673,23 @@ def patterns_grid(base, items, show_filters=True):
   <div class="chips" role="group" aria-label="filter patterns">{btns}</div></div>"""
     return filt + f'<div class="pgrid" id="pgrid">{"".join(cards)}</div>'
 
-def follow_block(skip=()):
-    items = [("youtube", YT, "the films"), ("instagram", IG, "the land + what i'm making"), ("tiktok", TT, "short clips"),
-             ("pinterest", PIN, "jewelry + patterns"), ("etsy · jewelry", SHOP, "handmade pieces"), ("etsy · patterns", DIGITALS, "samsara digitals")]
-    cards = "".join(f'<a href="{u}" target="_blank" rel="noopener"><strong>{n}</strong><span class="label">{d}</span></a>' for n, u, d in items if n not in skip)
+FOLLOW = [("youtube", YT, "the films"), ("instagram", IG, "the land + what we're making"), ("tiktok", TT, "short clips"), ("pinterest", PIN, "jewelry + patterns")]
+
+def follow_block():
+    cards = "".join(f'<a href="{u}" target="_blank" rel="noopener"><strong>{n}</strong><span class="label">{d}</span></a>' for n, u, d in FOLLOW)
     return f'<div class="follow reveal">{cards}</div>'
 
 def footer(base):
+    follow = "".join(f'<a href="{u}" target="_blank" rel="noopener">{n}</a>' for n, u, _ in FOLLOW)
+    links = [("the land", "land/"), ("films", "films/"), ("jewelry", "jewelry/"), ("make", "make/"), ("patterns", "patterns/"), ("field guide", "field-guide/")]
+    if len(RECIPES) >= 3: links.append(("recipes", "recipes/"))          # one recipe isn't a section yet. it's still on the make page
+    links += [("design your own", "bead-lab/"), ("about", "about/")]
+    site = "".join(f'<a href="{base}{h}">{t}</a>' for t, h in links)
     return f"""<footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
   <p class="tagline">the same old cycle.</p>
-  <p class="foot-links"><a href="{base}land/">the land</a> · <a href="{base}films/">films</a> · <a href="{base}make/">make</a> · <a href="{base}patterns/">patterns</a> · <a href="{base}field-guide/">field guide</a> · <a href="{base}recipes/">recipes</a> · <a href="{base}bead-lab/">bead lab</a> · <a href="{base}about/">about</a> · <a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></p>
+  <nav class="foot-follow" aria-label="follow along"><span class="label">follow along</span>{follow}</nav>
+  <nav class="foot-links" aria-label="every page">{site}<a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></nav>
   <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="foot-year">2026</span> same old samsara</p>
 </div></footer>
 <script src="{base}js/site.js?v={ver('js/site.js')}" defer></script>
@@ -565,21 +710,6 @@ ORG = {
     "sameAs": [YT, IG, TT, PIN, SHOP, DIGITALS],
 }
 
-def hero_block(base, kicker=""):
-    return f"""<section class="hero">
-  <div class="ring-wrap" aria-hidden="true"><div class="ring"></div></div>
-  <div class="wrap hero-text">
-    {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
-    <h1>same old samsara</h1>
-    <p class="tag">the same old cycle.</p>
-    <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
-    <div class="btns center hero-btns"><a class="btn solid" href="#films" data-newest="{EPISODES[0]['id']}">watch the newest episode</a>
-      <a class="btn" href="https://www.youtube.com/watch?v={EPISODES[-1]['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
-    <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
-  </div>
-  <div class="wrap">{almanac_strip()}</div>
-</section>"""
-
 # ---------------- the walk: the home page as a loop trail (walk/, made up ground) ----------------
 # One stop per part of the site. Order = the order you meet them on the trail. The 3D picture is drawn by walk/walk.js.
 # Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
@@ -588,29 +718,47 @@ WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
 <script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);}})();</script>
 """
 
+# the first thing a stranger reads. one plain line, then who we are.
+WHAT_LINE = "two guys, 34 acres and a camera."
+WHO_LINE = ("We're Chad and Daniel, a couple who bought 34 acres in Central New York with no idea what we were doing. "
+            "We're building a homestead and filming all of it. The jewelry and beading patterns we make help keep it going.")
+US_PHOTO = "images/daniel_and_chad.webp"
+US_ALT = "Chad and Daniel, side by side in front of a wooden fence"
+MAKE_INTRO = "Beadwork, food, and whatever else we're making at the time. When something turns out good, we share how we made it so you can try it too."
+
+# the address people can write to, scrambled, so it isn't sitting in the page (or in this file) for the robots that collect addresses.
+# js/site.js puts it back together when a person taps the button. to change it, run scramble("the new address") and paste the result.
+def scramble(addr): return "".join(f"{ord(c) + 7 + i % 5:02x}" for i, c in enumerate(reversed(addr)))
+HI = "74776c3877706976714b7a6c6a777a7569767f707578"
+
+def hi_button(base, text="email us", solid=True):
+    """the say hi button. with scripts off it goes to the about page, which says how else to reach us."""
+    return f'<a class="btn{" solid" if solid else ""}" href="{base}about/#say-hi" data-hi="{HI}">{e(text)}</a>'
+
 def walk_stops(base):
     ep, first = EPISODES[0], EPISODES[-1]
     free = next(p for p in PATTERNS if p.get("featured"))
     ext = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{u}" target="_blank" rel="noopener">{e(t)}</a>'
     loc = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{base}{u}">{e(t)}</a>'
-    wear = "".join(f"""<a href="{listing(p['id'])}" target="_blank" rel="noopener" title="{e(p['name'])}, {p['price']}"><img src="{base}{p['img']}" alt="{e(p['name'])}, {p['price']}" width="160" height="160" loading="lazy"></a>""" for p in FEATURED)
+    wear = "".join(f"""<a href="{listing(p['id'])}" target="_blank" rel="noopener" title="{e(p['name'])}">{pic(base, p['img'], p['name'], 84)}</a>""" for p in FEATURED)
     return [
         {"id": "films", "name": "films", "light": "morning", "side": "left",
          "alt": "A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow, a camera on a tripod in front of it, and a raven on one of the poles.",
-         "body": f"""<p>A documentary about our first year out here. It follows the whole process of getting the land. Episode 1 is from before we bought it.</p>
-      {yt_embed(ep, base)}
-      <p class="label ep-line">newest · {e(ep['label'])} · {e(ep['title'])}</p>""",
-         "links": ext("start at episode 1", f"https://www.youtube.com/watch?v={first['id']}", True) + loc("all the films", "films/") + ext("subscribe", f"{YT}?sub_confirmation=1")},
-        {"id": "make", "name": "make", "light": "late morning", "side": "right",
+         "body": f"""<p>{e(DOC_LINE)}</p>
+      {yt_embed(ep, base, (330, 370))}
+      <p class="label ep-line">newest · {e(ep_no(ep))} · {month_of(ep['date'])} · {e(ep['title'])}</p>""",
+         "links": ext("start at episode 1", watch(first), True) + loc("all the films", "films/") + ext("subscribe", f"{YT}?sub_confirmation=1"),
+         "after": inapp_tip()},
+        {"id": "make", "name": "make", "light": "late morning", "side": "right", "was": "make",
          "alt": "A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a raven on the roof.",
          "body": f"<p>{e(MAKE_INTRO)}</p>",
-         "links": loc(f"free pattern: {free['name']}", f"patterns/{slug(free)}/", True) + loc("every pattern", "patterns/") + loc("the bead lab", "bead-lab/") + loc("recipes", "recipes/")
-                  + ext("samsara digitals on etsy", DIGITALS) + loc("everything we make", "make/")},
-        {"id": "jewelry", "name": "jewelry", "light": "noon", "side": "left",
+         "links": loc(f"free pattern: {free['name']}", f"patterns/{slug(free)}/", True) + loc("every pattern", "patterns/") + loc("design your own", "bead-lab/")
+                  + (loc("recipes", "recipes/") if len(RECIPES) >= 3 else "") + loc("everything we make", "make/")},
+        {"id": "jewelry", "name": "jewelry", "light": "noon", "side": "left", "was": "wear",
          "alt": "A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a raven on top.",
          "body": f"""<p>Beaded by hand, one bead at a time. This is the shop that keeps the films going. The earrings don't really grow on the apple tree. We checked.</p>
       <div class="wear-row">{wear}</div>""",
-         "links": ext("the jewelry shop on etsy", SHOP, True) + ext("also on depop", DEPOP)},
+         "links": loc("see the jewelry", "jewelry/", True) + ext("the shop on etsy", SHOP) + ext("also on depop", DEPOP)},
         {"id": "field-guide", "name": "the field guide", "light": "afternoon", "side": "right",
          "alt": "A print of the woods: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera.",
          "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
@@ -618,50 +766,62 @@ def walk_stops(base):
         {"id": "land", "name": "the land", "light": "golden hour", "side": "left",
          "alt": "A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a raven on a rock, and geese flying over.",
          "body": "<p>34 acres in Central New York. Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p><p class=\"label\">this walk is a made up version. the real map stays with us.</p>",
-         "links": loc("about the land", "land/", True) + '<a class="btn" href="#year">the wheel of the year</a>'},
-        {"id": "follow", "name": "follow along", "light": "dusk", "side": "right",
+         "links": loc("about the land", "land/", True) + '<a class="btn" href="#year">the land, month by month</a>'},
+        {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow",
          "alt": "A print of a campfire at nightfall with two camp chairs, a raven on one of them, and a camper with its windows lit in the distance.",
          "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
          "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN)},
         {"id": "say-hi", "name": "say hi", "light": "night", "side": "left",
          "alt": "A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees.",
-         "body": "<p>Sign up for the newsletter and we'll write when there's something worth saying. If you like what we make, you can buy us a coffee.</p>",
-         "links": ext("the newsletter", NEWSLETTER, True) + ext("buy us a coffee", COFFEE) + loc("who we are", "about/")},
+         "body": f"""<div class="us">{pic(base, US_PHOTO, US_ALT, 96)}<p>That's us. Write to us, we read everything. Or sign up for the newsletter and we'll write when there's something worth saying.</p></div>""",
+         "links": hi_button(base) + ext("message us on instagram", IG) + ext("the newsletter", NEWSLETTER) + ext("buy us a coffee", COFFEE) + loc("who we are", "about/")},
         {"id": "road", "name": "the road", "light": "first light", "side": "left",
          "alt": "A print of a country road at sunrise running past a mailbox and a goldenrod meadow, with a raven flying off down the road.",
          "body": "<p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads.</p>",
-         "links": loc("the road videos", "road/", True) + ext("pneuma nomads on youtube", PN_YT) + ext("instagram", PN_IG) + ext("tiktok", PN_TT) + ext("spotify", PN_SPOTIFY)},
+         "links": loc("the road videos", "road/", True) + ext("pneuma nomads on youtube", PN_YT) + ext("instagram", PN_IG) + ext("tiktok", PN_TT) + ext(PN_SPOTIFY_TEXT, PN_SPOTIFY)},
     ]
 
-def walk_block(base, kicker=""):
+def gate_buttons(base, variant):
+    """the two buttons on the first screen. someone new should start at episode 1, so that's the main one.
+    people who came from Pinterest came for the jewelry and the patterns, so they get those instead (the head script sets data-from)."""
     ep, first = EPISODES[0], EPISODES[-1]
+    films = f"""<div class="btns hero-btns for-all"><a class="btn solid" href="{watch(first)}" target="_blank" rel="noopener">start at episode 1</a>
+        <a class="btn" href="#stop-films" data-walk-play="{ep['id']}">watch the newest episode</a></div>"""
+    pins = f"""<div class="btns hero-btns for-pin"><a class="btn solid" href="{base}jewelry/">the jewelry</a>
+        <a class="btn" href="{base}patterns/#free">free patterns</a></div>"""
+    return pins.replace(" for-pin", "") if variant == "pin" else films + pins if variant == "home" else films.replace(" for-all", "")
+
+def walk_block(base, variant="home"):
+    kicker = {"ig": "everything from the bio", "yt": "thanks for watching", "pin": "handmade jewelry + beading patterns"}.get(variant, "")
+    ep = EPISODES[0]
     stops = walk_stops(base)
-    LAZY = ' loading="lazy"'
-    still = lambda n, sid, alt, lazy=True: f'<img class="still" src="{base}images/walk/{n}-{sid}.webp" alt="{e(alt)}" width="1280" height="800"{LAZY if lazy else ""}>'
+    still = lambda n, sid, alt, lazy=True: pic(base, f"images/walk/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
     trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
+    # the old home page had #make, #wear and #follow. those addresses still land on the right stop.
+    was = lambda st: f'<span class="was" id="{st["was"]}"></span>' if st.get("was") else ""
     cards = "".join(f"""
   <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
     {still(i, st['id'], st['alt'])}
-    <div class="card">
+    <div class="card">{was(st)}
       <p class="label where"><span>stop {i} of {len(stops)}</span><span class="light">{e(st['light'])}</span></p>
       <h2>{e(st['name'])}</h2>
       {st['body']}
-      <div class="btns">{st['links']}</div>
+      <div class="btns">{st['links']}</div>{st.get('after', '')}
     </div>
   </article>""" for i, st in enumerate(stops, 1))
-    return f"""<section class="walk" id="walk" aria-label="a walk around the land" data-film="{base}{ep['img']}">
+    return f"""<section class="walk" id="walk" aria-label="a walk around the land" data-film="{base}{variant_for_film(ep['img'])}">
 <nav class="trail" aria-label="stops on the walk"><div class="trail-in">
   <ol id="trail-list">
     <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
     {trail}
-    <li class="plain"><a href="#everything">everything, as a plain page</a></li>
+    <li class="plain"><a href="#more">skip to the photos and episodes</a></li>
   </ol>
 </div></nav>
 <div class="walk-view">
   <canvas class="walk-gl" aria-hidden="true"></canvas>
   <div class="walk-hot"></div>
   <p class="walk-say label" role="status"></p>
-  <button class="walk-sound" type="button" aria-pressed="false" hidden><span>sound off</span></button>
+  <button class="walk-sound" type="button" aria-pressed="false" hidden><span>sound: off</span></button>
 </div>
 <div class="walk-stops">
   <header class="stop gate" id="stop-gate" data-stop="0">
@@ -671,101 +831,88 @@ def walk_block(base, kicker=""):
       <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
       <h1>same old samsara</h1>
       <p class="tag">the same old cycle.</p>
-      <p class="def">A creative outlet: films from the land, homesteading, jewelry, beading patterns, recipes, and whatever comes next. We're Chad and Daniel, a couple who'd never homesteaded a day in our lives, learning it on 34 acres in Central New York.</p>
-      <div class="btns hero-btns"><a class="btn solid" href="#stop-films" data-walk-play="{ep['id']}">watch the newest episode</a>
-        <a class="btn" href="https://www.youtube.com/watch?v={first['id']}" target="_blank" rel="noopener">start at episode 1</a></div>
+      <p class="what">{e(WHAT_LINE)}</p>
+      <p class="def">{e(WHO_LINE)}</p>
+      {gate_buttons(base, variant)}
     </div>
-    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#everything"><span class="on">skip the walk</span><span class="off">skip to the rest</span></a>
+    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#more"><span class="on">skip the walk</span><span class="off">skip to the photos</span></a>
       <span class="try">this is the still version, because your device asks for less motion. <a href="?walk">show the moving one</a></span></p>
   </header>{cards}
   <div class="stop end" id="stop-end">
     <div class="end-text">
       <p class="tag">the same old cycle.</p>
       <p class="def">That's the loop. You're back where you started.</p>
-      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="#everything">the rest of the page</a></div>
+      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="#more">more from the land</a></div>
     </div>
   </div>
 </div>
 </section>"""
 
-MAKE_INTRO = "Beadwork, food, and whatever else we're making at the time. When something turns out good, we share how we made it so you can try it too."
+def variant_for_film(rel):
+    """the newest episode's picture, as the walk paints it on the bedsheet screen: 480 wide is plenty for that"""
+    return variant(rel, 480)
 
-def make_shelves(base, full=False):
-    """everything we make, one shelf per kind, on the home page and the make page. list order is page order.
-    a new kind (how-to guides, say) is one more dict here, once it has a page to link to. full = the make page, which shows more of each."""
-    free = sorted([p for p in PATTERNS if p.get("free") and (p.get("featured") or "halloween" not in p["cats"])], key=lambda p: not p.get("featured"))
-    picks = [p for p in PATTERNS if p.get("design") and not p.get("free")][:10 if full else 5]
+def make_shelves(base):
+    """everything we make, one shelf per kind, on the make page. list order is page order.
+    a new kind (how-to guides, say) is one more dict here, once it has a page to link to."""
+    free = [p for p in PATTERNS if p.get("featured")]
+    picks = [p for p in PATTERNS if p.get("design") and not p.get("free") and p.get("live")][:3]
     return [
         {"id": "patterns", "name": "beading patterns", "count": f"{len(PATTERNS)} patterns", "feature": True,
          "note": "Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.",
          "items": patterns_grid(base, free + picks, show_filters=False),
-         "links": [("every pattern", "patterns/"), ("play in the bead lab", "bead-lab/")]},
+         "links": [(f"every pattern ({len(PATTERNS)})", "patterns/"), ("design your own", "bead-lab/")]},
         {"id": "recipes", "name": "recipes", "count": f"{len(RECIPES)} so far",
          "note": "Nothing fancy, mostly made by feel.",
-         "items": f"""<div class="rcards">{"".join(recipe_card(r, f"{base}recipes/{r['slug']}/") for r in (RECIPES if full else RECIPES[:3]))}</div>""",
-         "links": [("all recipes", "recipes/")]},
+         "items": f"""<div class="rcards">{"".join(recipe_card(r, f"{base}recipes/{r['slug']}/") for r in RECIPES)}</div>""",
+         "links": [("all recipes", "recipes/")] if len(RECIPES) > 1 else []},
     ]
 
-def make_block(base, full=False):
+def make_block(base):
     out = ""
-    for sh in make_shelves(base, full):
+    for sh in make_shelves(base):
         btns = "".join(f"""<a class="btn{' solid' if i == 0 else ''}" href="{base}{href}">{e(t)}</a>""" for i, (t, href) in enumerate(sh["links"]))
-        big = full and sh.get("feature")
-        tag = "h2" if full else "h3"
-        count = f'<span class="label">{e(sh["count"])}</span>' if full else ""
-        out += f"""<div class="shelf{' big' if big else ''}" id="{sh['id']}"><div class="shelf-head reveal"><{tag}>{e(sh['name'])}</{tag}>{count}</div><p class="lede reveal">{e(sh['note'])}</p>
+        out += f"""<div class="shelf{' big' if sh.get("feature") else ''}" id="{sh['id']}"><div class="shelf-head reveal"><h2>{e(sh['name'])}</h2><span class="label">{e(sh["count"])}</span></div><p class="lede reveal">{e(sh['note'])}</p>
   {sh['items']}
-  <div class="btns reveal">{btns}</div></div>"""
+  {f'<div class="btns reveal">{btns}</div>' if btns else ''}</div>"""
     return out
 
 def make_page():
     base = "../"
-    jump = " · ".join(f"""<a href="#{sh['id']}">{e(sh['name'])}</a>""" for sh in make_shelves(base, True))
+    jump = " · ".join(f"""<a href="#{sh['id']}">{e(sh['name'])}</a>""" for sh in make_shelves(base))
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">no. 03</p><h1>make</h1><p class="tag">what we make, and how.</p>
+  <h1>make</h1><p class="tag">what we make, and how.</p>
   <p class="def">{e(MAKE_INTRO)}</p>
   <p class="label shelf-jump">{jump}</p>
 </div></section>
-<section class="section"><div class="wrap">{make_block(base, full=True)}</div></section>"""
+<section class="section"><div class="wrap">{make_block(base)}</div></section>"""
     return page("Make: Beading Patterns + Recipes | Same Old Samsara",
                 "Everything we make and how we made it: brick stitch and bead loom beading patterns, recipes, and more as we go.",
                 base, "make/", body, here="make/")
 
 def home(variant="home"):
+    """the walk, and under it only what the walk doesn't have: today on the land, the photos, every episode, the wheel of the year.
+    (the make, jewelry and follow sections that used to repeat down here are stops on the walk, and pages in the menu.)"""
     base = "" if variant == "home" else "../"
-    wear = "".join(f"""<a class="wcard reveal" href="{listing(p['id'])}" target="_blank" rel="noopener">
-      <img src="{base}{p['img']}" alt="{e(p['name'])}" width="600" height="600" loading="lazy"><div><h3>{e(p['name'])}</h3><span class="label">{p['price']}</span></div></a>""" for p in FEATURED)
-    strip = "".join(f'<figure class="snap"><img src="{base}{src}" alt="{e(cap)}" loading="lazy" style="object-position:{pos}"><figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
-    s_land = f"""<section class="section" id="land"><div class="wrap">
-  {section_head("01", "the land", "34 acres · central new york · since fall 2026")}
-  <p class="lede reveal">Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>
-</div>
-<div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
-<div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">walk the land</a><a class="btn" href="{base}field-guide/">the field guide</a></div></div></section>"""
-    s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("02", "films", "season 1 · 2026")}{films_block(base)}</div></section>"""
-    s_make = f"""<section class="section" id="make"><div class="wrap">{section_head("03", "make", "patterns, recipes + whatever's next")}
-  <p class="lede reveal">{e(MAKE_INTRO)}</p>
-  {make_block(base)}
-  <div class="btns reveal shelf-all"><a class="btn" href="{base}make/">everything we make</a></div>
-</div></section>"""
-    s_wear = f"""<section class="section band soft" id="wear"><div class="wrap">{section_head("04", "wear", "handmade jewelry")}
-  <p class="lede reveal">Beaded by hand, one bead at a time. This is the shop that keeps the films going.</p>
-  <div class="wgrid">{wear}</div>
-  <div class="btns reveal"><a class="btn solid" href="{SHOP}" target="_blank" rel="noopener">the jewelry shop on etsy</a><a class="btn" href="{DEPOP}" target="_blank" rel="noopener">also on depop</a></div>
-</div></section>"""
-    s_wheel = f"""<section class="section" id="year"><div class="wrap">{section_head("05", "the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>"""
-    skip = {"ig": ("instagram",), "yt": ("youtube",), "pin": ("pinterest",)}.get(variant, ())
-    s_follow = f"""<section class="section" id="follow"><div class="wrap">{section_head("06", "follow along", "@sameoldsamsara everywhere")}{follow_block(skip)}</div></section>"""
-    kicker = {"ig": "everything from the bio", "yt": "thanks for watching", "pin": "handmade jewelry + beading patterns"}.get(variant, "")
-    order = {"home": [s_land, s_films, s_make, s_wear, s_wheel, s_follow],
-             "ig": [s_films, s_wear, s_make, s_land, s_wheel, s_follow],
-             "yt": [s_films, s_land, s_wear, s_make, s_wheel, s_follow],
-             "pin": [s_make, s_wear, s_land, s_films, s_wheel, s_follow]}[variant]
-    intro = f"""<section class="section after-walk" id="everything"><div class="wrap">
-  <p class="label after-label">everything, the plain way</p>
+    first = EPISODES[-1]
+    spot = lambda p: (50, 50) if p == "center" else tuple(int(v.rstrip("%")) for v in p.split())
+    strip = "".join(f'<figure class="snap">{pic(base, src, cap, 260, shape=(4, 5), pos=spot(pos), style=f"object-position:{pos}")}<figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
+    intro = f"""<section class="section after-walk" id="more"><div class="wrap">
+  <p class="label after-label">more from the land</p>
   {almanac_strip()}
 </div></section>"""
-    body = walk_block(base, kicker) + intro + "".join(order)
+    s_land = f"""<section class="section" id="land"><div class="wrap">
+  {section_head("photos from the land", "34 acres · central new york · since fall 2026")}
+</div>
+<div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
+<div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">about the land</a><a class="btn" href="{base}field-guide/">open the field guide</a></div></div></section>"""
+    s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("every episode", "season 1 · 2026")}
+  <p class="lede reveal">{e(FILMS_NEXT)}</p>
+  {episode_list(base, EPISODES)}
+  <div class="btns reveal"><a class="btn solid" href="{watch(first)}" target="_blank" rel="noopener">start at episode 1</a><a class="btn" href="{base}films/">all the films</a><a class="btn" href="{YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe</a></div>
+</div></section>"""
+    s_wheel = f"""<section class="section" id="year"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>"""
+    body = walk_block(base, variant) + intro + s_land + s_films + s_wheel
     path = "" if variant == "home" else f"{variant}/"
     return page("Same Old Samsara | Films From the Land, Handmade Jewelry, Beading Patterns",
                 "Same Old Samsara: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
@@ -776,51 +923,65 @@ def home(variant="home"):
 
 def land_page():
     base = "../"
-    strip = "".join(f'<figure class="field reveal"><img src="{base}{src}" alt="{e(cap)}" loading="lazy"><figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
+    strip = "".join(f'<figure class="field reveal">{pic(base, src, cap, 330)}<figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">no. 01</p><h1>the land</h1><p class="tag">34 acres. central new york.</p>
+  <h1>the land</h1><p class="tag">34 acres. central new york.</p>
   <p class="def">We bought it in September 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
-<section class="section"><div class="wrap">{section_head("·", "walk the land", "tap a spot")}{map_block(base)}</div></section>
-<section class="section band soft"><div class="wrap">{section_head("·", "the wheel of the year", "the same old cycle, on the ground")}{wheel_block()}</div></section>
-<section class="section"><div class="wrap">{section_head("·", "field notes", "photos from the land")}<div class="fieldgrid">{strip}</div>
-<div class="btns reveal"><a class="btn solid" href="{base}field-guide/">play the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
+<section class="section"><div class="wrap">{section_head("the map", "tap a spot")}{map_block(base)}</div></section>
+<section class="section band soft"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>
+<section class="section"><div class="wrap">{section_head("photos from the land", "field notes")}<div class="fieldgrid">{strip}</div>
+<div class="btns reveal"><a class="btn solid" href="{base}field-guide/">open the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",
                 "34 acres of meadow, woods and river in Central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
-                base, "land/", body, here="land/")
+                base, "land/", body, here="land/", image=f"{SITE}/images/land/mist-sunrise.jpg")
 
 def films_page():
     base = "../"
     ld = [{"@context": "https://schema.org", "@type": "VideoObject", "name": f'{x["title"]} ({x["label"]})', "description": x["blurb"],
            "thumbnailUrl": f'{SITE}/{x["img"]}', "uploadDate": x["date"],
-           "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": f'https://www.youtube.com/watch?v={x["id"]}'} for x in EPISODES]
+           "embedUrl": f'https://www.youtube-nocookie.com/embed/{x["id"]}', "url": watch(x)} for x in EPISODES]
+    first_line, rest = DOC_LINE.split(". ", 1)
+    n = len(EPISODES)
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">no. 02</p><h1>films</h1><p class="tag">a season a year.</p>
-  <p class="def">A documentary about our first years on 34 acres in Central New York. Chad and Daniel, a couple with no homesteading background and one camera. Season 1 is 2026.</p>
+  <h1>films</h1><p class="tag">{e(first_line.lower())}.</p>
+  <p class="def">{e(rest)} We're Chad and Daniel, a couple with no homesteading background and one camera.</p>
+  <p class="label status">season 1 · {n} episodes so far · {e(FILMS_NEXT.lower().replace(". ", " · ").rstrip("."))}</p>
 </div></section>
-<section class="section"><div class="wrap">{section_head("·", "season 1", "2026")}{films_block(base, all_eps=True, lede="new episodes as the year turns. start at episode 1, it's a story.")}</div></section>
-<section class="section band soft"><div class="wrap">{section_head("·", "between episodes", "shorts + the rest")}{follow_block(("etsy · jewelry", "etsy · patterns"))}</div></section>"""
+<section class="section"><div class="wrap">{section_head("season 1", "2026")}{film_main(base, lazy=False)}
+  <p class="lede reveal films-lede">New here? Start at episode 1. It's one story, told in order.</p>
+  {episode_list(base, EPISODES[1:], blurbs=True)}
+</div></section>
+<section class="section band soft"><div class="wrap">{section_head("between episodes", "shorts + the rest")}{follow_block()}</div></section>"""
     return page("Films | A Documentary From Our Land | Same Old Samsara",
-                "Same Old Samsara is a documentary series about our first years building a homestead on 34 acres in Central New York. Season 1, 2026.",
-                base, "films/", body, here="films/", jsonld=ld)
+                "Same Old Samsara is a documentary series about our first year building a homestead on 34 acres in Central New York. Season 1, 2026.",
+                base, "films/", body, here="films/", jsonld=ld, image=f"{SITE}/{EPISODES[0]['img']}")
+
+def pattern_order():
+    """the featured free one, the other free ones (one we're holding back goes last of those), then the paid ones"""
+    shown = [p for p in PATTERNS if has_page(p)]
+    return sorted(shown, key=lambda p: (not p.get("featured"), not p.get("free"), bool(p.get("hold")), "halloween" in p["cats"], not p.get("design"), p["name"]))
 
 def patterns_page():
     base = "../"
-    order = sorted(PATTERNS, key=lambda p: (not p.get("featured"), not p.get("free"), "halloween" in p["cats"], not p.get("design"), p["name"]))
+    order = pattern_order()
     ld = [{"@context": "https://schema.org", "@type": "ItemList", "name": "Same Old Samsara beading patterns",
-           "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"],
-                                "url": f'{SITE}/assets/{p["file"]}.pdf' if p.get("free") and not p.get("design") else f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
+           "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"], "url": f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">a few free. the rest at samsara digitals.</p>
-  <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. Instant download from Etsy.</p>
-  <div class="btns center"><a class="btn solid" href="{DIGITALS}" target="_blank" rel="noopener">samsara digitals on etsy</a><a class="btn" href="{base}bead-lab/">design your own</a></div>
+  <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">a few free. the rest in our pattern shop.</p>
+  <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. The paid ones are instant downloads from Samsara Digitals, our pattern shop on Etsy.</p>
+  <div class="btns center"><a class="btn solid" href="{DIGITALS}" target="_blank" rel="noopener">our pattern shop on etsy</a><a class="btn" href="{base}bead-lab/">design your own</a></div>
 </div></section>
 <section class="section"><div class="wrap">{patterns_grid(base, order)}
-  <div class="note reveal"><p><strong>Don't bead?</strong> The finished pieces are in the <a href="{SHOP}" target="_blank" rel="noopener">jewelry shop</a>.</p></div>
+  <div class="note reveal"><p><strong>Don't bead?</strong> The finished pieces are on the <a href="{base}jewelry/">jewelry page</a>.</p></div>
 </div></section>"""
     return page("Beading Patterns: Brick Stitch + Bead Loom PDFs | Same Old Samsara",
                 "Brick stitch and bead loom beading patterns: rainbow parrot, squid and jellyfish wavy fringe, silly goose, triceratops, om, flying saucer and more. A few free PDFs, the rest $2.99 to $4.99 on Etsy.",
-                base, "patterns/", body, here="make/", jsonld=ld)
+                base, "patterns/", body, here="make/", jsonld=ld, image=f"{SITE}/{pattern_img(next(p for p in order if p.get('design') and not p.get('free')))}")
+
+def pdf_size(p):
+    """ '0.7 MB', so nobody on phone data is surprised by the download """
+    return f'{(ROOT / "assets" / (p["file"] + ".pdf")).stat().st_size / 1e6:.1f} MB'
 
 def pattern_detail(p):
     base = "../../"
@@ -841,9 +1002,8 @@ def pattern_detail(p):
         {"@type": "ListItem", "position": 2, "name": "patterns", "item": SITE + "/patterns/"},
         {"@type": "ListItem", "position": 3, "name": p["name"], "item": url}]}
     rows = "".join(f"<tr><th>{e(k)}</th><td>{e(v)}</td></tr>" for k, v in facts(p))
-    cols = color_names(p)
-    swatches = ""
     d = design(p)
+    swatches = ""
     if d:
         swatches = "".join(f'<li><i style="background:{c["hex"]}"></i>{e(c["name"])}</li>' for c in d["colorways"][0]["colors"].values())
         swatches = f'<h3 class="mini">the colors</h3><ul class="swatches">{swatches}</ul>'
@@ -853,21 +1013,28 @@ def pattern_detail(p):
     related = [q for q in PATTERNS if q is not p and not q.get("free") and set(q["cats"]) & set(p["cats"])][:3]
     related = related or [q for q in PATTERNS if not q.get("free") and q.get("design") and q.get("live")][:3]
     rel = patterns_grid(base, related, show_filters=False) if related else ""
+    if free:
+        get = f"""<div class="btns"><a class="btn solid big" href="{base}assets/{p["file"]}.pdf" target="_blank" rel="noopener" download>download the free pdf</a></div>
+      <p class="label dl-help">a pdf, {pdf_size(p)}. if it doesn't save, open this page in your own browser first.</p>
+      <p class="label dl-help">want the next free one? <a href="{NEWSLETTER}" target="_blank" rel="noopener">join the newsletter</a>.</p>"""
+    else:
+        get = f"""<div class="btns"><a class="btn solid big" href="{listing(p["etsy"])}" target="_blank" rel="noopener">get it on etsy · ${p["price"]}</a></div>
+      {inapp_tip()}"""
     body = f"""<section class="section pdetail"><div class="wrap">
   <p class="label crumbs"><a href="{base}patterns/">patterns</a> / {e(p['type'])}</p>
   <div class="pd">
-    <div class="pd-img"><img src="{base}{pattern_img(p)}" alt="{e(p['name'])} {p['type']} beading pattern, every bead charted" width="1400" height="1050"></div>
+    <div class="pd-img">{pic(base, pattern_img(p), f"{p['name']} {p['type']} beading pattern" + (", every bead charted" if d else ""), (358, 620), lazy=False)}</div>
     <div class="pd-info">
       <h1>{e(title_name)}</h1><p class="label">{e(p['type'])} beading pattern · pdf</p>
       <p class="pd-blurb">{e(p['blurb'])}</p>
-      <div class="btns">{f'<a class="btn solid big" href="{base}assets/{p["file"]}.pdf" target="_blank" rel="noopener" download>download the free pdf</a>' if free else f'<a class="btn solid big" href="{listing(p["etsy"])}" target="_blank" rel="noopener">get it on etsy · ${p["price"]}</a>'}</div>
+      {get}
       <table class="facts">{rows}</table>
       {swatches}
       <h3 class="mini">what's inside</h3><ul class="inside">{''.join(f'<li>{e(x)}</li>' for x in inside)}</ul>
       <p class="label">{"free to download and stitch. it works as earrings, a pendant, a keychain, a pin or a sew-on patch. you can sell what you make from it." if free else "sold through samsara digitals, our pattern shop on etsy. you can sell what you make from it."}</p>
     </div>
   </div>
-  {f'<div class="related">{section_head("·", "you might also like")}{rel}</div>' if rel else ''}
+  {f'<div class="related">{section_head("you might also like")}{rel}</div>' if rel else ''}
 </div></section>"""
     desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} {'Free download.' if free else '$' + p['price'] + ', instant download.'}"
     return page(f"{'Free ' if free else ''}{title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
@@ -877,7 +1044,7 @@ def beadlab_page():
     base = "../"
     pal = json.dumps([{"n": n, "c": c} for n, c in TOHO])
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">no. 04</p><h1>the bead lab</h1><p class="tag">design your own brick stitch.</p>
+  <p class="label kicker"><a href="{base}make/">make</a> · design your own</p><h1>the bead lab</h1><p class="tag">design your own brick stitch pattern.</p>
   <p class="def">Tap beads to color them. Mirror mode keeps it symmetric. When you like it, grab the word chart and stitch it for real. It saves in your browser, so you can come back to it.</p>
 </div></section>
 <section class="section lab-section"><div class="wrap">
@@ -898,8 +1065,9 @@ def beadlab_page():
         <button type="button" class="solid" id="chartbtn">word chart</button><button type="button" id="png">save image</button>
       </div>
       <p class="label" id="labcount">0 beads</p>
+      <p class="label touch-tip">one finger paints. pinch with two to zoom in.</p>
     </div>
-    <div class="lab-board"><svg id="board" role="img" aria-label="brick stitch grid"></svg></div>
+    <div class="lab-board"><svg id="board" role="img" aria-label="brick stitch grid. tap or drag across the beads to color them."></svg></div>
   </div>
   <div class="chart-out" id="chartout" hidden><h3 class="mini">your word chart</h3><p class="label">rows top to bottom. → left to right, ← right to left. start with a ladder of your widest row.</p><pre id="charttext"></pre>
     <button type="button" class="btn" id="copychart">copy it</button></div>
@@ -911,49 +1079,92 @@ def beadlab_page():
 
 def fieldguide_page():
     base = "../"
-    crit = "".join(f"""<button class="critter reveal" type="button" id="{c['id']}" data-id="{c['id']}" aria-label="who's this? tap to see">
-  <span class="cframe"><img src="{base}{c['img']}" alt="{e(c['name'])}" loading="lazy" style="transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}"></span>
-  <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>""" for c in CRITTERS)
-    crit += """<div class="critter soon reveal"><span class="cframe"><span class="cam" aria-hidden="true"></span></span>
-  <span class="ans show"><strong>on the trail cam</strong><span>The trail cam is up. First night, a raccoon. Whoever walks past next ends up here.</span></span></div>"""
+    def critter(c):
+        clip = f' data-clip="{base}{c["clip"]}"' if c.get("clip") else ""
+        return f"""<button class="critter reveal" type="button" id="{c['id']}" data-id="{c['id']}"{clip} aria-label="who's this? tap to see">
+  <span class="cframe">{pic(base, c['img'], c['name'], (260, 390), shape=(1, 1), style=f"transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}")}</span>
+  <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>"""
+    crit = "".join(critter(c) for c in CRITTERS)
     finds = "".join(f"""<button class="find reveal" type="button" id="{f['id']}" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
   <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
-  <span class="face front"><img src="{base}{f['img']}" alt="{e(f['name'])}" loading="lazy"><strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
+  <span class="face front">{pic(base, f['img'], f['name'], (170, 260), shape=(4, 3), hold=True)}<strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
+    # someone who taps a pin lands on one card, half way down this page, knowing nothing about us. js/fieldguide.js puts this under that card.
+    hello = f"""<aside class="fg-hello" id="fg-hello" hidden>
+  {pic(base, US_PHOTO, US_ALT, 64)}
+  <div><p>This is from our 34 acres in Central New York. We're Chad and Daniel, and we're filming all of it.</p>
+  <div class="btns"><a class="btn solid" href="{base}films/">watch the films</a><a class="btn" href="{base}jewelry/">see the jewelry</a><a class="btn" href="{base}about/">who we are</a></div></div>
+</aside>"""
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">the land</p><h1>the field guide</h1><p class="tag">who lives here, and what we've found.</p>
+  <p class="label kicker"><a href="{base}land/">the land</a> · the field guide</p><h1>the field guide</h1><p class="tag">who lives here, and what we've found.</p>
   <p class="def">Everything here was found on our land in Central New York. We're not experts. We're learning it one walk at a time, and this guide grows as we do.</p>
+  <p class="label newhere">new here? we're chad and daniel, and we film all of this. <a href="{base}films/">watch the films</a> · <a href="{base}jewelry/">see the jewelry</a></p>
 </div></section>
-<section class="section"><div class="wrap">{section_head("·", "who lives here", "guess first, then tap")}
+<section class="section"><div class="wrap">{section_head("who lives here", "guess first, then tap")}
   <p class="lede reveal">Each one starts zoomed way in. Take a guess, then tap to see the whole thing.</p>
   <div class="critters" id="critters">{crit}</div>
   <p class="label tally" id="met"></p>
 </div></section>
-<section class="section band soft"><div class="wrap">{section_head("·", "things to find", "read the hint, then turn it over")}
+<section class="section band soft"><div class="wrap">{section_head("things to find", "read the hint, then turn it over")}
   <div class="finds" id="finds">{finds}</div>
   <p class="label tally" id="found"></p>
-  <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}land/">walk the land</a></div>
-</div></section>"""
+  <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}land/">see the map of the land</a><a class="btn" href="{base}films/">watch the films</a></div>
+</div></section>
+{hello}"""
     return page("The Field Guide: Who Lives on the Land | Same Old Samsara",
                 "A little interactive field guide to our 34 acres in Central New York: guess the animals from a close-up, and turn over the mushrooms, moss and plants we've found.",
-                base, "field-guide/", body, here="field-guide/", extra_js=f'<script src="{base}js/fieldguide.js" defer></script>')
+                base, "field-guide/", body, here="field-guide/", image=f"{SITE}/images/land/grasshopper.jpg",
+                extra_js=f'<script src="{base}js/fieldguide.js?v={ver("js/fieldguide.js")}" defer></script>')
+
+def jewelry_page():
+    """the jewelry has a page of its own now. it used to be the one thing in the menu that threw people out to Etsy with no warning."""
+    base = "../"
+    cards = "".join(f"""<a class="wcard reveal" href="{listing(p['id'])}" target="_blank" rel="noopener">
+      {pic(base, p['img'], p['alt'], (170, 260))}<div><h3>{e(p['name'])}</h3><span class="label">{e(p['kind'])}</span></div></a>""" for p in JEWELRY)
+    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Handmade beaded jewelry by Same Old Samsara", "url": SITE + "/jewelry/",
+           "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"},
+           "mainEntity": {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"], "url": listing(p["id"])} for i, p in enumerate(JEWELRY)]}}]
+    body = f"""<section class="hero small"><div class="wrap hero-text">
+  <h1>jewelry</h1><p class="tag">beaded by hand, one bead at a time.</p>
+  <p class="def">Earrings and bracelets Chad makes by hand, most of them one seed bead at a time. This is the shop that keeps the films going. Each piece opens on Etsy, where the price, the sizes and the checkout are.</p>
+  <div class="btns center"><a class="btn solid" href="{SHOP}" target="_blank" rel="noopener">the whole shop on etsy</a><a class="btn" href="{DEPOP}" target="_blank" rel="noopener">also on depop</a></div>
+  {inapp_tip()}
+</div></section>
+<section class="section"><div class="wrap">{section_head("a few pieces", "tap one to see it on etsy")}
+  <div class="wgrid">{cards}</div>
+  <div class="note reveal"><p><strong>Rather make your own?</strong> The <a href="{base}patterns/">beading patterns</a> are here too, and a few are free.</p></div>
+</div></section>"""
+    return page("Handmade Beaded Jewelry | Same Old Samsara",
+                "Handmade beaded earrings and bracelets by Same Old Samsara: opossums, jellyfish, squid, rainbow fringe and more. Each piece is sold through our Etsy shop.",
+                base, "jewelry/", body, here="jewelry/", jsonld=ld, image=f"{SITE}/{JEWELRY[0]['img']}")
+
+def moved(title, to, canonical):
+    """a tiny page for an address people guess (/shop, /contact). it sends them on, and tells search engines where the real page is."""
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{e(title)} | Same Old Samsara</title>
+<link rel="canonical" href="{SITE}/{canonical}"><meta name="robots" content="noindex, follow"><meta http-equiv="refresh" content="0; url={to}"></head>
+<body><p>this way: <a href="{to}">sameoldsamsara.xyz/{canonical}</a></p></body></html>
+"""
 
 def about_page():
     base = "../"
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker">about</p><h1>who's behind this</h1><p class="tag">chad + daniel.</p>
+  <div class="us-big">{pic(base, US_PHOTO, US_ALT, 220, lazy=False)}</div>
+  <h1>who's behind this</h1><p class="tag">chad + daniel.</p>
 </div></section>
 <section class="section"><div class="wrap prose reveal">
+  <p>We're Chad and Daniel, a couple who'd never homesteaded a day in our lives. In September 2026 we bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
   <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
-  <p>We're Chad and Daniel, a couple who'd never homesteaded a day in our lives. In September 2026 we bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
-    <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs on <a href="{DIGITALS}" target="_blank" rel="noopener">Samsara Digitals</a>. A few free.</li>
-    <li><a href="{SHOP}" target="_blank" rel="noopener">Handmade jewelry</a>: beaded earrings, bracelets and necklaces on Etsy.</li>
-    <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch.</li>
+    <li><a href="{base}jewelry/">Handmade jewelry</a>: beaded earrings and bracelets, sold through our Etsy shop.</li>
+    <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs. A few are free, the rest are in Samsara Digitals, our pattern shop on Etsy.</li>
+    <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch pattern.</li>
+    <li><a href="{base}field-guide/">The field guide</a>: the animals, plants and mushrooms we've found on the land so far.</li>
   </ul>
-  <h2>say hi</h2><p>The easiest way is a message on <a href="{SHOP}" target="_blank" rel="noopener">Etsy</a> or <a href="{IG}" target="_blank" rel="noopener">Instagram</a>.</p>
+  <h2 id="say-hi">say hi</h2>
+  <p>Write to us, we read everything. A message on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> or <a href="{SHOP}" target="_blank" rel="noopener">Etsy</a> works too.</p>
+  <div class="btns">{hi_button(base)}<a class="btn" href="{IG}" target="_blank" rel="noopener">message us on instagram</a><a class="btn" href="{NEWSLETTER}" target="_blank" rel="noopener">the newsletter</a></div>
 </div></section>"""
     return page("About | Same Old Samsara", "Same Old Samsara is the creative outlet of Chad and Daniel: films from their land in Central New York, handmade beaded jewelry and beading patterns.",
                 base, "about/", body, here="about/", jsonld=[ORG])
@@ -1023,31 +1234,32 @@ h1 {{ font-family:var(--pixel); font-weight:400; font-size:clamp(19px, 6vw, 28px
 .stripe i:nth-child(4){{background:var(--sage)}} .stripe i:nth-child(5){{background:var(--denim)}} .stripe i:nth-child(6){{background:var(--plum)}}
 .tag {{ font-family:var(--term); font-size:26px; line-height:1.1; color:var(--sand); margin:14px 0 18px; }}
 .bio {{ margin:0; max-width:34em; color:var(--cream); opacity:.92; }}
-.label {{ font-family:var(--pixel); font-size:10px; line-height:1.7; margin:0 0 12px; }}
+.label {{ font-family:var(--pixel); font-size:12px; line-height:1.7; margin:0 0 12px; }}
 .label::before {{ content:"> "; color:var(--clay); }}
 section {{ padding-block:30px 6px; }}
 .vlog {{ display:block; text-decoration:none; border:3px solid var(--night); background:var(--night); box-shadow:6px 6px 0 var(--sand); }}
 .vlog .thumb {{ position:relative; aspect-ratio:16/9; overflow:hidden; }}
+picture {{ display:contents; }} picture > source {{ display:none; }}
 .vlog img {{ width:100%; height:100%; object-fit:cover; display:block; }}
 .play {{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:var(--night); display:grid; place-items:center; }}
 .play::after {{ content:""; border-left:18px solid var(--cream); border-top:11px solid transparent; border-bottom:11px solid transparent; margin-left:5px; }}
 .vlog .meta {{ color:var(--cream); padding:12px 14px 14px; display:grid; gap:4px; }}
-.vlog .place {{ font-family:var(--pixel); font-size:11px; line-height:1.8; display:flex; align-items:center; gap:8px; }}
+.vlog .place {{ font-family:var(--pixel); font-size:12px; line-height:1.8; display:flex; align-items:center; gap:8px; }}
 .pin {{ height:15px; width:auto; flex-shrink:0; }}
 .vlog .sub {{ font-family:var(--term); font-size:21px; line-height:1; color:var(--sand); }}
 .links {{ display:grid; gap:10px; }}
-.lnk {{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:2px 10px; text-decoration:none; background:#fffaf0; border:2px solid var(--pepper); padding:12px 14px; }}
-.lnk b {{ font-family:var(--pixel); font-weight:400; font-size:10px; line-height:1.7; }}
-.lnk span {{ grid-row:2; font-size:14px; opacity:.8; }}
+.lnk {{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:0 10px; text-decoration:none; background:#fffaf0; border:2px solid var(--pepper); padding:10px 14px 12px; }}
+.lnk b {{ font-family:var(--term); font-weight:400; font-size:25px; line-height:1.15; }}
+.lnk span {{ grid-row:2; font-size:15px; opacity:.85; }}
 .lnk i {{ grid-row:1 / 3; grid-column:2; font-style:normal; font-family:var(--pixel); font-size:12px; color:var(--clay); }}
 .lnk:hover, .lnk:focus-visible {{ background:var(--sand); }}
 a:focus-visible {{ outline:3px solid var(--mustard); outline-offset:2px; }}
 .land {{ border:2px dashed var(--pepper); padding:16px; display:grid; gap:10px; }}
 .land p {{ margin:0; }}
 .land .row {{ display:flex; flex-wrap:wrap; gap:8px; }}
-.btn {{ font-family:var(--pixel); font-size:9px; line-height:1.6; padding:10px 12px; text-decoration:none; background:var(--pepper); color:var(--cream); border:2px solid var(--pepper); }}
+.btn {{ font-family:var(--term); font-size:22px; line-height:1; padding:11px 14px 12px; text-decoration:none; background:var(--pepper); color:var(--cream); border:2px solid var(--pepper); }}
 .btn.ghost {{ background:transparent; color:var(--pepper); }}
-footer {{ padding-block:34px max(34px, env(safe-area-inset-bottom, 0px)); font-size:13px; opacity:.75; }}
+footer {{ padding-block:34px max(34px, env(safe-area-inset-bottom, 0px)); font-size:14px; opacity:.8; }}
 footer .stripe {{ margin-bottom:14px; }}
 @media (prefers-reduced-motion: reduce) {{ .cur {{ animation:none; }} }}
 </style>
@@ -1058,13 +1270,13 @@ footer .stripe {{ margin-bottom:14px; }}
   <h1 aria-label="Pneuma Nomads"><span id="word" aria-hidden="true">Pneuma Nomads</span><span class="cur" aria-hidden="true"></span></h1>
   <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
   <p class="tag">following the warm air.</p>
-  <p class="bio">We're Chad and Daniel. Summers we live on our land in Central New York, and winters we hitch up the fifth wheel with Lucy and Miley and head south. This is where the road videos live.</p>
+  <p class="bio">We're Chad and Daniel. Summers we live on our land in Central New York, and winters we hitch up the fifth wheel with our cat Lucy and our dog Miley and head south. This is where the road videos live.</p>
 </div></header>
 <main id="main" class="wrap">
   <section>
     <p class="label">latest vlog</p>
     <a class="vlog" href="https://www.youtube.com/watch?v={v['id']}" target="_blank" rel="noopener">
-      <span class="thumb"><img src="{base}{v['img']}" alt="{e(v['title'])}" width="960" height="540" fetchpriority="high"><span class="play" aria-hidden="true"></span></span>
+      <span class="thumb">{pic(base, v['img'], v['title'], (354, 524), lazy=False)}<span class="play" aria-hidden="true"></span></span>
       <span class="meta"><span class="place">{pn_pin()}{e(v['place'])}</span><span class="sub">{e(v['label'])} · {e(v['len'])} · {e(v['title'])}</span></span>
     </a>
   </section>
@@ -1076,7 +1288,7 @@ footer .stripe {{ margin-bottom:14px; }}
     <p class="label">the rest of the year</p>
     <div class="land">
       <p>Summers we're home on 34 acres, building a homestead. That story lives on Same Old Samsara, along with Chad's handmade jewelry and beading patterns.</p>
-      <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{SHOP}" target="_blank" rel="noopener">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
+      <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{base}jewelry/">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
     </div>
   </section>
 </main>
@@ -1137,7 +1349,7 @@ def recipes_page():
   <p class="label kicker"><a href="{base}make/">make</a> · the kitchen</p><h1>recipes</h1><p class="tag">what we're cooking.</p>
   <p class="def">Nothing fancy. Mostly made by feel, then written down after so friends can make it too.</p>
 </div></section>
-<section class="section"><div class="wrap">{section_head("·", "the recipe box", f"{len(RECIPES)} so far")}
+<section class="section"><div class="wrap">{section_head("the recipe box", f"{len(RECIPES)} so far")}
   <div class="rcards">{cards}</div>
 </div></section>"""
     return page("Recipes | Same Old Samsara", "Simple, cozy recipes from Chad and Daniel, mostly made by feel and written down after.",
@@ -1182,18 +1394,19 @@ def llms_txt():
     lines = ["# Same Old Samsara", "",
              "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in Central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
              "Headings on this site are lowercase on purpose. Prices are in USD.", "",
-             "## Films", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
+             "## Films", f"- [Films]({SITE}/films/): {DOC_LINE} {FILMS_NEXT}", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
     lines += ["", "## Make", f"- [Make]({SITE}/make/): everything we make in one place, beading patterns and recipes so far.", "", "## Beading patterns", f"PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy]({DIGITALS}). Full library: {SITE}/patterns/", ""]
-    for p in PATTERNS:
+    for p in pattern_order():
         if p.get("free"):
-            lines.append(f"- [{p['name']}]({SITE}/assets/{p['file']}.pdf): free {p['type']} pattern. {p['blurb']}")
+            lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): free {p['type']} pattern. {p['blurb']} PDF: {SITE}/assets/{p['file']}.pdf")
         elif p.get("live"):
             lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): {p['type']} pattern, ${p['price']}. {p['blurb']} Buy: {listing(p['etsy'])}")
     lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
-              "## Jewelry", f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
-              "## About", f"- [About]({SITE}/about/)", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in Central New York, bought in September 2026. The exact location is private.",
+              "## Jewelry", f"- [Jewelry]({SITE}/jewelry/): a dozen pieces with photos, each linking to its Etsy listing.",
+              f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
+              "## About", f"- [About]({SITE}/about/): who we are, and how to write to us.", f"- [The land]({SITE}/land/): 34 acres of meadow, woods and river in Central New York, bought in September 2026. The exact location is private.",
               f"- Winter travel channel: [Pneuma Nomads]({PN})", "",
               "## Social", f"- YouTube: {YT}", f"- Instagram: {IG}", f"- TikTok: {TT}", f"- Pinterest: {PIN}", ""]
     return "\n".join(lines)
@@ -1232,16 +1445,25 @@ def sitemap(paths):
 def write(rel, text):
     f = ROOT / rel; f.parent.mkdir(parents=True, exist_ok=True); f.write_text(text)
 
+def check_jewelry():
+    """prices and stock live on Etsy, so the only thing that can go stale here is a piece that's gone. say so when it's been a while."""
+    age = (datetime.date.today() - datetime.date.fromisoformat(JEWELRY_CHECKED)).days
+    if age > 45:
+        print(f"!! the jewelry pieces were last checked {age} days ago ({JEWELRY_CHECKED}). open each one on Etsy, take out any that are gone, and bump JEWELRY_CHECKED.")
+
 if __name__ == "__main__":
     copy_pattern_images()
     write("index.html", home())
     for v in ("ig", "yt", "pin"): write(f"{v}/index.html", home(v))
     write("land/index.html", land_page())
     write("films/index.html", films_page())
+    write("jewelry/index.html", jewelry_page())
+    write("shop/index.html", moved("Shop", "../jewelry/", "jewelry/"))
+    write("contact/index.html", moved("Say Hi", "../about/#say-hi", "about/"))
     write("make/index.html", make_page())
     write("patterns/index.html", patterns_page())
-    paid = [p for p in PATTERNS if (not p.get("free") and p.get("live")) or (p.get("free") and p.get("design"))]
-    for p in paid: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
+    paged = [p for p in PATTERNS if has_page(p)]
+    for p in paged: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
     write("bead-lab/index.html", beadlab_page())
     write("field-guide/index.html", fieldguide_page())
     write("about/index.html", about_page())
@@ -1252,5 +1474,7 @@ if __name__ == "__main__":
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "make/", "patterns/", "bead-lab/", "about/", "road/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paid] + [f"recipes/{r['slug']}/" for r in RECIPES]))
-    print("built", 12 + len(paid) + len(RECIPES), "pages")
+    write("sitemap.xml", sitemap(["", "land/", "field-guide/", "films/", "jewelry/", "make/", "patterns/", "bead-lab/", "about/", "road/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paged] + [f"recipes/{r['slug']}/" for r in RECIPES]))
+    for night in ("", "-night"): variant(f"images/walk/0-gate{night}.webp", 720)      # walk.css paints these behind the walk on a phone
+    check_jewelry()
+    print("built", 15 + len(paged) + len(RECIPES), "pages")

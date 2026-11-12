@@ -40,7 +40,35 @@ class Handler(http.server.SimpleHTTPRequestHandler):
         # on the wi-fi, serve only what GitHub Pages would: no dot files, no folders that start with _
         if bind != "127.0.0.1" and re.search(r"(^|/)[._]", urllib.parse.urlparse(self.path).path.lstrip("/")):
             self.send_error(404); return None
+        # an iPhone asks for a video a piece at a time and won't play it unless the server can answer that way (GitHub Pages can)
+        self._left = None
+        want = re.fullmatch(r"bytes=(\d*)-(\d*)", self.headers.get("Range", "").strip())
+        path = pathlib.Path(self.translate_path(self.path))
+        if want and (want.group(1) or want.group(2)) and path.is_file():
+            size = path.stat().st_size
+            if want.group(1): start, end = int(want.group(1)), int(want.group(2) or size - 1)
+            else: start, end = max(size - int(want.group(2)), 0), size - 1          # "the last n bytes"
+            end = min(end, size - 1)
+            if start > end:
+                self.send_error(416); return None
+            f = path.open("rb"); f.seek(start)
+            self.send_response(206)
+            self.send_header("Content-Type", self.guess_type(str(path)))
+            self.send_header("Content-Range", f"bytes {start}-{end}/{size}")
+            self.send_header("Content-Length", str(end - start + 1))
+            self.send_header("Accept-Ranges", "bytes")
+            self.end_headers()
+            self._left = end - start + 1
+            return f
         return super().send_head()
+
+    def copyfile(self, source, out):
+        left = getattr(self, "_left", None)
+        if left is None: return super().copyfile(source, out)
+        while left > 0:
+            chunk = source.read(min(65536, left))
+            if not chunk: break
+            out.write(chunk); left -= len(chunk)
 
     def do_POST(self):
         url = urllib.parse.urlparse(self.path)

@@ -1,6 +1,6 @@
 /* same old samsara · the almanac
    sun + moon for central new york (no location beyond that), day/night theme, the turning ring,
-   wheel of the year, the land map, click-to-play films, pattern search, reveal on scroll. */
+   wheel of the year, the land map, click-to-play films, pattern search, the say hi button, reveal on scroll. */
 (function () {
   "use strict";
   window.SOS_READY = true;
@@ -82,14 +82,6 @@
     nowEl.hidden = false;
   }
 
-  /* ---------- "watch the newest episode" plays it right there ---------- */
-  document.querySelectorAll("[data-newest]").forEach(function (a) {
-    a.addEventListener("click", function () {
-      var b = document.querySelector('.film-main .yt[data-id="' + a.dataset.newest + '"]');
-      if (b) setTimeout(function () { b.click(); }, reduce ? 0 : 600);
-    });
-  });
-
   /* ---------- the ring turns as you scroll (and slowly on its own) ---------- */
   var rings = document.querySelectorAll(".ring");
   if (rings.length && !reduce) {
@@ -147,6 +139,7 @@
   var card = document.getElementById("map-card");
   if (card) {
     var spots = JSON.parse(card.dataset.spots), img = document.getElementById("map-img");
+    var small = card.querySelector("source");            // the phone sized copies. the <img> keeps the original for old browsers
     var pins = document.querySelectorAll(".pin");
     pins.forEach(function (b, i) {
       if (i === 0) b.setAttribute("aria-pressed", "true");
@@ -154,7 +147,7 @@
         var s = spots[b.dataset.spot];
         pins.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
         img.style.opacity = 0;
-        setTimeout(function () { img.src = s.img; img.style.opacity = 1; }, 180);
+        setTimeout(function () { if (small) small.srcset = s.set; img.src = s.img; img.style.opacity = 1; }, 180);
         document.getElementById("map-name").textContent = s.name;
         document.getElementById("map-note").textContent = s.note;
         if (window.innerWidth < 860) card.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
@@ -186,11 +179,29 @@
         c.hidden = !(okF && okS);
       });
     };
-    chips.forEach(function (b) { b.addEventListener("click", function () {
-      f = b.dataset.f; chips.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); apply();
-    }); });
+    var pick = function (b) { f = b.dataset.f; chips.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); }); apply(); };
+    chips.forEach(function (b) { b.addEventListener("click", function () { pick(b); }); });
     if (q) q.addEventListener("input", apply);
+    // a link like patterns/#free opens with that filter already on
+    var want = location.hash.slice(1), chip = want && [].filter.call(chips, function (b) { return b.dataset.f === want; })[0];
+    if (chip) pick(chip);
   }
+
+  /* ---------- say hi: the address is only put together when a person reaches for the button ---------- */
+  document.querySelectorAll("[data-hi]").forEach(function (a) {
+    var addr = "";
+    var make = function () {
+      if (addr) return;
+      var h = a.dataset.hi;
+      for (var i = 0; i < h.length; i += 2) addr = String.fromCharCode(parseInt(h.substr(i, 2), 16) - 7 - (i / 2) % 5) + addr;
+      a.href = "mai" + "lto:" + addr;
+    };
+    ["pointerdown", "touchstart", "mouseenter", "focus"].forEach(function (t) { a.addEventListener(t, make, { passive: true }); });
+    a.addEventListener("click", function (ev) {
+      if (!addr) { ev.preventDefault(); make(); location.href = a.href; }      // pressed without touching it first (a screen reader, say)
+      a.textContent = addr;                                                    // and shown, for anyone with no mail app set up
+    });
+  });
 
   /* ---------- reveal on scroll ---------- */
   var els = document.querySelectorAll(".reveal");

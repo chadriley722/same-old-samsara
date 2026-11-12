@@ -23,12 +23,17 @@
 .walk .card p.label { font-size: 13px; color: var(--ink-soft); }
 .walk .card .btns { margin-top: 16px; gap: 8px; }
 .walk .card .btn { font-size: 14px; padding: 9px 14px; }
+@media (pointer: coarse) { .walk .card .btn { min-height: 44px; padding-block: 0; } }
 .walk .card .yt { margin-top: 14px; box-shadow: none; border: 1px solid var(--rule); }
 .walk .ep-line { margin-top: 8px; }
 .wear-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .wear-row a { display: block; border-radius: 4px; overflow: hidden; border: 1px solid var(--rule); }
 .wear-row img { width: 100%; aspect-ratio: 1; object-fit: cover; transition: transform .4s; }
 .wear-row a:hover img { transform: scale(1.05); }
+.walk .us { display: flex; gap: 14px; align-items: center; }
+.walk .us img { flex: none; width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--ink); }
+.walk .inapp { margin-top: 12px; font-size: 12.5px; }
+.walk .was { position: absolute; top: 0; }       /* where the old home page's #make, #wear and #follow links land now */
 
 /* ---------- plain layout ---------- */
 .walk .stop { max-width: var(--wrap); margin: 0 auto; padding: 26px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: center; }
@@ -39,8 +44,12 @@
 .gate-text { max-width: 760px; margin: 26px auto 0; padding: 0 18px; }
 .gate-text .def { max-width: 620px; }
 .gate-text h1 { font-size: clamp(44px, 9vw, 96px); font-weight: 650; font-variation-settings: "SOFT" 100, "WONK" 1, "opsz" 144; }
-.gate-text .def { margin: 16px auto 0; }
+.gate-text .what { margin-top: 12px; font-size: clamp(17px, 2.2vw, 20px); font-weight: 500; }
+.gate-text .def { margin: 12px auto 0; }
 .gate-text .btns { justify-content: center; }
+.hero-btns.for-pin { display: none; }
+:root[data-from="pin"] .hero-btns.for-pin { display: flex; }
+:root[data-from="pin"] .hero-btns.for-all { display: none; }
 .walk-hint { margin-top: 22px; }
 .walk-hint .on, .walk-hint .try { display: none; }
 .walk-can .walk-hint .try { display: block; margin-top: 6px; }
@@ -63,6 +72,10 @@
 .walk-on .walk-view { display: block; position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; z-index: 0;
   background: var(--bg) url("../images/walk/0-gate.webp") center / cover no-repeat; }
 :root[data-theme="night"].walk-on .walk-view { background-image: url("../images/walk/0-gate-night.webp"); }
+@media (max-width: 760px) {
+  .walk-on .walk-view { background-image: url("../images/r/walk/0-gate-720.webp"); }
+  :root[data-theme="night"].walk-on .walk-view { background-image: url("../images/r/walk/0-gate-night-720.webp"); }
+}
 .walk-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .8s ease; touch-action: pan-y; }
 .walk-ready .walk-gl { opacity: 1; }
 .walk-on .walk-stops { position: relative; z-index: 2; margin-top: -100vh; margin-top: -100lvh; pointer-events: none; }
@@ -76,7 +89,8 @@
   text-shadow: 0 0 18px var(--bg), 0 0 8px var(--bg), 0 0 3px var(--bg); }
 .walk-on .gate-text h1 { font-size: clamp(40px, min(6.4vw, 11vh), 84px); white-space: nowrap; }
 .walk-on .gate-text .tag { font-size: clamp(19px, min(2.6vw, 3.6vh), 27px); }
-.walk-on .gate-text .def { margin: 12px 0 0; font-size: clamp(14.5px, 2.1vh, 16.5px); line-height: 1.5; max-width: 520px; color: var(--ink); }
+.walk-on .gate-text .what { margin-top: clamp(6px, 1.4vh, 12px); font-size: clamp(16.5px, min(1.7vw, 2.6vh), 19.5px); }
+.walk-on .gate-text .def { margin: 8px 0 0; font-size: clamp(14.5px, 2.1vh, 16.5px); line-height: 1.5; max-width: 520px; color: var(--ink); }
 .walk-on .gate-text .btns { justify-content: flex-start; margin-top: clamp(12px, 2.4vh, 20px); }
 .walk-on .gate-text .btn { text-shadow: none; background: color-mix(in srgb, var(--bg) 70%, transparent); }
 .walk-on .gate-text .btn.solid { background: var(--ink); }
@@ -133,7 +147,7 @@
 .trail a.done i { background: currentColor; }
 .trail a[aria-current] { color: var(--ink); font-weight: 700; }
 .trail a[aria-current] i { background: var(--gold); border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 35%, transparent); }
-.trail .plain { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); max-width: 132px; }
+.trail .plain { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); max-width: 140px; }
 .trail .plain a { flex-direction: row; white-space: normal; text-decoration: underline; text-underline-offset: 3px; font-size: 12px; line-height: 1.3; }
 .trail-now { display: none; }
 @media (max-width: 899px) {
@@ -142,11 +156,12 @@
     background: color-mix(in srgb, var(--bg) 86%, transparent); border-bottom: 1px solid var(--rule); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
   .trail-now { display: block; flex: 1; min-width: 0; margin: 0; font-size: 12.5px; color: var(--ink); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .trail ol { flex-direction: row; padding: 0; border: 0; background: none; -webkit-backdrop-filter: none; backdrop-filter: none; }
-  .trail a { padding: 13px 6.5px; }
+  .trail a { padding: 17px 9px; }        /* each dot is 28 by 44 to tap. nine of them and the name still fit across a phone */
   .trail a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-  .trail li + li:not(.plain) a i::before { left: auto; right: calc(100% + 2px); bottom: 50%; height: 0; width: 9px; border-left: 0; border-top: 1.5px dotted currentColor; transform: translateY(50%); }
+  .trail li + li:not(.plain) a i::before { left: auto; right: calc(100% + 2px); bottom: 50%; height: 0; width: 14px; border-left: 0; border-top: 1.5px dotted currentColor; transform: translateY(50%); }
   .trail .plain { display: none; }
 }
+@media (max-width: 360px) { .trail a { padding-inline: 6px; } .trail li + li:not(.plain) a i::before { width: 8px; } }
 
 /* ---------- little buttons on things in the picture ---------- */
 .walk-hot { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
@@ -164,6 +179,7 @@
 @keyframes walk-flash { 0% { opacity: .92; } 100% { opacity: 0; } }
 .walk-sound { position: absolute; z-index: 4; left: 14px; top: calc(100vh - 54px); top: calc(100svh - 54px); padding: 8px 13px; border-radius: 999px; border: 1px solid var(--rule); cursor: pointer;
   background: color-mix(in srgb, var(--bg) 84%, transparent); color: var(--ink); font-family: var(--label); font-size: 12.5px; }
+.walk-sound::after { content: ""; position: absolute; inset: -7px -4px; }      /* 44px tall to tap */
 .walk-sound[aria-pressed="true"] { border-color: var(--ink); }
 .walk-sound span::before { content: "♪ "; }
 .walk-sound[hidden] { display: none; }

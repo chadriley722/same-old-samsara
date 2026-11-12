@@ -29,12 +29,29 @@ Do this the same day the episode is public on YouTube, so "watch the newest epis
    The id is in the video's URL (`watch?v=<id>`). `date` is the day it went public.
 3. **Build + push** (commands above).
 
-That one entry updates the home page hero button, the films section, /films, /yt, /ig, /pin, the video schema and llms.txt.
+That one entry updates the home page's first screen, the films stop, the episode list, /films, /yt, /ig, /pin, the video schema and llms.txt.
+The build also makes the phone sized copies of the thumbnail (in `images/r/`), so commit that folder too.
+
+4. **While you're there, look at the jewelry.** Open each piece in `JEWELRY` on Etsy. Take out any that are gone and set `JEWELRY_CHECKED` to today. The build prints a reminder when it's been more than 45 days.
 
 ## other things that need a hand edit
 - Road vlog: `ROAD_LATEST` in build.py + `images/road/latest-vlog.jpg` (960x540).
 - Pattern relisted on Etsy: set its `"live": True` in `PATTERNS`.
-- Seasonal freebie: move `"free": True` to another pattern (its PDF needs the end page).
+- The free pattern to feature: move `"featured": True` to another free pattern. `"hold": True` keeps a free one at the back of the line (the christmas tree has it until its redo is test stitched).
+- A new free pattern: `"free": True`, its PDF at `assets/<file>.pdf`. Every free pattern gets its own page with the download button, so no card ever opens a bare PDF.
+- Jewelry: the `JEWELRY` list. A square photo in `images/shop/`, the Etsy listing number, no prices (they live on Etsy).
+- The address behind "email us": `HI` in build.py holds it scrambled, so it's in no page and not in this repo in plain text. To change it, run `scramble("the new address")` and paste what it prints.
+
+## pictures
+Every `<img>` is written by `pic()` in build.py. It makes smaller WebP copies in `images/r/` (240 to 720 wide, cut to the shape the page shows) and writes a `<picture>` tag, so a phone downloads a 30 KB file instead of a 300 KB one. Add a photo the normal way (a JPG in `images/`), use `pic()`, run the build, commit `images/r/` with it.
+If a photo is taken off the site, its copies in `images/r/` stay until someone deletes them by hand.
+The build needs `cwebp` for this (it's on this Mac, from Homebrew's `webp`). The stand-in pattern cards still need `magick` and `rsvg-convert`, as before.
+
+## check the words and the links
+```
+python3 "../redesign-3d-b-2026-11/tools/copycheck.py" .
+```
+Reads every built page and flags "farm", dashes, place names, a plain email address, and links or pictures that point at nothing.
 
 ## the walk (the 3D home page, branch `redesign-3d-b`)
 

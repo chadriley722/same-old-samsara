@@ -106,7 +106,7 @@ async function start() {
   function markTrail(k) {
     if (k === shown) return; shown = k;
     links.forEach((a) => { const i = +a.dataset.go; if (i === k) a.setAttribute("aria-current", "step"); else a.removeAttribute("aria-current"); a.classList.toggle("done", i < k); });
-    nowLabel.textContent = k === 0 ? "the gate" : k + " of " + (stops.length - 1) + " · " + links[k].textContent.trim();
+    nowLabel.textContent = links[k].textContent.trim();          // the dots beside it already say how far along you are
     walk.dataset.at = STOP_IDS[k];
   }
 
@@ -156,7 +156,7 @@ async function start() {
       if (!sound) { try { sound = (await import("./sound.js")).startSound(); } catch (_) { sound = null; } if (!sound) { soundBtn.hidden = true; return; } }
       soundOn = !soundOn;
       soundBtn.setAttribute("aria-pressed", soundOn ? "true" : "false");
-      soundBtn.firstElementChild.textContent = soundOn ? "sound on" : "sound off";
+      soundBtn.firstElementChild.textContent = soundOn ? "sound: on" : "sound: off";
       clearInterval(soundTimer);
       if (soundOn) { sound.on(); hear(); soundTimer = setInterval(() => { hear(); sound.tick(); }, 300); } else sound.off();
     });
@@ -233,8 +233,9 @@ async function start() {
   addEventListener("load", measure);
 
   measure();
-  // arriving on a link like /#stop-films: stand at that stop, not half way to it
-  const m = location.hash.match(/^#stop-(.+)$/), hi = m ? stops.findIndex((s) => s.id === "stop-" + m[1]) : -1;
+  // arriving on a link like /#stop-films (or an old one like /#make): stand at that stop, not half way to it
+  let aim = null; try { aim = location.hash.length > 1 ? walk.querySelector(location.hash) : null; } catch (_) {}
+  const hi = aim ? stops.indexOf(aim.closest(".stop[data-stop]")) : -1;
   if (hi > 0) requestAnimationFrame(() => window.scrollTo(0, anchors[hi]));
   // ?u=4.5 puts you half way between stop 4 and stop 5 (handy for checking a spot)
   if (q.has("u")) { const v = clamp(+q.get("u") || 0, 0, anchors.length - 1), k = Math.min(Math.floor(v), anchors.length - 2); root.style.scrollBehavior = "auto"; requestAnimationFrame(() => window.scrollTo(0, anchors[k] + (anchors[k + 1] - anchors[k]) * (v - k))); }

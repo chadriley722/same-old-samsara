@@ -2,6 +2,12 @@
    cream / pepper / moss / night moss / goldenrod / rust
    Fraunces (headlines) · Work Sans (body) · Courier Prime (labels)
    day + night: the site goes dark when the sun is down on the land (js/site.js), or by the sun/moon button. */
+/* stand-ins for the half second before the real fonts arrive. each is a font the phone already has, sized so it runs as wide
+   as the real one. the words keep their line breaks when the real font swaps in, so the page doesn't jump. (measured nov 12) */
+@font-face { font-family: "Fraunces stand-in"; src: local("Times New Roman Bold"), local("TimesNewRomanPS-BoldMT"); font-weight: 500 900; size-adjust: 94.5%; }
+@font-face { font-family: "Fraunces stand-in"; src: local("Times New Roman"), local("TimesNewRomanPSMT"); font-weight: 100 499; size-adjust: 93%; }
+@font-face { font-family: "Fraunces stand-in"; src: local("Times New Roman Italic"), local("TimesNewRomanPS-ItalicMT"); font-style: italic; size-adjust: 88.5%; }
+@font-face { font-family: "Work Sans stand-in"; src: local("Helvetica Neue"), local("Arial"), local("Roboto"); size-adjust: 109.6%; }
 :root {
   --cream: #fff4d9;
   --paper: #fbefd2;
@@ -22,8 +28,8 @@
   --card: #fffaf0;
   --shadow: 0 1px 0 rgba(51, 53, 31, .08), 0 10px 30px -18px rgba(51, 53, 31, .45);
 
-  --display: "Fraunces", Georgia, "Times New Roman", serif;
-  --body: "Work Sans", "Helvetica Neue", Arial, sans-serif;
+  --display: "Fraunces", "Fraunces stand-in", Georgia, "Times New Roman", serif;
+  --body: "Work Sans", "Work Sans stand-in", "Helvetica Neue", Arial, sans-serif;
   --label: "Courier Prime", "Courier New", Courier, monospace;
   --wrap: 1120px;
   --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.3 0 0 0 0 0.28 0 0 0 0 0.2 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -41,13 +47,15 @@
   --shadow: 0 10px 30px -16px rgba(0, 0, 0, .7);
 }
 * { box-sizing: border-box; }
-html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; }
+html { scroll-behavior: smooth; -webkit-text-size-adjust: 100%; scroll-padding-top: 76px; }   /* a link to a spot on the page lands below the header, not under it */
 body {
   margin: 0; background: var(--bg) var(--grain); color: var(--ink);
   font-family: var(--body); font-size: 17px; line-height: 1.6;
   overflow-x: hidden;
 }
 img { max-width: 100%; height: auto; display: block; }
+picture { display: contents; }   /* <picture> only chooses the file. the <img> inside is what gets laid out and styled */
+picture > source { display: none; }   /* or each one becomes an empty box in a grid or a flex row */
 .fade body, .fade .top, .fade .band { transition: background-color .8s ease, color .8s ease; }  /* only when someone flips day/night */
 a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
 a:hover { color: var(--accent); }
@@ -69,19 +77,22 @@ p { margin: 0; }
 .top-in { display: flex; align-items: center; gap: 18px; min-height: 60px; }
 .brand { display: flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--display); font-weight: 600; font-size: 20px; white-space: nowrap; }
 .brand .mark { width: 24px; height: 29px; }
-.links { display: flex; gap: 4px 18px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.links { display: flex; gap: 0 6px; margin-left: auto; margin-right: -6px; overflow-x: auto; scrollbar-width: none; }
 .links::-webkit-scrollbar { display: none; }
-.links a { font-family: var(--label); font-size: 14px; text-decoration: none; white-space: nowrap; padding: 6px 0; }
+.links a { font-family: var(--label); font-size: 14px; text-decoration: none; white-space: nowrap; padding: 12px 6px; }   /* the padding is the part you can tap: 44px tall */
 .links a[aria-current="page"] { color: var(--accent); text-decoration: underline; }
-.sky { flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--rule); background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.sky { position: relative; flex: none; width: 36px; height: 36px; border-radius: 50%; border: 1px solid var(--rule); background: transparent; cursor: pointer; display: grid; place-items: center; color: var(--ink); }
+.sky::after { content: ""; position: absolute; inset: -6px -5px 0; }   /* a little more to tap than the 36px circle you see (not downward: the menu is there on a phone) */
 .sky .sun { width: 16px; height: 16px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 30%, transparent); transition: all .5s; }
 :root[data-theme="night"] .sky .sun { background: transparent; box-shadow: inset -5px -2px 0 0 #f3e8c8; transform: rotate(-20deg); }
 @media (max-width: 720px) {
   .top-in { flex-wrap: wrap; gap: 0 12px; padding-top: 8px; }
   .brand span { font-size: 18px; }
-  .links { order: 3; width: 100%; margin: 0; padding-bottom: 6px; gap: 16px; }
+  .links { order: 3; width: calc(100% + 12px); margin: -6px -6px 0; gap: 0; justify-content: space-between; }
+  .links a { font-size: 13px; }
   .sky { margin-left: auto; }
 }
+@media (max-width: 350px) { .links a { font-size: 12.5px; padding-inline: 2px; } }
 
 /* ---------- hero with the turning ring ---------- */
 .hero { position: relative; padding: clamp(28px, 6vh, 70px) 0 40px; text-align: center; overflow: hidden; }
@@ -104,6 +115,7 @@ p { margin: 0; }
 .almanac > div:first-child { border-left: 0; }
 .almanac strong { font-family: var(--display); font-weight: 500; font-size: 19px; display: flex; align-items: center; gap: 8px; }
 .moon { width: 18px; height: 18px; display: inline-block; flex: none; }
+html:not(.js) .almanac { display: none; }   /* the strip is filled in by js/site.js. with scripts off it would be four empty boxes */
 @media (max-width: 760px) { .almanac { grid-template-columns: 1fr 1fr; } .almanac > div:nth-child(3) { border-left: 0; } .almanac > div:nth-child(n+3) { border-top: 1px solid var(--rule); } }
 
 /* ---------- sections ---------- */
@@ -111,10 +123,9 @@ p { margin: 0; }
 .band { background: var(--band); color: var(--band-ink); --ink: var(--band-ink); --ink-soft: color-mix(in srgb, var(--band-ink) 72%, transparent); --rule: rgba(255, 244, 217, .2); --card: color-mix(in srgb, var(--band) 80%, black); --accent: var(--gold); }
 .band.soft { background: var(--bg2); color: var(--ink); --ink: inherit; }
 :root:not([data-theme="night"]) .band.soft { --ink: var(--pepper); --ink-soft: #6e6b66; --rule: rgba(81,79,76,.2); --card: #fffaf0; --accent: var(--rust); color: var(--pepper); }
-.shead { display: grid; grid-template-columns: auto 1fr auto; align-items: baseline; gap: 6px 18px; border-bottom: 1px solid currentColor; padding-bottom: 12px; margin-bottom: 26px; }
+.shead { display: grid; grid-template-columns: 1fr auto; align-items: baseline; gap: 6px 18px; border-bottom: 1px solid currentColor; padding-bottom: 12px; margin-bottom: 26px; }
 .shead h2 { font-size: clamp(32px, 5vw, 52px); }
-.shead .no { color: var(--accent); }
-@media (max-width: 640px) { .shead { grid-template-columns: 1fr; } .shead .sub { order: 3; } }
+@media (max-width: 640px) { .shead { grid-template-columns: 1fr; } }
 .lede { font-size: 19px; max-width: 660px; margin-bottom: 26px; }
 .btns { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 26px; }
 .btns.center { justify-content: center; }
@@ -122,8 +133,13 @@ p { margin: 0; }
 .btn:hover { transform: translateY(-2px); color: inherit; }
 .btn.solid { background: var(--ink); color: var(--bg); border-color: var(--ink); }
 .band .btn.solid { background: var(--band-ink); color: var(--band); }
+.band.soft .btn.solid { background: var(--ink); color: var(--bg2); border-color: var(--ink); }   /* a soft band is light, so its main button is dark like everywhere else */
 .btn.big { font-size: 17px; padding: 14px 24px; }
 .note { margin-top: 40px; padding: 18px 20px; border: 1px dashed var(--rule); border-radius: 10px; }
+/* shown only inside the instagram, tiktok, facebook or pinterest app (the head script sets data-app) */
+.inapp { display: none; margin-top: 14px; max-width: 520px; }
+:root[data-app] .inapp { display: block; }
+.hero .inapp { margin-inline: auto; }
 .prose { max-width: 680px; }
 .prose p, .prose ul { margin: 0 0 16px; font-size: 18px; }
 .prose h2 { font-size: 30px; margin: 36px 0 12px; }
@@ -155,19 +171,22 @@ p { margin: 0; }
 .play::after { content: ""; position: absolute; left: 31px; top: 24px; border-left: 22px solid var(--night); border-top: 14px solid transparent; border-bottom: 14px solid transparent; }
 .len { position: absolute; right: 10px; bottom: 8px; background: rgba(0,0,0,.65); color: #fff; padding: 1px 6px; border-radius: 3px; }
 .film-meta h3 { font-size: 32px; margin: 6px 0 10px; }
-.films .lede { margin-top: 30px; }
 .eps { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
 .ep { display: grid; grid-template-columns: 120px 1fr; gap: 14px; align-items: center; text-decoration: none; padding: 10px; border: 1px solid var(--rule); border-radius: 8px; }
 .ep img { border-radius: 4px; aspect-ratio: 16 / 9; object-fit: cover; }
-.ep h3 { font-size: 20px; }
+.ep h3 { font-size: 20px; margin: 2px 0; }
+.ep .when { display: block; font-size: 12.5px; }
 .ep p { font-size: 14px; margin-top: 4px; color: var(--ink-soft); }
+.status { margin-top: 16px; color: var(--accent); }
+.films-lede { margin: 34px 0 18px; }
 
 /* ---------- patterns ---------- */
 .pfilters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 22px; }
-#psearch { font: 16px var(--body); padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); min-width: 220px; flex: 1 1 220px; max-width: 320px; }
+#psearch { font: 16px var(--body); min-height: 44px; padding: 10px 16px; border-radius: 999px; border: 1.5px solid var(--ink); background: transparent; color: var(--ink); min-width: 220px; flex: 1 1 220px; max-width: 320px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chips button, .tool-row button { font: 13.5px var(--label); padding: 7px 12px; border-radius: 999px; border: 1px solid var(--rule); background: transparent; color: var(--ink); cursor: pointer; }
 .chips button[aria-pressed="true"], .tool-row button[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+@media (pointer: coarse) { .chips button, .tool-row button { min-height: 44px; padding-inline: 15px; } .chips { gap: 8px; } }
 .pgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 20px; }
 .pcard { text-decoration: none; display: flex; flex-direction: column; gap: 6px; }
 .pcard[hidden] { display: none; }
@@ -178,6 +197,14 @@ p { margin: 0; }
 .pmeta h3 { font-size: 20px; }
 .pill { font: 13px var(--label); padding: 2px 9px; border-radius: 999px; border: 1px solid currentColor; white-space: nowrap; }
 .pill.free { background: var(--gold); color: var(--night); border-color: var(--gold); }
+@media (max-width: 560px) {
+  .pgrid { grid-template-columns: 1fr 1fr; gap: 20px 12px; }
+  .pmeta { flex-direction: column; align-items: flex-start; gap: 5px; }
+  .pmeta h3 { font-size: 17px; }
+}
+.dl-help { margin-top: 10px; }
+.dl-help + .dl-help { margin-top: 4px; }
+.dl-help a { color: var(--accent); }
 
 .pdetail { padding-top: 40px; }
 .crumbs { margin-bottom: 20px; }
@@ -202,6 +229,8 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .wcard:hover { transform: rotate(-1deg) translateY(-4px); }
 .wcard img { aspect-ratio: 1; object-fit: cover; }
 .wcard h3 { font-size: 19px; margin: 10px 0 2px; }
+.wcard img { width: 100%; }
+@media (max-width: 560px) { .wgrid { grid-template-columns: 1fr 1fr; gap: 12px; } .wcard { padding: 7px 7px 11px; } .wcard h3 { font-size: 16.5px; } .wcard .label { font-size: 13px; } }
 
 /* ---------- wheel of the year ---------- */
 .wheel-wrap { display: grid; grid-template-columns: minmax(260px, 440px) 1fr; gap: 40px; align-items: center; }
@@ -251,13 +280,13 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .land .rose path { fill: var(--ink); }
 .land .rose text, .land .mapword { font: italic 20px var(--display); fill: var(--ink-soft); text-anchor: middle; }
 .land .mapword { font-size: 22px; opacity: .7; }
-.pin { position: absolute; width: 34px; height: 34px; margin: -17px 0 0 -17px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; padding: 0; }
-.pin span { position: absolute; inset: 9px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--bg); }
-.pin::before { content: ""; position: absolute; inset: 0; border-radius: 50%; border: 2px solid var(--accent); animation: ping 2.6s ease-out infinite; }
+.pin { position: absolute; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; border: 0; background: transparent; cursor: pointer; padding: 0; }
+.pin span { position: absolute; inset: 14px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 3px var(--bg); }
+.pin::before { content: ""; position: absolute; inset: 5px; border-radius: 50%; border: 2px solid var(--accent); animation: ping 2.6s ease-out infinite; }
 .pin[aria-pressed="true"] span { background: var(--ink); transform: scale(1.3); }
 @keyframes ping { from { transform: scale(.4); opacity: 1; } to { transform: scale(1.4); opacity: 0; } }
 .map-card { background: var(--card); padding: 12px 12px 18px; box-shadow: var(--shadow); position: sticky; top: 90px; }
-.map-card img { aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 12px; transition: opacity .3s; }
+.map-card img { width: 100%; aspect-ratio: 4 / 3; object-fit: cover; margin-bottom: 12px; transition: opacity .3s; }
 .map-card h3 { font-size: 28px; margin: 4px 0 8px; }
 .map-foot { grid-column: 1 / -1; }
 
@@ -274,15 +303,21 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 @media (max-width: 820px) { .lab-tools { position: static; } }
 .palette { display: grid; grid-template-columns: repeat(auto-fill, 34px); gap: 7px; }
 .palette button { width: 34px; height: 34px; border-radius: 8px; border: 2px solid var(--rule); cursor: pointer; padding: 0; }
+@media (pointer: coarse) { .palette { grid-template-columns: repeat(auto-fill, 44px); gap: 8px; } .palette button { width: 44px; height: 44px; } .size select { min-height: 44px; padding-inline: 10px; } }
+.touch-tip { display: none; }
+@media (pointer: coarse) { .touch-tip { display: block; } }
 .palette button[aria-checked="true"] { outline: 3px solid var(--accent); outline-offset: 2px; }
 .tool-row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
 .tool-row button.solid { background: var(--ink); color: var(--bg); }
 .size { font: 13.5px var(--label); display: flex; gap: 6px; align-items: center; }
 .size select { font: inherit; background: transparent; color: var(--ink); border: 1px solid var(--rule); border-radius: 6px; padding: 4px; }
-.lab-board { overflow: auto; touch-action: none; }
+.lab-board { overflow: auto; touch-action: pinch-zoom; }   /* one finger paints. two fingers zoom the page in, so the beads get big enough for a thumb */
 #board { width: 100%; max-width: 560px; height: auto; display: block; margin: 0 auto; user-select: none; }
 #board .b { stroke: rgba(51, 53, 31, .35); stroke-width: .6; cursor: crosshair; }
-#board .b.empty { fill: transparent; stroke: var(--rule); stroke-dasharray: 2 2; }
+#board .b.empty { fill: color-mix(in srgb, var(--ink) 4%, transparent); stroke: color-mix(in srgb, var(--ink) 38%, transparent); stroke-dasharray: 2 2; }   /* plain enough to see where to tap, day or night */
+:root[data-theme="night"] #board .b.empty { fill: color-mix(in srgb, var(--ink) 9%, transparent); stroke: color-mix(in srgb, var(--ink) 55%, transparent); }
+:root[data-theme="night"] #board .b { stroke: rgba(0, 0, 0, .5); }
+@media (max-width: 820px) { .lab-section .wrap { padding-inline: 10px; } }
 #board .axis { stroke: var(--accent); stroke-width: 1; stroke-dasharray: 4 4; opacity: .5; }
 .chart-out { margin-top: 26px; background: var(--card); padding: 18px; border-radius: 10px; box-shadow: var(--shadow); }
 .chart-out pre { white-space: pre-wrap; font: 14px/1.7 var(--label); margin: 12px 0; max-height: 420px; overflow: auto; }
@@ -293,7 +328,10 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
   -webkit-mask: var(--ring-url) center / contain no-repeat; mask: var(--ring-url) center / contain no-repeat; animation: spin 80s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 .tagline { font-family: var(--display); font-style: italic; font-size: 26px; color: var(--accent); }
-.foot-links { margin: 14px 0; font-family: var(--label); font-size: 14px; }
+.foot-links, .foot-follow { display: flex; flex-wrap: wrap; justify-content: center; align-items: center; gap: 0 6px; margin: 6px auto; max-width: 560px; font-family: var(--label); font-size: 14px; line-height: 1.2; }
+.foot-links a, .foot-follow a { padding: 14px 7px; }   /* 44px tall to tap */
+.foot-follow { margin-top: 16px; }
+.foot-follow .label { flex-basis: 100%; margin-bottom: -4px; }
 
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
@@ -304,9 +342,10 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 /* ---------- field guide ---------- */
 .critters { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
 .critter { position: relative; display: flex; flex-direction: column; gap: 8px; text-align: left; padding: 10px 10px 14px; border: 0; background: var(--card); color: var(--ink); box-shadow: var(--shadow); border-radius: 6px; cursor: pointer; font: inherit; }
-.critter.soon { cursor: default; }
 .cframe { display: block; aspect-ratio: 1; overflow: hidden; border-radius: 4px; background: var(--rule); position: relative; }
 .cframe img { width: 100%; height: 100%; object-fit: cover; transform: scale(var(--zoom, 4.5)); transition: transform 1.1s cubic-bezier(.2, .7, .2, 1); }
+.cframe video { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s; }   /* the trail cam clip, laid over its still once the card is open */
+.cframe video.on { opacity: 1; }
 .critter.open .cframe img { transform: scale(1); }
 .critter .q { color: var(--accent); }
 .critter.open .q { display: none; }
@@ -314,12 +353,12 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .critter.open .ans, .ans.show { display: flex; }
 .ans strong, .find .front strong { font-family: var(--display); font-size: 21px; font-weight: 600; }
 .ans span, .find .front span { font-size: 15.5px; color: var(--ink-soft); }
-.cam { position: absolute; inset: 0; margin: auto; width: 46%; height: 34%; border: 2px dashed var(--ink-soft); border-radius: 10px; }
-.cam::after { content: ""; position: absolute; inset: 0; margin: auto; width: 34%; aspect-ratio: 1; border: 2px dashed var(--ink-soft); border-radius: 50%; }
 .tally { margin-top: 18px; color: var(--accent); }
 .finds { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 18px; }
-.find { position: relative; display: grid; min-height: 330px; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1000px; font: inherit; color: var(--ink); text-align: left; }
-/* both faces share one grid cell, so the card grows to fit the longer side */
+.find { position: relative; display: grid; min-height: 190px; padding: 0; border: 0; background: none; cursor: pointer; perspective: 1000px; font: inherit; color: var(--ink); text-align: left; }
+/* both faces share one grid cell. face down, the card is only as tall as its hint: the picture side is lifted out of the
+   layout until the card is turned over, so a page of hints is short. turned over, it grows to fit the picture. */
+.find:not(.flipped) .front { position: absolute; inset: 0; overflow: hidden; }
 .find .face { grid-area: 1 / 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; gap: 8px; padding: 12px 12px 16px; border-radius: 6px; background: var(--card); box-shadow: var(--shadow); backface-visibility: hidden; -webkit-backface-visibility: hidden; transition: transform .7s cubic-bezier(.2, .7, .2, 1); }
 .find .back { justify-content: space-between; border: 1px dashed var(--ink-soft); background: transparent; }
 .find .back .hint { font-family: var(--display); font-style: italic; font-size: 22px; line-height: 1.25; }
@@ -329,6 +368,24 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .find .front img { aspect-ratio: 4 / 3; object-fit: cover; border-radius: 4px; width: 100%; }
 .find:hover .back { border-color: var(--accent); }
 .critter:focus-visible, .find:focus-visible { outline: 2px dashed var(--accent); outline-offset: 3px; }
+@media (max-width: 560px) {
+  .critters, .finds { grid-template-columns: 1fr 1fr; gap: 12px; }
+  .critter { padding: 7px 7px 11px; }
+  .ans strong, .find .front strong { font-size: 18px; }
+  .ans span, .find .front span { font-size: 14.5px; }
+  .find { min-height: 170px; }
+  .find .face { padding: 10px 10px 12px; }
+  .find .back .hint { font-size: 18.5px; }
+}
+.newhere { margin-top: 16px; }
+.newhere a { color: var(--accent); white-space: nowrap; }
+/* the hello strip: js/fieldguide.js sets it under the card someone arrived on from a pin */
+.fg-hello { grid-column: 1 / -1; display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px 16px; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--card); color: var(--ink); }
+.fg-hello[hidden] { display: none; }
+.fg-hello img { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }
+.fg-hello p { font-size: 16.5px; }
+.fg-hello .btns { margin-top: 12px; gap: 8px; }
+.fg-hello .btn { font-size: 14px; padding: 9px 14px; }
 @media (prefers-reduced-motion: reduce) { .cframe img, .find .face { transition: none; } }
 button.btn { background: transparent; color: var(--ink); cursor: pointer; }
 
@@ -373,6 +430,11 @@ button.btn { background: transparent; color: var(--ink); cursor: pointer; }
   .reveal { opacity: 1 !important; transform: none !important; }
 }
 
+/* ---------- about: the two of us ---------- */
+.us-big { width: min(220px, 56vw); margin: 0 auto 22px; }
+.us-big img { width: 100%; height: auto; aspect-ratio: 1; object-fit: cover; border-radius: 50%; border: 1.5px solid var(--ink); box-shadow: 6px 6px 0 color-mix(in srgb, var(--moss) 82%, transparent); }
+:root[data-theme="night"] .us-big img { box-shadow: 6px 6px 0 #14150b; }
+
 /* ---------- hero: a way in, and where we are right now (nov 7 review) ---------- */
 .hero-btns { margin-top: 22px; }
 .now { display: flex; justify-content: center; align-items: center; gap: 8px; margin: 18px auto 0; color: var(--ink-soft); }
@@ -382,8 +444,7 @@ button.btn { background: transparent; color: var(--ink); cursor: pointer; }
 :root[data-theme="night"] .now i { background: #9aa06a; }
 :root[data-theme="night"] .now.road i { background: var(--gold); }
 @media (max-width: 720px) {
+  html { scroll-padding-top: 100px; }
   .hero { padding-top: 34px; }
   .hero .ring-wrap { width: min(250px, 62vw); }
-  .links { gap: 0; justify-content: space-between; }
-  .links a { font-size: 13px; }
 }
