@@ -66,11 +66,12 @@ The top of the home page is a loop trail you scroll along, drawn like a woodcut.
 
 ## the road (/road, the Pneuma Nomads page)
 
-/road is a road trip you scroll, in the Pneuma Nomads look (retro computer travel log). It is the walk's idea on a made up road south: no real route, no real place. Five stops: leaving, the latest vlog, follow along, fuel, the rest of the year.
+/road is a drive you scroll, in the Pneuma Nomads look (retro computer travel log). You ride along with the truck and the fifth wheel on a made up road: no real route, no real place. It is a loop. Six stops: leaving (out of the land's gate), the latest vlog, follow along, fuel, winter (the camp by the water), and home again (back in at the same gate, in spring). The last card's main button goes to the home page, where the walk starts at that gate. The walk's last stop goes to /road. So the two pages make one circle.
 
 - **The page's words and links:** `road_page()` in `build.py`. The look is `road/road.css` (the page does not load `style.css`).
-- **The 3D:** `road/roadworld.js` (the scene), `road/land.js` (the road and where things stand), `road/shapes.js` (the screen, signpost, pump, cup), `road/light.js` (first light to sunset, in the Pneuma Nomads colors).
+- **The 3D:** `road/roadworld.js` (the scene: where the rig is, where the camera rides), `road/land.js` (the road and where things stand), `road/shapes.js` (the screen, signpost, pump, cup), `road/light.js` (first light, sunset at the water, the night drive home, first light again, in the Pneuma Nomads colors).
+- **Move a stop:** `RIG_Z` in `road/land.js` is where the truck stops, `CAM` is where the camera stands there, `PLACES` is what's beside it. Keep the stop ids in `road_page()` and `STOP_IDS` in `road/roadworld.js` in step.
 - **It shares the walk's engine.** `walk/print.js` draws both, and `walk/walk.js` drives both (the page names its scene in `data-scene`). A change to either of those two files changes both pages, so look at both after.
 - **A new vlog needs nothing extra** past `ROAD_LATEST` and the thumbnail: the screen in the 3D reads them. The still print of that stop shows a plain Pneuma Nomads card on the screen on purpose, so it never shows an old vlog.
 - **Preview:** http://127.0.0.1:8811/road/ . `?plain` and `?u=2` work here too. The 3D on its own: `_build/walk-dev.html?scene=road`.
-- **If the look changes, redo its five still prints:** same as the walk's, with `_build/walk-dev.html?scene=road&shoot=1`. The PNGs come out as `road-<n>-<name>.png` and go to `images/road/<n>-<name>.webp`.
+- **If the look changes, redo its six still prints:** same as the walk's, with `_build/walk-dev.html?scene=road&shoot=1`. The PNGs come out as `road-<n>-<name>.png` and go to `images/road/<n>-<name>.webp`.

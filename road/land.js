@@ -1,7 +1,7 @@
 /* pneuma nomads · the road · the ground
    A MADE UP ROAD. One road running south, with a strip of made up country on either side of it: frosty woods, then hills,
    then pine flats, then the water. It is no real route and no real place. Units are metres.
-   You drive toward -z. +x is on your right (the west, where the sun goes down). */
+   You drive toward -z, then home again toward +z. +x is on your right going south (the west, where the sun goes down). */
 
 import { smooth, lerp, fbm, vnoise, rng, clamp } from "../walk/m.js";
 
@@ -10,7 +10,6 @@ export const EYE = 3.15;                       // how high the camera rides abov
 export const WATER_Y = -1.25;
 export const LANE = 1.8;                       // the middle of the right hand lane, from the centre line
 export const HALF = 3.7;                       // half the width of the road
-export const CAM_D = -3.4;                     // the camera rides left of the centre line, so the road shows past the rig
 
 /* ---------- the road ---------- */
 const bend = (z) => 58 * Math.sin(z / 255 + 0.5) + 15 * Math.sin(z / 96 + 2.2);
@@ -36,32 +35,44 @@ export function lateral(x, z) { return (x - roadX(z)) / Math.hypot(slope(z), 1);
 /** a point beside the road: d metres to the right of the centre line at z */
 export function beside(z, d) { const h = heading(z); return [roadX(z) - h[1] * d, z + h[0] * d]; }
 
+/* ---------- the trip ---------- */
+/* where the truck is at each stop (z along the road): 0 pulling out of the gate, 1 at the screen, 2 at the signpost, 3 at the pump,
+   4 camped by the water, 5 turning back in at the gate */
+export const RIG_Z = [-51, -575, -915, -1250, -1617, -43.5];
+/* where the camera is at each stop: [metres north of the truck, metres right of the centre line, height above the road].
+   out on the road it rides off the rig's rear quarter, well left of the centre line (see road/roadworld.js). */
+export const CAM = [[28, -3.4, 3.15], [17, -9.5, 3.6], [19, -8.5, 3.4], [17, -8.5, 3.5], [27, -3.4, 3.15], [-26, 9.5, 3.2]];
+
 /* ---------- places (all invented): [metres to the right of the centre line, z] ---------- */
-export const STOPS_Z = [-23, -560, -900, -1240, -1590];                    // where the camera is at each stop
+const by = (k, ahead, right) => [right, RIG_Z[k] - ahead];                // a spot by where the truck stops: metres on past it, metres right of the centre line
 export const PLACES = {
   gate: [13.6, -43.5],         // the land's gate
   mailbox: [6.6, -36.5],
   park0: [2.6, -51],           // the rig, half way out of the gate and turning down the road
-  screen: [-19, -589],         // the big roadside screen with the latest road video on it, up where the road tops the hills
-  park1: [-12, -580],          // where the rig pulls in to watch it, at the foot of the screen
-  signpost: [-8.6, -915],
-  park2: [-6.8, -933],
-  pump: [-10, -1253.5],
-  cup: [-15.2, -1256],
-  park3: [-10.2, -1268],       // at the pump
-  camp: [10, -1617],           // where the rig is parked at the end, by the water
+  park5: [8, -46],             // and half way back in, at the end
+  park1: by(1, 0, 5.6),        // pulled over at the foot of the screen
+  screen: by(1, 4, 16.5),      // the big roadside screen with the latest road video on it, up where the road tops the hills
+  park2: by(2, 0, 5.4),
+  signpost: by(2, 7.5, 6.6),
+  park3: by(3, 0, 7.6),        // pulled in at the pump
+  pump: by(3, -1.2, 4.9),
+  cup: by(3, 6, 12.5),
+  camp: [10, RIG_Z[4]],        // where the rig is parked for the winter, by the water
   chairs: [11.5, -1606],
-  north: [5.8, -1627],         // the sign that points back up the road
+  north: [5.8, -1634],         // the sign that points back up the road
 };
 const ROOM = { screen: 12 };                                               // how far the trees stand back from a thing (7.5 if not said)
 const PADS = Object.entries(PLACES).map(([name, [d, z]]) => [...beside(z, d), d, z, ROOM[name] || 7.5]);
 const segDist = (x, z, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = clamp(((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz), 0, 1); return Math.hypot(x - ax - dx * t, z - az - dz * t); };
 /* nothing is planted between where you stand at a stop and what you look at there: [stop, place, how wide a lane to keep clear] */
-const SIGHT = [[0, "park0", 7], [0, "gate", 6], [1, "screen", 10], [1, "park1", 5], [2, "signpost", 6], [3, "cup", 7], [3, "pump", 5], [4, "camp", 8], [4, "chairs", 8], [4, "north", 4]]
-  .map(([k, name, r]) => [...beside(STOPS_Z[k], CAM_D), ...beside(PLACES[name][1], PLACES[name][0]), r]);
+const SIGHT = [[0, "park0", 7], [0, "gate", 6], [1, "screen", 10], [1, "park1", 6], [2, "signpost", 6], [2, "park2", 6], [3, "cup", 7], [3, "pump", 5], [3, "park3", 6],
+               [4, "camp", 8], [4, "chairs", 8], [4, "north", 4], [5, "gate", 6], [5, "park5", 7]]
+  .map(([k, name, r]) => [...beside(RIG_Z[k] + CAM[k][0], CAM[k][1]), ...beside(PLACES[name][1], PLACES[name][0]), r]);
 const inSight = (x, z) => SIGHT.some((s) => segDist(x, z, s[0], s[1], s[2], s[3]) < s[4]);
-/* the gravel where the land's drive meets the road */
-const DRIVE = [...beside(PLACES.gate[1], PLACES.gate[0] + 7), ...beside(PLACES.gate[1] - 3.5, HALF - 0.5)];
+/* gravel: where the land's drive meets the road, and the pull-in at the pump. [from x, z, to x, z, all gravel within, none past] */
+const GRAVEL = [[...beside(PLACES.gate[1], PLACES.gate[0] + 7), ...beside(PLACES.gate[1] - 3.5, HALF - 0.5), 2.3, 4.6],
+                [...beside(RIG_Z[3] + 12, 7.4), ...beside(RIG_Z[3] - 7, 7.4), 3.4, 5.4]];
+const gravel = (x, z) => Math.max(...GRAVEL.map((g) => 1 - smooth(g[4], g[5], segDist(x, z, g[0], g[1], g[2], g[3]))));
 
 function raw(x, z) {
   const t = along(z), w = country(t), d = lateral(x, z), a = Math.abs(d), ry = roadY(z);
@@ -69,9 +80,9 @@ function raw(x, z) {
   const off = smooth(7, 52, a);
   // north: low rolling ground, a wooded ridge well back from the road
   const north = roll * 9 * off + 24 * smooth(110, 270, a) * (0.55 + 0.9 * far);
-  // hills: the road is cut into a slope. the ground climbs on your right and falls away on your left to a valley, with
-  // the next range standing up beyond it
-  const hills = d > 0 ? Math.min(0.5 * Math.max(a - 7, 0), 34) * (0.75 + 0.5 * far) + roll * 10 * off + 60 * smooth(90, 290, a) * (0.4 + far)
+  // hills: the road is cut into a slope. the ground climbs on your left and falls away on your right to a valley, with
+  // the next range standing up beyond it (that side is behind the rig when you ride along with it)
+  const hills = d < 0 ? Math.min(0.5 * Math.max(a - 7, 0), 34) * (0.75 + 0.5 * far) + roll * 10 * off + 60 * smooth(90, 290, a) * (0.4 + far)
                       : -24 * smooth(7, 78, a) + roll * 12 * off + 118 * smooth(105, 300, a) * (0.45 + 0.9 * far);
   // pine flats: nearly level
   const pines = roll * 2.6 * off;
@@ -115,7 +126,7 @@ export function buildGround(step = 4) {
       const patch = fbm(x * 0.021 + 7, zz * 0.021 + 3, 3);
       const sand = w[3] * (d > 0 ? smooth(5, 9, d) : 0.35 + 0.5 * smooth(0.45, 0.6, patch));
       const litter = clamp(w[0] * (0.55 + 0.6 * smooth(0.4, 0.6, patch)) + w[1] * smooth(0.52, 0.66, patch) * 0.8 + w[2] * smooth(0.42, 0.56, patch) * 0.9, 0, 1);
-      const drive = 1 - smooth(2.3, 4.6, segDist(x, zz, DRIVE[0], DRIVE[1], DRIVE[2], DRIVE[3]));
+      const drive = gravel(x, zz);
       mask[k * 4] = (1 - litter) * (1 - sand) * (1 - drive);               // grass
       mask[k * 4 + 1] = litter * (1 - sand) * (1 - drive);                 // leaf litter, pine straw
       mask[k * 4 + 2] = Math.max(1 - smooth(HALF + 0.3, 6.6, a), drive) * (1 - sand);     // the shoulder, and the land's drive
@@ -166,9 +177,10 @@ export function plantTrees(quality = 1) {
         const d = side * (a + rand() * gap), zz = z + (rand() - 0.5) * gap, keep = rand(), kind = rand(), tone = rand(), size = rand(), yaw = rand() * 6.283;
         const [x, pz] = beside(zz, d), patch = fbm(x * 0.021 + 7, pz * 0.021 + 3, 3);
         // how wooded it is here: thick in the north and the hills, open pine flats, a few palms by the water
-        const thick = w[0] * (0.5 + 0.5 * smooth(0.35, 0.6, patch)) + w[1] * (d > 0 ? 0.85 : 0.55 + 0.4 * smooth(60, 120, a)) + w[2] * 0.34 * smooth(0.38, 0.6, patch) + w[3] * (d > 0 ? 0.1 * (1 - smooth(10, 20, a)) : 0.16);
+        const thick = w[0] * (0.5 + 0.5 * smooth(0.35, 0.6, patch)) + w[1] * (d < 0 ? 0.85 : 0.55 + 0.4 * smooth(60, 120, a)) + w[2] * 0.34 * smooth(0.38, 0.6, patch) + w[3] * (d > 0 ? 0.1 * (1 - smooth(10, 20, a)) : 0.16);
         if (keep > thick) continue;
         if (w[3] > 0.5 && d > 21) continue;                                  // nothing grows in the water
+        if (d < 0 && d > -18.5) continue;                                    // the left verge is kept open: the camera rides down it
         if (!clearOf(x, pz) || inSight(x, pz)) continue;
         const pick = w[0] > 0.5 ? 0 : w[1] > 0.5 ? 1 : w[2] > 0.5 ? 2 : 3;
         let species, ink, scale = 0.8 + size * 0.55;
@@ -181,7 +193,7 @@ export function plantTrees(quality = 1) {
     }
   }
   // a few set by hand: palms round the camp at the end
-  for (const [d, z, s] of [[19.5, -1613, 1.15], [17, -1630, 0.95], [-11, -1640, 1.05], [-13, -1600, 1.1], [14, -1644, 0.9]]) {
+  for (const [d, z, s] of [[19.5, -1613, 1.15], [17, -1630, 0.95], [-21, -1640, 1.05], [-22, -1600, 1.1], [14, -1646, 0.9]]) {
     const [x, pz] = beside(z, d);
     out.push({ x, y: height(x, pz) - 0.1, z: pz, scale: s, yaw: z * 0.7, species: SPECIES.PALM, ink: 0, lod: 0 });
   }
@@ -198,7 +210,7 @@ export function plantVerge(quality = 1) {
         const d = side * (a + rand() * cell), zz = z + rand() * cell, keep = rand(), pick = rand(), tall = rand(), seed = rand();
         if (keep > 0.62 - a * 0.012) continue;
         const [x, pz] = beside(zz, d);
-        if (!clearOf(x, pz, 0.56) || segDist(x, pz, DRIVE[0], DRIVE[1], DRIVE[2], DRIVE[3]) < 3.4) continue;
+        if (!clearOf(x, pz, 0.56) || gravel(x, pz) > 0.5) continue;
         if (w[3] > 0.5 && d > 15) continue;                                   // the wet sand
         // frosty grass up north, seed heads in the hills, palmetto under the pines, sea oats on the dunes
         const kind = w[0] > 0.5 ? 1 : w[1] > 0.5 ? (pick < 0.4 ? 0 : 1) : w[2] > 0.5 ? (pick < 0.5 ? 2 : pick < 0.72 ? 0 : 1) : (pick < 0.62 ? 0 : 1);
@@ -210,9 +222,10 @@ export function plantVerge(quality = 1) {
   return new Float32Array(out);
 }
 
-/** poles along the left of the road through the north: [x, y, z]. the wire stops where the hills start. */
+/** poles along the right of the road through the north: [x, y, z]. they tick by behind the rig. the wire stops where the hills start.
+    one is left out, a little south of the gate, where the camera comes across the road at the end of the trip. */
 export function poles() {
   const out = [];
-  for (let z = 2; z > -390; z -= 46) { const [x, pz] = beside(z, -7.6); out.push([x, height(x, pz), pz]); }
+  for (let z = -24; z > -390; z -= 46) { if (z === -70) continue; const [x, pz] = beside(z, 7.6); out.push([x, height(x, pz), pz]); }
   return out;
 }

@@ -511,8 +511,9 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None, extra_
 <a class="skip" href="#main">skip to the good part</a>
 """
 
-# the menu is the walk's stops, in the walk's order. follow along is left out (it's in every footer), and say hi goes last.
-NAV = [("films", "films/"), ("make", "make/"), ("wear", "wear/"), ("the land", "land/"), ("field guide", "field-guide/"), ("the road", "road/"), ("say hi", "say-hi/")]
+# the menu is the walk's stops, in the walk's order. follow along is left out (it's in every footer).
+# the road goes last: it leads out to the pneuma nomads page, the way the walk's last stop does.
+NAV = [("films", "films/"), ("make", "make/"), ("wear", "wear/"), ("the land", "land/"), ("field guide", "field-guide/"), ("say hi", "say-hi/"), ("the road", "road/")]
 
 def nav(base, here=""):
     def link(t, h):
@@ -1204,7 +1205,9 @@ def pn_pin():
     return f'<svg class="pin" viewBox="0 0 11 14" shape-rendering="crispEdges" aria-hidden="true">{r}</svg>'
 
 def road_page():
-    """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html): a road trip you scroll, like the walk.
+    """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html): a drive you scroll. You ride along with
+    the truck and the fifth wheel: out of the gate, south to the water, and home again to the same gate, where the last card
+    leads into the walk (the home page). The walk's last stop leads here, so the two pages make one loop.
     The 3D picture is road/roadworld.js, drawn by the walk's print engine and driven by walk/walk.js. The look is road/road.css.
     Every stop is real html, so the links work with scripts off and when a browser can't draw the world.
     The stop ids are the world's stop ids (road/roadworld.js STOP_IDS), so keep the two in step."""
@@ -1219,8 +1222,8 @@ def road_page():
               ("tiktok", PN_TT, "short clips", "sage"), (PN_SPOTIFY_TEXT, PN_SPOTIFY, "what we play in the truck", "denim")]
     rows = "".join(f'<a class="lnk" style="--c:var(--{c})" href="{u}" target="_blank" rel="noopener"><b>{e(n)}</b><span>{e(d)}</span><i aria-hidden="true">&gt;</i></a>' for n, u, d, c in follow)
     stops = [
-        {"id": "vlog", "name": "the latest vlog", "where": "the hills · morning", "side": "right",
-         "alt": "A print of a big roadside movie screen on a hilltop in fall colour, with a map pin floating over it and the truck and camper pulled over beside it.",
+        {"id": "vlog", "name": "the latest vlog", "where": "the hills · morning", "side": "left",
+         "alt": "A print of a pickup truck and fifth wheel camper pulled over under a big roadside movie screen on a hilltop in fall colour, with a map pin floating over the screen.",
          "body": f"""<p>Our newest video from the road. Pull over and watch.</p>
         <a class="vlog" href="{vlog_url}" target="_blank" rel="noopener">
           <span class="thumb">{pic(base, v['img'], v['title'], (330, 390))}<span class="play" aria-hidden="true"></span></span>
@@ -1228,18 +1231,22 @@ def road_page():
         </a>""",
          "links": ext("watch it on youtube", vlog_url, True) + ext("all the road videos", PN_YT)},
         {"id": "follow", "name": "follow along", "where": "the pines · midday", "side": "left",
-         "alt": "A print of a wooden signpost with four coloured boards pointing four ways, beside a road through pine woods. The camper is pulled over a little way on.",
+         "alt": "A print of the truck and camper pulled up at a wooden signpost with four coloured boards pointing four ways, on a road through pine woods.",
          "body": f"""<p>Four signs, four ways to come along. The long videos go up on YouTube first.</p>
         <div class="links">{rows}</div>""",
          "links": ""},
-        {"id": "fuel", "name": "fuel", "where": "last gas · afternoon", "side": "right",
-         "alt": "A print of an old red gas pump with a lit globe, a giant coffee cup on a pole, and the truck and camper pulled in beside them. Palms and water show down the road.",
+        {"id": "fuel", "name": "fuel", "where": "last gas · afternoon", "side": "left",
+         "alt": "A print of the truck and camper pulled in at an old red gas pump with a lit globe, under a giant coffee cup on a pole, with the afternoon sun behind them.",
          "body": "<p>The truck runs on diesel. We run on coffee. If the videos are worth a cup to you, here's the jar.</p>",
          "links": ext("buy us a coffee", PN_COFFEE, True)},
-        {"id": "home", "name": "the rest of the year", "where": "the water · sunset", "side": "left",
+        {"id": "winter", "name": "winter", "where": "the water · sunset", "side": "left",
          "alt": "A print of the truck and camper parked by the water at sunset, with two camp chairs facing the sun, palm trees, and a small road sign with a house on it.",
-         "body": "<p>This is where the road stops for the winter. Summers we're home on 34 acres in Central New York, building a homestead. That story lives on Same Old Samsara, along with the jewelry and the patterns.</p>",
-         "links": loc("watch the land", "films/", True) + loc("jewelry", "wear/") + loc("patterns", "patterns/") + loc("same old samsara", "")},
+         "body": "<p>This is the warm air we were following. We park by the water, film all winter and post as we go.</p>",
+         "links": ext("subscribe on youtube", f"{PN_YT}?sub_confirmation=1", True)},
+        {"id": "home", "name": "home again", "where": "the gate · first light", "side": "left",
+         "alt": "A print of the truck and camper turning in at an open wooden gate at first light in spring, with a mailbox by the road and a map pin floating over the gate.",
+         "body": "<p>Come spring we drive it all back. Summers we're home on 34 acres in Central New York, building a homestead and filming it. That half is called Same Old Samsara, and it starts right here at the gate.</p>",
+         "links": loc("walk the land", "", True) + loc("watch the land", "films/") + loc("jewelry", "wear/") + loc("patterns", "patterns/")},
     ]
     still = lambda n, sid, alt, lazy=True: pic(base, f"images/road/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
     trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
@@ -1289,7 +1296,7 @@ def road_page():
   <nav aria-label="more"><a href="{PN_YT}" target="_blank" rel="noopener">youtube</a><a href="{base}">the land</a></nav>
 </header>
 <main id="main">
-<section class="walk" id="walk" aria-label="the road south" data-scene="../road/roadworld.js" data-film="{base}{variant(v['img'], 480)}">
+<section class="walk" id="walk" aria-label="the road south, and home again" data-scene="../road/roadworld.js" data-film="{base}{variant(v['img'], 480)}">
 <nav class="trail" aria-label="stops on the road"><div class="trail-in">
   <ol id="trail-list">
     <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>leaving</span></a></li>
@@ -1320,9 +1327,9 @@ def road_page():
   </header>{cards}
   <div class="stop end" id="stop-end">
     <div class="end-text">
-      <p class="tag">that's the road.</p>
-      <p>We're back on the land in May.</p>
-      <div class="btns"><a class="btn solid" href="#walk" data-again>drive it again</a><a class="btn" href="{base}">back to the land</a></div>
+      <p class="tag">the same old cycle.</p>
+      <p>Out in the fall, home in the spring.</p>
+      <div class="btns"><a class="btn solid" href="{base}">walk the land</a><a class="btn" href="#walk" data-again>drive it again</a></div>
     </div>
   </div>
 </div>
