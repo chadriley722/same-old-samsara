@@ -41,6 +41,8 @@ export class Geo {
   }
   /** set the sway weight of every vertex from its position */
   sway(fn) { for (let k = 0; k < this.v.length; k += STRIDE) this.v[k + 7] = fn(this.v[k], this.v[k + 1], this.v[k + 2], this.v[k + 7]); return this; }
+  /** push every point somewhere else (the normals stay as they were, which is fine for a gentle push) */
+  warp(fn) { for (let k = 0; k < this.v.length; k += STRIDE) { const p = fn(this.v[k], this.v[k + 1], this.v[k + 2]); this.v[k] = p[0]; this.v[k + 1] = p[1]; this.v[k + 2] = p[2]; } return this; }
   build() { return { data: new Float32Array(this.v), idx: this.n > 65535 ? new Uint32Array(this.i) : new Uint16Array(this.i), count: this.i.length }; }
 }
 
@@ -440,24 +442,142 @@ export function stakes() {
 
 export function fencePost() { return new Geo().add(cyl(0.07, 0.06, 1.25, 5, P(INK.WOOD, STYLE.PLANK), 1), { roll: 0.03 }); }
 
-/** the raven. body here, wings separate so they can beat. faces +z. */
-export function ravenBody() {
-  const g = new Geo(), ink = P(INK.RAVEN, STYLE.PLAIN, 0, -1);      // glow -1: firelight leaves the raven alone
-  g.add(blob(0.11, 0.115, 0.25, 2, ink, 1), { pos: [0, 0, 0], pitch: -0.22 });
-  g.add(blob(0.075, 0.075, 0.09, 1, ink, 1), { pos: [0, 0.1, 0.23] });
-  g.add(cyl(0.036, 0.004, 0.15, 6, P(INK.PEPPER, STYLE.PLAIN, 0, -1), 2, false), { pos: [0, 0.095, 0.3], pitch: Math.PI / 2 + 0.12 });
-  // tail: a wedge
-  const a = g.vert(0, -0.03, -0.2, 0, 1, 0, ink, 1), b = g.vert(-0.1, -0.07, -0.52, 0, 1, 0, ink, 1), c = g.vert(0.1, -0.07, -0.52, 0, 1, 0, ink, 1), d = g.vert(0, -0.08, -0.58, 0, 1, 0, ink, 1);
-  g.tri(a, b, c); g.tri(b, d, c);
-  for (const x of [-0.045, 0.045]) g.add(tube([x, -0.09, 0.02], [x, -0.24, 0.05], 0.011, 0.009, 4, P(INK.PEPPER, STYLE.PLAIN, 0, -1), 2, false));
+/* ---------- the raven ----------
+   Made to read as a raven and not a crow, and to match the bird in the logo: a big heavy body, a long thick bill whose
+   top edge hooks down, shaggy throat feathers, long wings that end in spread "fingers", and a wedge tail (the middle
+   feathers are the longest). One flat ink, like the logo.
+   It comes in pieces so the world can pose it: body, head, lower bill, tail, legs, the folded wings for when it sits,
+   and two halves of each open wing. Every piece faces +z. The numbers are the bird at rest, before the world scales it. */
+const RV = P(INK.RAVEN, STYLE.PLAIN, 0, -1);        // glow -1: firelight leaves the raven alone
+export const RAVEN = {                              // where the pieces join (the world's rig uses these)
+  head: [0, 0.075, 0.31], jaw: [0, 0, 0.07], tail: [0, 0.012, -0.25], shoulder: [0.075, 0.07, 0.09], wrist: 0.4, feet: -0.272,
+};
+
+/** a shape pulled through oval rings along z. each ring: [z, middle y, half width, height above the middle, depth below it] */
+function loft(rings, sides, paint, part = 0) {
+  const g = new Geo();
+  rings.forEach(([z, cy, hw, up, dn], j) => {
+    for (let k = 0; k <= sides; k++) {
+      const a = (k / sides) * TAU, c = Math.cos(a), s = Math.sin(a), ry = s >= 0 ? up : dn;
+      const nx = c / Math.max(hw, 1e-4), ny = s / Math.max(ry, 1e-4), l = Math.hypot(nx, ny) || 1;
+      g.vert(c * hw, cy + s * ry, z, nx / l, ny / l, 0, paint, part);
+    }
+    if (j) for (let k = 0; k < sides; k++) { const a = (j - 1) * (sides + 1) + k, b = a + sides + 1; g.quad(a, a + 1, b + 1, b); }
+  });
+  for (const j of [0, rings.length - 1]) {          // close both ends
+    const [z, cy] = rings[j], c0 = g.vert(0, cy, z, 0, 0, j ? 1 : -1, paint, part), base = j * (sides + 1);
+    for (let k = 0; k < sides; k++) (j ? g.tri(c0, base + k, base + k + 1) : g.tri(c0, base + k + 1, base + k));
+  }
   return g;
 }
-export function ravenWing(side) {      // root at the origin, reaching out along x
-  const g = new Geo(), ink = P(INK.RAVEN, STYLE.PLAIN, 0, -1), s = side;
-  const pts = [[0, 0, 0.12], [0.3 * s, 0.02, 0.17], [0.62 * s, 0, 0.08], [0.78 * s, -0.01, -0.06], [0.6 * s, 0, -0.16], [0.36 * s, 0, -0.2], [0.14 * s, 0, -0.22], [0, 0, -0.14]];
-  const c = g.vert(0.3 * s, 0.01, -0.02, 0, 1, 0, [ink[0], -0.14, ink[2], ink[3]], 3);
-  pts.forEach((p) => g.vert(p[0], p[1], p[2], 0, 1, 0, [ink[0], -Math.abs(p[0]) * 0.62, ink[2], ink[3]], 3));
-  for (let k = 0; k < pts.length; k++) g.tri(c, c + 1 + k, c + 1 + ((k + 1) % pts.length));
+
+/** flat feathers lie in the xz plane and face up. this stitches a fan of triangles round a middle point so the top is the front. */
+function fanXZ(g, c, pts, paint, part, y = 0) {
+  const c0 = g.vert(c[0], y, c[1], 0, 1, 0, paint, part), n = pts.length;
+  pts.forEach((p) => g.vert(p[0], y, p[1], 0, 1, 0, paint, part));
+  for (let k = 0; k < n; k++) {
+    const a = pts[k], b = pts[(k + 1) % n], i = c0 + 1 + k, j = c0 + 1 + ((k + 1) % n);
+    if ((a[1] - c[1]) * (b[0] - c[0]) - (a[0] - c[0]) * (b[1] - c[1]) >= 0) g.tri(c0, i, j); else g.tri(c0, j, i);
+  }
+}
+
+/** one feather: from its root, out along an angle (0 is +x, turning toward -z). a "finger" narrows early, so sky shows between the tips. */
+function blade(g, x, z, ang, len, w, part, y = 0, finger = false) {
+  const ax = Math.cos(ang), az = -Math.sin(ang), px = Math.sin(ang), pz = Math.cos(ang);
+  const edge = finger ? [[0, 0.5], [0.3, 1], [0.56, 0.7], [0.9, 0.52], [0.985, 0.24]] : [[0, 0.55], [0.4, 1], [0.8, 0.82], [0.96, 0.4]];
+  const at = (t, h) => [x + ax * len * t + px * w * h, z + az * len * t + pz * w * h];
+  fanXZ(g, at(0.45, 0), [...edge.map(([t, h]) => at(t, h)), at(1, 0), ...edge.slice().reverse().map(([t, h]) => at(t, -h))], RV, part, y);
+}
+
+/** the body, in flight trim: a deep chest, a thick neck, a ragged belly */
+export function ravenTorso() {
+  const g = new Geo(), r = rng(11);
+  g.add(blob(0.125, 0.13, 0.28, 2, RV, 1, { seed: 3, bump: 0.05, freq: 3 })
+    .warp((x, y, z) => { const t = z < 0 ? -z / 0.28 : 0, k = 1 - 0.5 * Math.pow(t, 1.6); return [x * k, y * k + 0.02 * t, z]; }));      // narrower toward the tail
+  g.add(blob(0.095, 0.1, 0.13, 1, RV, 1), { pos: [0, 0.035, 0.2] });
+  for (let k = 0; k < 6; k++) {
+    const z = 0.13 - k * 0.055, x = (r() - 0.5) * 0.1, y = -0.105 + Math.abs(z) * 0.12;
+    g.add(tube([x, y, z], [x * 1.3, y - 0.055, z - 0.075], 0.032, 0.003, 4, RV, 1, false));
+  }
+  return g;
+}
+
+/** what is added when it sits: the wings folded along the flanks, their long tips lying over the tail, and the thigh feathers */
+export function ravenFolded() {
+  const g = new Geo();
+  for (const s of [1, -1]) {
+    g.add(blob(0.04, 0.105, 0.245, 1, RV, 3, { seed: 5 }), { pos: [s * 0.108, 0.035, -0.07], roll: s * 0.25, pitch: 0.08 });
+    g.add(blob(0.02, 0.036, 0.17, 1, RV, 5), { pos: [s * 0.055, 0.03, -0.37], yaw: s * 0.16, pitch: 0.05 });
+    g.add(blob(0.062, 0.085, 0.075, 1, RV, 1, { seed: 9, bump: 0.12 }), { pos: [s * 0.058, -0.11, -0.035] });
+  }
+  return g;
+}
+
+/** two strong legs, standing. the feet are at RAVEN.feet. */
+export function ravenLegs() {
+  const g = new Geo(), y = RAVEN.feet;
+  for (const s of [1, -1]) {
+    const ankle = [s * 0.052, y + 0.012, 0.035];
+    g.add(tube([s * 0.05, -0.1, 0], ankle, 0.017, 0.012, 5, RV, 2, false));
+    for (const a of [-0.5, 0, 0.5]) g.add(tube(ankle, [ankle[0] + Math.sin(a) * 0.085, y + 0.004, ankle[2] + Math.cos(a) * 0.085], 0.011, 0.005, 4, RV, 2, false));
+    g.add(tube(ankle, [ankle[0], y + 0.004, ankle[2] - 0.06], 0.011, 0.005, 4, RV, 2, false));
+  }
+  return g;
+}
+
+/** the head: a flat crown, a long heavy bill, bristles over its base, a pale eye (paper showing through, as in the logo),
+    and the hackles: the loose pointed throat feathers that make a raven look bearded. the middle of the skull is the origin. */
+export function ravenHead() {
+  const g = new Geo(), r = rng(7);
+  g.add(blob(0.076, 0.07, 0.098, 2, RV, 1).warp((x, y, z) => [x, y > 0 ? y * 0.9 : y, z]), { pos: [0, 0, 0.01] });
+  g.add(blob(0.066, 0.06, 0.09, 1, RV, 1), { pos: [0, -0.04, -0.01] });
+  g.add(loft([[0.07, 0.006, 0.037, 0.036, 0.012], [0.14, 0.004, 0.031, 0.034, 0.01], [0.2, -0.004, 0.022, 0.027, 0.008], [0.245, -0.017, 0.012, 0.016, 0.006], [0.272, -0.034, 0.003, 0.004, 0.003]], 8, RV, 2));
+  g.add(blob(0.03, 0.022, 0.058, 1, RV, 1), { pos: [0, 0.034, 0.115], pitch: 0.12 });
+  for (const s of [1, -1]) g.add(blob(0.012, 0.013, 0.013, 1, P(INK.CREAM, STYLE.PLAIN, 0, -1), 8), { pos: [s * 0.067, 0.014, 0.055] });
+  for (let k = 0; k < 11; k++) {
+    const row = (k % 3) - 1, t = Math.floor(k / 3) / 3;                    // three rows, from the chin down to the breast
+    const from = [row * 0.03, -0.062 - t * 0.03, 0.05 - t * 0.11], len = 0.09 + r() * 0.055;
+    const d = [row * 0.35 + (r() - 0.5) * 0.2, -0.86, -0.42 + (r() - 0.5) * 0.3], l = Math.hypot(d[0], d[1], d[2]) / len;
+    g.add(tube(from, [from[0] + d[0] / l, from[1] + d[1] / l, from[2] + d[2] / l], 0.024, 0.002, 4, RV, 6, false));
+  }
+  return g;
+}
+
+/** the lower bill. its hinge, at the corner of the mouth, is the origin. */
+export function ravenJaw() {
+  return loft([[0, -0.014, 0.03, 0.01, 0.018], [0.08, -0.016, 0.024, 0.008, 0.016], [0.15, -0.022, 0.012, 0.006, 0.01], [0.185, -0.028, 0.003, 0.003, 0.004]], 8, RV, 2);
+}
+
+/** the tail: a wedge. root at the origin, pointing back. the world closes or fans it by squeezing it sideways. */
+export function ravenTail() {
+  const g = new Geo(), N = 9;
+  for (let k = 0; k < N; k++) {
+    const t = (k - (N - 1) / 2) / ((N - 1) / 2);                           // -1 .. 1 across the fan
+    blade(g, t * 0.03, 0.02, Math.PI / 2 - t * 0.5, 0.5 - 0.25 * Math.abs(t), 0.05, 4, -0.03 * t * t);      // a shallow roof, so it has some body from the side
+  }
+  return g;
+}
+
+/** the inner half of an open wing: the arm, from the shoulder (the origin) to the wrist. side is 1 or -1. */
+export function ravenArm(side) {
+  const g = new Geo(), s = side, N = 7;
+  for (let k = 0; k < N; k++) {
+    const t = k / (N - 1), a = Math.PI / 2 + lerp(0.2, -0.4, t);
+    blade(g, s * lerp(0.03, RAVEN.wrist, t), -0.05, s > 0 ? a : Math.PI - a, lerp(0.25, 0.31, t), 0.056, 4, -0.002 * (N - k));
+  }
+  fanXZ(g, [s * 0.2, -0.01], [[0, 0.075], [s * 0.2, 0.09], [s * 0.4, 0.07], [s * 0.42, -0.06], [s * 0.2, -0.11], [0, -0.1]], RV, 3, 0.004);
+  return g;
+}
+
+/** the outer half: the hand, from the wrist (the origin) out. the long primaries spread like fingers. */
+export function ravenHand(side) {
+  const g = new Geo(), s = side;
+  const F = [[-0.12, 0.5], [0, 0.58], [0.13, 0.61], [0.27, 0.59], [0.42, 0.54], [0.58, 0.48], [0.76, 0.42], [0.96, 0.38], [1.17, 0.35]];      // angle, length
+  F.forEach(([a, len], k) => {
+    const t = k / (F.length - 1);
+    blade(g, s * 0.13 * (1 - t), -0.012 - 0.03 * t, s > 0 ? a : Math.PI - a, len, lerp(0.036, 0.052, t), 5, -0.002 * k, k < 5);
+  });
+  fanXZ(g, [s * 0.1, -0.03], [[0, 0.055], [s * 0.13, 0.06], [s * 0.235, 0.03], [s * 0.22, -0.05], [s * 0.12, -0.13], [0, -0.16]], RV, 3, 0.004);
   return g;
 }
 

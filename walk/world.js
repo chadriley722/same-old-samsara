@@ -64,7 +64,15 @@ const rotY = (out, x, y, z, yaw, s = 1) => {
   return out;
 };
 const local = (p, l) => [p.x + Math.cos(p.yaw) * l[0] + Math.sin(p.yaw) * l[2], p.y + l[1], p.z - Math.sin(p.yaw) * l[0] + Math.cos(p.yaw) * l[2]];
-const angLerp = (a, b, t) => { let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return a + d * t; };
+const angDiff = (a, b) => { let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; };
+const angLerp = (a, b, t) => a + angDiff(a, b) * t;
+/* posing a jointed thing (the raven): each of these multiplies a matrix on the right, in place.
+   turns follow the right hand rule: tX tips +z down, tY swings +x back toward -z, tZ lifts +x. */
+const mMove = (m, x, y, z) => { m[12] += m[0] * x + m[4] * y + m[8] * z; m[13] += m[1] * x + m[5] * y + m[9] * z; m[14] += m[2] * x + m[6] * y + m[10] * z; return m; };
+const mTurnX = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const y = m[4 + i], z = m[8 + i]; m[4 + i] = y * c + z * s; m[8 + i] = z * c - y * s; } return m; };
+const mTurnY = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const x = m[i], z = m[8 + i]; m[i] = x * c - z * s; m[8 + i] = x * s + z * c; } return m; };
+const mTurnZ = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const x = m[i], y = m[4 + i]; m[i] = x * c + y * s; m[4 + i] = y * c - x * s; } return m; };
+const RAVEN_SIZE = 1.5;        // a good deal bigger than life, so it reads from across the meadow
 
 export class World {
   /** tier: 2 desktop, 1 phone, 0 weak. throws if WebGL2 is not there. */
@@ -170,7 +178,14 @@ export class World {
     });
     this.props.push({ mesh: this.mesh(fence.build()), model: m4.create(), id: 248 });
     // the raven, and the geese
-    this.raven = { perch: this.mesh(shapes.ravenBody().build()), fly: this.mesh(new shapes.Geo().add(shapes.ravenBody()).add(shapes.ravenWing(1), { pos: [0.07, 0.05, 0.03] }).add(shapes.ravenWing(-1), { pos: [-0.07, 0.05, 0.03] }).build()), model: m4.create(), pos: [0, 0, 0] };
+    const piece = (g) => ({ mesh: this.mesh(g.build()), m: m4.create() });
+    this.raven = {
+      torso: piece(shapes.ravenTorso()), folded: piece(shapes.ravenFolded()), legs: piece(shapes.ravenLegs()), head: piece(shapes.ravenHead()),
+      jaw: piece(shapes.ravenJaw()), tail: piece(shapes.ravenTail()),
+      arm: [piece(shapes.ravenArm(1)), piece(shapes.ravenArm(-1))], hand: [piece(shapes.ravenHand(1)), piece(shapes.ravenHand(-1))],
+      root: m4.create(), draw: [], pos: [0, 0, 0], yaw: 0, bank: 0, climb: 0, u: 0, dir: 1, wait: 0, turn: 0, beat: 0,
+      air: false, settle: 2.6, fresh: true,          // settle: it lands (and first appears) with its wings up, like the logo, then folds them
+    };
     const goose = new shapes.Geo().add(shapes.goose()).add(shapes.gooseWing(1)).add(shapes.gooseWing(-1));
     this.geese = this.mesh(goose.build());
     const gd = new Float32Array(9 * 8);
@@ -365,6 +380,17 @@ export class World {
     return (this.cam = { eye, fwd, right, up, tanV: Math.tan(vfov / 2), tanH: Math.tan(vfov / 2) * aspect, shift, yaw, s, k, f, e, ww });
   }
 
+  /** workbench only: a close look at the raven from any side. spy: { dist, yaw, pitch, fov } */
+  spy({ dist = 6, yaw = 0, pitch = 0.1, fov = 30 }) {
+    const t = v3.add(this.raven.pos, [0, 0.2, 0]), fwd = [Math.sin(yaw) * Math.cos(pitch), -Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
+    const eye = v3.sub(t, v3.scale(fwd, dist)), aspect = this.cssW / this.cssH, vfov = fov * DEG;
+    m4.lookAt(this.view, eye, t, [0, 1, 0]);
+    m4.perspective(this.proj, vfov, aspect, NEAR, FAR, 0, 0);
+    m4.mul(this.vp, this.proj, this.view);
+    const right = v3.norm(v3.cross(fwd, [0, 1, 0])), up = v3.cross(right, fwd);
+    return (this.cam = { ...this.cam, eye, fwd, right, up, tanV: Math.tan(vfov / 2), tanH: Math.tan(vfov / 2) * aspect, shift: [0, 0] });
+  }
+
   /** where a world point lands on the page, in css pixels. null when it is behind you or off the picture. */
   project(p, margin = 0) {
     const c = m4.project(this.vp, p);
@@ -381,12 +407,13 @@ export class World {
     if (gl.isContextLost() || !this.fbo) return;
     const u = state.u, t = Math.floor(state.time * 12) / 12;          // everything that sways is drawn "on twos", like a flip book
     const L = (this.light = lightAt(u, state.night || 0, this.lit, this.shade));
-    const cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide, state.seen || 1);
+    let cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide, state.seen || 1);
     const P_ = this.prog;
     const dt = state.still ? 1 : clamp(state.time - (this.lastTime === undefined ? state.time : this.lastTime), 0, 0.1);
     this.lastTime = state.time;
 
-    this.animate(u, state.time, L, dt);
+    this.animate(u, state.time, L, dt, !!state.still);
+    if (state.spy) cam = this.spy(state.spy);
 
     // --- the shadow block ---
     const shadowOn = this.shadowRes > 0 && L.shadow > 0.02;
@@ -444,23 +471,110 @@ export class World {
     gl.drawArrays(gl.TRIANGLES, 0, 3);
   }
 
-  /* the things that move on their own: the raven, the fire, the flag, the geese */
-  animate(u, time, L, dt) {
-    const k = clamp(Math.floor(u), 0, STOP_IDS.length - 2), f = u - k;
-    // the raven leaves a little after you do, and is there before you arrive
-    const a = this.perches[k], b = this.perches[k + 1], ft = smooth(0.1, 0.62, f), R = this.raven;
-    const dist = Math.hypot(b[0] - a[0], b[2] - a[2]);
-    const arc = Math.sin(Math.PI * ft) * (3 + dist * 0.07);
-    const pos = [lerp(a[0], b[0], ft), lerp(a[1], b[1], ft) + arc, lerp(a[2], b[2], ft)];
-    R.flying = ft > 0.001 && ft < 0.999;
-    if (k + 1 === STOP_IDS.length - 1 && ft >= 0.999) { R.flying = true; const c = time * 0.35; pos[0] += Math.cos(c) * 7; pos[2] += Math.sin(c) * 7; R.yaw = Math.atan2(-Math.sin(c), Math.cos(c)); }
-    else if (R.flying) R.yaw = Math.atan2(b[0] - a[0], b[2] - a[2]);
-    else { const c = this.cam; R.yaw = c ? Math.atan2(c.eye[0] - pos[0], c.eye[2] - pos[2]) + 0.7 : 0; }
+  /* The raven. It leaves a little after you do and is waiting before you arrive. In the air it soars: a few slow, deep
+     beats to get going, then a long glide on flat wings with the tips spread, and a wings-up landing (the pose in the
+     logo). Stop half way and it wheels in a circle until you walk on. Sitting, it turns side on, watches you, and looks about. */
+  flyRaven(u, time, dt, still) {
+    const R = this.raven, J = shapes.RAVEN, n = STOP_IDS.length, k = clamp(Math.floor(u), 0, n - 2), f = u - k;
+    const ft = smooth(0.1, 0.62, f);
+    const end = k === n - 2 && ft >= 0.999;                                  // the last stop: it stays up, circling
+    const air = (ft > 0.001 && ft < 0.999) || end;
+
+    // where the walk says it should be: off its perch, out in front of where you are looking (so it leads you, and stays
+    // in the picture), then down to the next perch
+    const c = this.cam, fl = Math.hypot(c.fwd[0], c.fwd[2]) || 1, G = [c.eye[0] + (c.fwd[0] / fl) * 24, 0, c.eye[2] + (c.fwd[2] / fl) * 24];
+    G[1] = Math.max(c.eye[1] + 5.5, land.height(G[0], G[2]) + 4.5);
+    const spot = (uu) => {
+      const kk = clamp(Math.floor(uu), 0, n - 2), t = smooth(0.1, 0.62, clamp(uu - kk, 0, 1)), A = this.perches[kk], B = this.perches[kk + 1];
+      const sw = Math.sin(Math.PI * t), lead = Math.pow(sw, 0.8) * 0.85;
+      return [lerp(lerp(A[0], B[0], t), G[0], lead), lerp(lerp(A[1], B[1], t), G[1], lead) + sw, lerp(lerp(A[2], B[2], t), G[2], lead)];
+    };
+    const here = spot(u), want = [here[0], here[1], here[2]], swell = Math.sin(Math.PI * ft);
+    // stand still while it is up there, and it circles
+    if (Math.abs(u - R.u) > 1e-6) R.dir = u > R.u ? 1 : -1;
+    const idle = Math.abs(u - R.u) <= 0.03 * dt;
+    R.u = u;
+    R.wait = still || !air ? 0 : clamp(R.wait + (idle ? dt * 0.7 : -dt * 3), 0, 1);
+    if (!still) R.turn += dt * 0.62;
+    const ring = end ? 9 : 7 * smooth(0, 1, R.wait) * Math.sqrt(swell);
+    want[0] += Math.cos(R.turn) * ring; want[1] += Math.sin(R.turn * 0.5) * ring * 0.1; want[2] += Math.sin(R.turn) * ring;
+
+    // it is carried toward that point, and faces the way it is really moving (so it never flies backwards)
+    const p = R.pos, jump = still || R.fresh || Math.hypot(want[0] - p[0], want[2] - p[2]) > 70, ease = jump ? 1 : 1 - Math.exp(-dt * 12);
+    const from = [p[0], p[1], p[2]], h = Math.max(dt, 1e-3);
+    for (let i = 0; i < 3; i++) p[i] += (want[i] - p[i]) * ease;
+    R.fresh = false;
+    const vx = jump ? 0 : (p[0] - from[0]) / h, vy = jump ? 0 : (p[1] - from[1]) / h, vz = jump ? 0 : (p[2] - from[2]) / h, sp = Math.hypot(vx, vz);
+
+    let pitch, armUp, handUp, armBack, handBack, twist, fan, tailDown, legs, wings, headTurn, nod, gape, hop = 0, vee = 0;
+    if (air) {
+      let to = R.yaw;
+      if (jump) { const next = spot(u + 0.004 * R.dir); to = end ? -R.turn : Math.atan2(next[0] - here[0], next[2] - here[2]); }
+      else if (sp > 0.6) to = Math.atan2(vx, vz);
+      const d = angDiff(R.yaw, to), rate = jump ? (end ? -0.62 : 0) : d * 6;        // how fast it is turning: it leans into the turn
+      R.yaw = jump ? to : R.yaw + d * (1 - Math.exp(-dt * 6));
+      R.bank += (clamp(-rate * 0.55, -0.7, 0.7) - R.bank) * (jump ? 1 : 1 - Math.exp(-dt * 3.5));
+      R.climb += (clamp(vy / Math.max(sp, 4), -0.45, 0.45) - R.climb) * (jump ? 1 : 1 - Math.exp(-dt * 4));
+      const leave = end ? 0.5 : R.dir > 0 ? ft : 1 - ft;                         // 0 at the perch it left, 1 at the one it is making for
+      const rise = end ? 0 : (1 - smooth(0.02, 0.18, leave)) * (1 - R.wait);      // a couple of slow beats to get going, then it glides
+      const flare = end ? 0 : smooth(0.8, 0.975, leave);                         // the landing: wings up, tail fanned, legs down
+      R.beat = still ? 0.9 : R.beat + dt * 12.5;                                 // two beats a second: slow and deep
+      const B = rise * 0.8;
+      armUp = lerp(0.1, 1, flare) + B * 0.85 * Math.sin(R.beat) + Math.sin(time * 1.1) * 0.03;
+      handUp = lerp(0.2, 0.3, flare) + B * 0.7 * Math.sin(R.beat - 1.1);
+      armBack = lerp(0.06, -0.1, flare) + B * 0.08;
+      handBack = lerp(0.16, -0.04, flare) + B * (0.3 - 0.3 * Math.sin(R.beat + 0.4));
+      twist = lerp(0, -0.5, flare) + B * 0.15 * Math.cos(R.beat);
+      pitch = lerp(0.03 + R.climb * 0.8, 0.55, flare) + B * 0.1;
+      fan = lerp(lerp(0.8, 0.55, rise), 1, flare); tailDown = lerp(0.02 - R.climb * 0.3, 0.45, flare);
+      legs = flare; wings = 1;
+      headTurn = clamp(-R.bank * 0.6, -0.4, 0.4); nod = 0.1 + flare * 0.25; gape = 0.04 + this.ravenHop * 0.45;
+      R.settle = 1;                                                              // when it lands it holds its wings up a moment
+    } else {
+      const toYou = Math.atan2(c.eye[0] - p[0], c.eye[2] - p[2]), face = toYou - 1.15;      // side on, bill to the left, as in the logo
+      R.yaw = jump ? face : angLerp(R.yaw, face, 1 - Math.exp(-dt * 5));
+      R.bank = 0; R.climb = 0;
+      if (this.ravenHop > 0.6) R.settle = Math.max(R.settle, 0.95);               // poked: the wings go up
+      if (!still) R.settle = Math.max(0, R.settle - dt);
+      const up = still ? (u < 0.02 ? 1 : 0) : smooth(0.15, 0.5, R.settle);        // 1 wings up, 0 folded away
+      armUp = lerp(-0.25, 1.15, up); handUp = lerp(-0.5, 0.2, up); armBack = lerp(0.9, 0, up); handBack = lerp(1.3, -0.04, up);
+      twist = lerp(0, -0.25, up); pitch = lerp(0.4, 0.55, up) - this.ravenHop * 0.2; fan = lerp(0.55, 1, up); tailDown = lerp(-0.03, 0.3, up);      // folded, the tail tip stays level with its feet
+      vee = up * 0.4;                                                             // one wing a little forward, one back: the V in the logo
+      legs = 1; wings = up > 0.02 ? 1 : 0;
+      headTurn = clamp(angDiff(R.yaw, toYou), -1.3, 1.3) * 0.3 + (still ? 0 : Math.sin(Math.floor(time / 2.9) * 7.31) * 0.35 * (1 - this.ravenHop));      // mostly in profile, so the bill shows
+      nod = 0.06 + (still ? 0 : Math.sin(Math.floor(time / 4.3) * 3.7) * 0.1) - this.ravenHop * 0.35;
+      gape = 0.04 + this.ravenHop * 0.5;
+      hop = Math.abs(Math.sin(time * 14)) * this.ravenHop * 0.12;
+    }
+    R.air = air;
     this.ravenHop *= Math.exp(-dt * 6);
-    pos[1] += Math.abs(Math.sin(time * 14)) * this.ravenHop * 0.25;
-    R.pos = pos;
-    rotY(R.model, pos[0], pos[1] + (R.flying ? 0 : 0.2), pos[2], R.yaw, 1.7);
-    this.hot.raven = [pos[0], pos[1] + 0.15, pos[2]];
+
+    // pose the pieces
+    const set = (piece, m) => { piece.m.set(m); return piece.m; };
+    const root = mTurnZ(rotY(R.root, p[0], p[1] + (air ? 0 : 0.2) + hop, p[2], R.yaw, RAVEN_SIZE), R.bank);
+    const body = mTurnX(set(R.torso, root), -pitch);
+    set(R.folded, body);
+    mTurnX(set(R.legs, root), -0.4 * (1 - legs));
+    const head = mTurnY(mTurnX(mMove(set(R.head, body), J.head[0], J.head[1], J.head[2]), pitch * 0.9 + nod), headTurn);
+    for (let i = 0; i < 12; i++) head[i] *= 1.12;                                 // a raven's head and bill are big for its body
+    mTurnX(mMove(set(R.jaw, head), J.jaw[0], J.jaw[1], J.jaw[2]), gape);
+    const tail = mTurnZ(mTurnX(mMove(set(R.tail, body), J.tail[0], J.tail[1], J.tail[2]), -tailDown), air ? -R.bank * 0.5 : 0.3);
+    for (let i = 0; i < 3; i++) tail[i] *= fan;
+    for (let i = 0; i < 2; i++) {
+      const s = i ? -1 : 1;
+      const arm = mTurnX(mTurnY(mTurnZ(mMove(set(R.arm[i], body), s * J.shoulder[0], J.shoulder[1], J.shoulder[2]), s * armUp), s * armBack - vee), twist);
+      mTurnY(mTurnZ(mMove(set(R.hand[i], arm), s * J.wrist, 0, 0), s * handUp), s * handBack);
+    }
+    R.draw.length = 0;
+    R.draw.push(R.torso, R.head, R.jaw, R.tail);
+    if (wings) R.draw.push(R.arm[0], R.arm[1], R.hand[0], R.hand[1]); else R.draw.push(R.folded);
+    if (legs > 0.12) R.draw.push(R.legs);
+    this.hot.raven = [p[0], p[1] + (air ? 0 : 0.3), p[2]];
+  }
+
+  /* the things that move on their own: the raven, the fire, the flag, the geese */
+  animate(u, time, L, dt, still) {
+    this.flyRaven(u, time, dt, still);
     // fire
     this.fireKick *= Math.exp(-dt * 2.2); this.beadKick *= Math.exp(-dt * 1.8);
     this.fire = clamp(L.fire + this.fireKick, 0, 1.6);
@@ -537,9 +651,8 @@ export class World {
       gl.bindVertexArray(p.mesh.vao); gl.drawElements(gl.TRIANGLES, p.mesh.count, p.mesh.type, 0);
       if (p === this.beads) o.f("uWind", 0.8, 0.6, L.wind * 0.42, state.gust || 0);
     }
-    const R = this.raven, rm = R.flying ? R.fly : R.perch;
-    o.m("uModel", R.model); gl.vertexAttrib4f(4, 1, 0, 0, 232);
-    gl.bindVertexArray(rm.vao); gl.drawElements(gl.TRIANGLES, rm.count, rm.type, 0);
+    gl.vertexAttrib4f(4, 1, 0, 0, 232);
+    for (const piece of this.raven.draw) { o.m("uModel", piece.m); gl.bindVertexArray(piece.mesh.vao); gl.drawElements(gl.TRIANGLES, piece.mesh.count, piece.mesh.type, 0); }
     if (this.geeseOn && !depthOnly) {
       o.m("uModel", this.geeseModel);
       gl.bindVertexArray(this.geese.vao); gl.drawElementsInstanced(gl.TRIANGLES, this.geese.count, this.geese.type, 0, this.geese.n);
