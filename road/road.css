@@ -48,6 +48,9 @@ header.top { position: sticky; top: 0; z-index: 8; height: 46px; display: flex; 
 .btn.solid { background: var(--pepper); color: var(--cream); }
 .btn:hover, .btn:focus-visible { background: var(--sand); color: var(--pepper); }
 .btn.solid:hover, .btn.solid:focus-visible { background: var(--night); color: var(--cream); }
+/* one under the other, the second one smaller (it is still 44 tall to tap) */
+.btns.stack { flex-direction: column; align-items: flex-start; }
+.btn.small { font-size: 19px; padding-inline: 11px; border-width: 1.5px; }
 
 /* ---------- the cards: one log entry each ---------- */
 .card { position: relative; background: var(--paper); color: var(--pepper); border: 2px solid var(--night); box-shadow: 6px 6px 0 var(--block); }

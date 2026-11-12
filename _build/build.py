@@ -762,7 +762,7 @@ def walk_stops(base):
                   + (loc("recipes", "recipes/") if len(RECIPES) >= 3 else "")},
         {"id": "wear", "name": "wear", "light": "noon", "side": "left", "was": "wear",
          "alt": "A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a raven on top.",
-         "body": f"""<p>We have an Etsy shop with the jewelry we make by hand and the apparel we designed. The earrings don't really grow on the apple tree. We checked.</p>
+         "body": f"""<p>We have an Etsy shop with the jewelry we make by hand. Apparel we designed is coming soon. The earrings don't really grow on the apple tree. We checked.</p>
       <div class="wear-row">{wear}</div>""",
          "links": loc("see the jewelry", "wear/", True) + ext("our etsy shop", SHOP) + ext("also on depop", DEPOP)},
         {"id": "land", "name": "the land", "light": "golden hour", "side": "left",
@@ -1122,16 +1122,18 @@ def fieldguide_page():
                 extra_js=f'<script src="{base}js/fieldguide.js?v={ver("js/fieldguide.js")}" defer></script>')
 
 def wear_page():
-    """the wear stop's page: the jewelry (and the apparel, once its listings are added to JEWELRY). each piece opens its own Etsy listing."""
+    """the wear stop's page: the jewelry. each piece opens its own Etsy listing.
+    no apparel is listed yet (Nov 12: a shirt is coming with the Etsy overhaul), so the page says "coming soon" and claims nothing more.
+    when it is listed: add it to JEWELRY and take the "coming soon" lines out here, in walk_stops() and in about_page()."""
     base = "../"
     cards = "".join(f"""<a class="wcard reveal" href="{listing(p['id'])}" target="_blank" rel="noopener">
       {pic(base, p['img'], p['alt'], (170, 260))}<div><h3>{e(p['name'])}</h3><span class="label">{e(p['kind'])}</span></div></a>""" for p in JEWELRY)
-    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Handmade jewelry and apparel by Same Old Samsara", "url": SITE + "/wear/",
+    ld = [{"@context": "https://schema.org", "@type": "CollectionPage", "name": "Handmade jewelry by Same Old Samsara", "url": SITE + "/wear/",
            "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"},
            "mainEntity": {"@type": "ItemList", "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"], "url": listing(p["id"])} for i, p in enumerate(JEWELRY)]}}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <h1>wear</h1><p class="tag">jewelry made by hand, and apparel we designed.</p>
-  <p class="def">Earrings and bracelets Chad makes by hand, most of them one seed bead at a time, and apparel we designed. It all lives in our Etsy shop, where the prices, the sizes and the checkout are.</p>
+  <h1>wear</h1><p class="tag">jewelry made by hand. apparel coming soon.</p>
+  <p class="def">Earrings and bracelets Chad makes by hand, most of them one seed bead at a time. They live in our Etsy shop, where the prices, the sizes and the checkout are. Apparel we designed is coming soon.</p>
   <div class="btns center"><a class="btn solid" href="{SHOP}" target="_blank" rel="noopener">our etsy shop</a><a class="btn" href="{DEPOP}" target="_blank" rel="noopener">also on depop</a></div>
   {inapp_tip()}
 </div></section>
@@ -1139,8 +1141,8 @@ def wear_page():
   <div class="wgrid">{cards}</div>
   <div class="note reveal"><p><strong>Rather make your own?</strong> The <a href="{base}patterns/">beading patterns</a> are here too, and a few are free.</p></div>
 </div></section>"""
-    return page("Wear: Handmade Jewelry + Apparel | Same Old Samsara",
-                "Handmade beaded earrings and bracelets, and apparel we designed, by Same Old Samsara. Each piece is sold through our Etsy shop.",
+    return page("Wear: Handmade Jewelry | Same Old Samsara",
+                "Handmade beaded earrings and bracelets by Same Old Samsara. Each piece is sold through our Etsy shop. Apparel we designed is coming soon.",
                 base, "wear/", body, here="wear/", jsonld=ld, image=f"{SITE}/{JEWELRY[0]['img']}")
 
 def say_hi_page():
@@ -1180,7 +1182,7 @@ def about_page():
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
-    <li><a href="{base}wear/">Wear</a>: beaded earrings and bracelets made by hand, and apparel we designed, sold through our Etsy shop.</li>
+    <li><a href="{base}wear/">Wear</a>: beaded earrings and bracelets made by hand, sold through our Etsy shop. Apparel we designed is coming soon.</li>
     <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs. A few are free, the rest are in Samsara Digitals, our pattern shop on Etsy.</li>
     <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch pattern.</li>
     <li><a href="{base}field-guide/">The field guide</a>: the animals, plants and mushrooms we've found on the land so far.</li>
@@ -1235,14 +1237,17 @@ def road_page():
          "body": f"""<p>Four signs, four ways to come along. The long videos go up on YouTube first.</p>
         <div class="links">{rows}</div>""",
          "links": ""},
-        {"id": "fuel", "name": "fuel", "where": "last gas · afternoon", "side": "left",
+        {"id": "gas", "name": "gas", "where": "last gas · afternoon", "side": "left",
          "alt": "A print of the truck and camper pulled in at an old red gas pump with a lit globe, under a giant coffee cup on a pole, with the afternoon sun behind them.",
-         "body": "<p>The truck runs on diesel. We run on coffee. If the videos are worth a cup to you, here's the jar.</p>",
+         "body": "<p>The truck runs on gas. We run on coffee. If the videos are worth a cup to you, here's the jar.</p>",
          "links": ext("buy us a coffee", PN_COFFEE, True)},
         {"id": "winter", "name": "winter", "where": "the water · sunset", "side": "left",
          "alt": "A print of the truck and camper parked by the water at sunset, with two camp chairs facing the sun, palm trees, and a small road sign with a house on it.",
          "body": "<p>This is the warm air we were following. We park by the water, film all winter and post as we go.</p>",
-         "links": ext("subscribe on youtube", f"{PN_YT}?sub_confirmation=1", True)},
+         # the main button is the newest vlog (the same ROAD_LATEST link as the vlog stop), with a smaller subscribe button under it
+         "stack": True,
+         "links": ext("watch the latest vlog", vlog_url, True)
+                  + f'<a class="btn small" href="{PN_YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe on youtube</a>'},
         {"id": "home", "name": "home again", "where": "the gate · first light", "side": "left",
          "alt": "A print of the truck and camper turning in at an open wooden gate at first light in spring, with a mailbox by the road and a map pin floating over the gate.",
          "body": "<p>Come spring we drive it all back. Summers we're home on 34 acres in Central New York, building a homestead and filming it. That half is called Same Old Samsara, and it starts right here at the gate.</p>",
@@ -1250,6 +1255,8 @@ def road_page():
     ]
     still = lambda n, sid, alt, lazy=True: pic(base, f"images/road/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
     trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
+    # a stop's buttons. "stack" puts them one under the other (the winter stop: the vlog, then a smaller subscribe button)
+    btns = lambda st: ('<div class="btns' + (" stack" if st.get("stack") else "") + '">' + st["links"] + "</div>") if st["links"] else ""
     cards = "".join(f"""
   <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
     {still(i, st['id'], st['alt'])}
@@ -1258,7 +1265,7 @@ def road_page():
       <div class="in">
         <h2>{e(st['name'])}</h2>
         {st['body']}
-        {f'<div class="btns">{st["links"]}</div>' if st['links'] else ''}
+        {btns(st)}
       </div>
     </div>
   </article>""" for i, st in enumerate(stops, 1))

@@ -10,9 +10,9 @@ import * as shapes from "./shapes.js";
 import * as walkShapes from "../walk/mesh.js";
 import { INK } from "../walk/glsl.js";
 import { lightAt, MOON_DIR } from "./light.js";
-import { Printer, NEAR, FAR, rotY, local, angLerp } from "../walk/print.js";
+import { Printer, NEAR, FAR, rotY, local, angLerp, mTurnZ } from "../walk/print.js";
 
-export const STOP_IDS = ["leave", "vlog", "follow", "fuel", "winter", "home"];
+export const STOP_IDS = ["leave", "vlog", "follow", "gas", "winter", "home"];
 const P = land.PLACES, RZ = land.RIG_Z, LAST = STOP_IDS.length - 1;
 const SCREEN = 4, POST = 1.8, PUMP = 1.5, CUP = 1.25;       // how much bigger than life the roadside things are
 const HITCH = -1.7, NOSE = 3.65, AXLE = 5.4;                // the truck's bed (where the fifth wheel sits), the camper's nose, nose to axles
@@ -37,7 +37,7 @@ const VIEWS = [
   { look: [3, 6.4, 2.1], shift: [0.12, -0.2], shiftN: [0, -0.4] },                          // leaving: the rig swinging out of the gate
   { look: [3, 9.5, 6.4], lookN: [3, 10.5, 7.2], shift: [0.22, 0.04], shiftN: [0, 0.36] },   // the latest vlog: the rig under the big screen
   { look: [3, 5.6, 3.0], shift: [0.24, 0], shiftN: [0, 0.38] },                             // follow along: pulled up at the signpost
-  { look: [4.5, 7.6, 3.2], shift: [0.22, 0], shiftN: [0, 0.38] },                           // fuel: at the pump, under the cup
+  { look: [4.5, 7.6, 3.2], shift: [0.22, 0], shiftN: [0, 0.38] },                           // gas: at the pump, under the cup
   { look: [5.5, 10.75, 2.6], shift: [0.25, -0.04], shiftN: [0, 0.36] },                     // winter: camped by the water
   { look: [-1.5, 6.5, 2.2], shift: [0.22, -0.04], shiftN: [0, 0.34] },                      // home: turning back in at the gate
 ].map((v, k) => ({ ...v, cam: land.CAM[k] }));
@@ -53,8 +53,9 @@ function lane(z, dir, off = 0) {
   const hitch = local({ x: p[0], y: p[1], z: p[2], yaw }, [HITCH, 0, 0]), ax = onRoad(z + (AXLE - HITCH) * dir, d);
   return { x: p[0], y: p[1], z: p[2], yaw, cyaw: Math.atan2(-(hitch[2] - ax[2]), hitch[0] - ax[0]), park: 0 };
 }
-/** where the truck is and which way it and the fifth wheel point, at stop-progress u: { x, y, z, yaw, cyaw, park } */
-function rigAt(u) {
+/** where the truck is and which way it and the fifth wheel point, at stop-progress u: { x, y, z, yaw, cyaw, park }.
+    (y is only roughly the ground there. settle() is what sets the rig down on its wheels.) */
+export function rigAt(u) {
   if (u <= 4) {
     // heading south. it eases away from each stop and up to the next, and pulls over where it stops
     const k = Math.min(Math.floor(u), 3), r = lane(lerp(RZ[k], RZ[k + 1], ease(u - k)), 1);
@@ -84,6 +85,27 @@ function rigAt(u) {
   const yaw = from.yaw + Math.min(s, run) / R_GATE, on = arc([from.x, from.z], from.yaw, yaw, R_GATE), past = Math.max(s - run, 0);
   const x = on[0] + Math.cos(yaw) * past, z = on[1] - Math.sin(yaw) * past;
   return { x, y: land.height(x, z) + 0.05, z, yaw, cyaw: yaw - 0.8 * smooth(0, 0.45, g) * (1 - 0.22 * smooth(0.7, 1, g)), park: smooth(0.7, 1, g) };
+}
+
+/* ---------- setting the rig down on the road ---------- */
+const FRONT = 1.85, REAR = -1.9;                 // the truck's axles, ahead of and behind its middle (walk/mesh.js truck())
+const AXLES = 1.725, BACK = NOSE + AXLES;        // the camper's axles behind its own middle, and behind the hitch (walk/mesh.js camper())
+/** how high the surface is under a wheel at [x, z]: the road's own ribbon where the wheel is on the road, the ground where it is off it */
+export function surface(x, z) {
+  const d = land.lateral(x, z), off = smooth(land.HALF, land.HALF + 0.35, Math.abs(d));
+  return lerp(land.roadY(z - land.heading(z)[0] * d) + 0.07, land.height(x, z) + 0.01, off);
+}
+/** the rig, set down on its wheels: the truck on its two axles, the fifth wheel on its own axles and on the hitch in the truck's bed.
+    so on a hill both of them tip with the road, and neither one sinks into it or hangs over it. each is [x, y, z, yaw, tip]. */
+export function settle(rig) {
+  // an axle sits on whichever of its two wheels is on the higher ground (one can be on the road and the other on the shoulder)
+  const axle = (x, z, yaw, half) => { const sx = Math.sin(yaw) * half, sz = Math.cos(yaw) * half; return Math.max(surface(x + sx, z + sz), surface(x - sx, z - sz)); };
+  const F = [Math.cos(rig.yaw), -Math.sin(rig.yaw)];
+  const yF = axle(rig.x + F[0] * FRONT, rig.z + F[1] * FRONT, rig.yaw, 0.9), yR = axle(rig.x + F[0] * REAR, rig.z + F[1] * REAR, rig.yaw, 0.9);
+  const tip = Math.atan2(yF - yR, FRONT - REAR), y = yR + (yF - yR) * (-REAR / (FRONT - REAR));
+  const hx = rig.x + F[0] * HITCH, hz = rig.z + F[1] * HITCH, hy = y + HITCH * Math.sin(tip);            // the hitch rides up and down with the truck's bed
+  const C = [Math.cos(rig.cyaw), -Math.sin(rig.cyaw)], ya = axle(hx - C[0] * BACK, hz - C[1] * BACK, rig.cyaw, 1.13);
+  return { truck: [rig.x, y, rig.z, rig.yaw, tip], camper: [hx - C[0] * NOSE, ya + (hy - ya) * (AXLES / BACK), hz - C[1] * NOSE, rig.cyaw, Math.atan2(hy - ya, BACK)] };
 }
 
 export class RoadWorld extends Printer {
@@ -184,8 +206,8 @@ export class RoadWorld extends Printer {
     u = clamp(u, 0, LAST);
     const rig = (this.rig = rigAt(u)), n = Math.round(u), V = VIEWS[n], C = u > 4 ? CHASE_N : CHASE_S;
     // how much this is the stop's own view: 1 at the stop, 0 out on the road. leaving the camp it lets go fast, to get round
-    // behind the rig before the rig has turned round
-    const w = u > 4 && n === 4 ? 1 - smooth(0.015, TURN, u - 4) : 1 - smooth(0.06, 0.4, Math.abs(u - n));
+    // behind the rig before the rig has turned round. and it comes across the road to the gate late, once it is past the poles
+    const w = u > 4 && n === 4 ? 1 - smooth(0.015, TURN, u - 4) : n === 5 ? 1 - smooth(0.03, 0.2, 5 - u) : 1 - smooth(0.06, 0.4, Math.abs(u - n));
     const narrow = 1 - smooth(0.8, 1.25, aspect);
     const mix = (a, b) => [lerp(a[0], b[0], w), lerp(a[1], b[1], w), lerp(a[2], b[2], w)];
     const cm = mix(C.cam, V.cam), lk = mix(C.look, V.lookN && narrow > 0 ? v3.lerp(V.look, V.lookN, narrow) : V.look);
@@ -207,15 +229,14 @@ export class RoadWorld extends Printer {
   animate(u, time, L, dt, still) {
     const rig = this.rig, cam = this.cam;
     this.at = u;
-    // the fifth wheel hangs off the hitch in the truck's bed
-    const hitch = local({ x: rig.x, y: rig.y, z: rig.z, yaw: rig.yaw }, [HITCH, 0, 0]);
-    const cpos = [hitch[0] - Math.cos(rig.cyaw) * NOSE, rig.y, hitch[2] + Math.sin(rig.cyaw) * NOSE];
+    // both of them are set down on their wheels, so they tip with the road on the hills
+    const { truck: T, camper: K } = settle(rig), cpos = [K[0], K[1], K[2]];
     const bump = still ? 0 : Math.sin(time * 7.1) * 0.012 * (1 - rig.park) * smooth(0, 0.08, Math.abs(Math.sin(Math.PI * cam.f)))      // a little life in the springs while it rolls
                              + this.honk * Math.abs(Math.sin(time * 15)) * 0.24;                                                  // and a hop when you press it
-    rotY(this.truck.model, rig.x, rig.y + bump, rig.z, rig.yaw, 1);
-    rotY(this.camper.model, cpos[0], cpos[1] - 0.1 + bump * 0.6, cpos[2], rig.cyaw, 1);
+    mTurnZ(rotY(this.truck.model, T[0], T[1] + bump, T[2], T[3], 1), T[4]);
+    mTurnZ(rotY(this.camper.model, K[0], K[1] + bump * 0.6, K[2], K[3], 1), K[4]);
     this.trim.model.set(this.camper.model);
-    this.beam = [rig.x + Math.cos(rig.yaw) * 8, rig.y + 0.6, rig.z - Math.sin(rig.yaw) * 8];       // where the headlights land
+    this.beam = [rig.x + Math.cos(rig.yaw) * 8, T[1] + 0.6, rig.z - Math.sin(rig.yaw) * 8];        // where the headlights land
     this.hot.rig = [cpos[0], cpos[1] + 3.2, cpos[2]];
     this.hot.cup = spot("cup", 5.9 * CUP);
     this.hot.post = spot("signpost", 2.4 * POST);

@@ -62,7 +62,11 @@ export const PLACES = {
   north: [5.8, -1634],         // the sign that points back up the road
 };
 const ROOM = { screen: 12 };                                               // how far the trees stand back from a thing (7.5 if not said)
-const PADS = Object.entries(PLACES).map(([name, [d, z]]) => [...beside(z, d), d, z, ROOM[name] || 7.5]);
+/* a patch of ground at the road's own level under each thing: [x, z, d, z, how far the trees stand back, level out to here, back to the country by here] */
+const PADS = Object.entries(PLACES).map(([name, [d, z]]) => [...beside(z, d), d, z, ROOM[name] || 7.5, 4.5, 9]);
+/* and a wide one under the whole rig wherever it stops, centred on its middle, so every wheel is on level ground while it pulls in and out */
+/* (the one at the camp is wider still: the rig swings right round on the sand there) */
+for (const [d, z, r = 9.5] of [[6, -48], by(1, -4, 5.6), by(2, -4, 5.4), by(3, -4, 7.6), [8.5, RIG_Z[4] - 1, 12.5], [5.5, -46]]) PADS.push([...beside(z, d), d, z, 0, r, r + 5]);
 const segDist = (x, z, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = clamp(((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz), 0, 1); return Math.hypot(x - ax - dx * t, z - az - dz * t); };
 /* nothing is planted between where you stand at a stop and what you look at there: [stop, place, how wide a lane to keep clear] */
 const SIGHT = [[0, "park0", 7], [0, "gate", 6], [1, "screen", 10], [1, "park1", 6], [2, "signpost", 6], [2, "park2", 6], [3, "cup", 7], [3, "pump", 5], [3, "park3", 6],
@@ -90,17 +94,21 @@ function raw(x, z) {
   const gulf = d > 0 ? -smooth(9, 30, d) * (ry - WATER_Y + 1.6) + roll * 0.8 * off * (1 - smooth(9, 22, d))
                      : roll * 3.2 * off + 2.2 * smooth(30, 90, a) * far;
   let h = ry + north * w[0] + hills * w[1] + pines * w[2] + gulf * w[3];
-  h -= 0.42 * smooth(4.4, 6.4, a) * (1 - smooth(6.4, 10.5, a)) * (1 - w[3] * (d > 0 ? 1 : 0));       // a shallow ditch off each shoulder
+  if (d < 0) h -= 0.42 * smooth(4.4, 6.4, a) * (1 - smooth(6.4, 10.5, a));       // a shallow ditch off the left shoulder. the right one is kept level: the rig pulls over onto it
   return h;
 }
-/** the finished ground: the country, with the road benched into it and a level patch under each thing that stands by it */
+/** the finished ground: the country, with the road benched into it and a patch at the road's own level under each thing that
+    stands by it. "the road's level" is its height straight across from the spot, so the shoulder and the patches rise and fall
+    with the road. under the road the ground is a little below the road's surface, and from the edge out it comes up flush with it,
+    so there is no step for the rig to drop off when it pulls over (road/roadworld.js surface() counts on this). */
 export function height(x, z) {
   let h = raw(x, z);
-  const a = Math.abs(lateral(x, z));
-  if (a < 6.5) h = lerp(roadY(z), h, smooth(HALF + 0.5, 6.5, a));
+  const d = lateral(x, z), a = Math.abs(d), flush = roadY(z - heading(z)[0] * d) + 0.06 * smooth(HALF, 5.4, a);
+  // the shoulder. the right one is wide: that is the side the rig pulls over onto
+  h = lerp(flush, h, d > 0 ? smooth(6, 9, a) : smooth(HALF + 0.5, 6.5, a));
   for (const p of PADS) {
     const dd = Math.hypot(x - p[0], z - p[1]);
-    if (dd < 9) h = lerp(roadY(p[3]) - 0.05, h, smooth(4.5, 9, dd));
+    if (dd < p[6]) h = lerp(flush, h, smooth(p[5], p[6], dd));
   }
   return h;
 }
