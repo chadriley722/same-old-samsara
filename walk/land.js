@@ -41,42 +41,53 @@ function withRoad(x, z) {
   return h;
 }
 
-/* ---------- the trail: a loop from the gate, around, and back ---------- */
+/* ---------- the trail: in the gate, around the loop, back out the gate and onto the road ---------- */
 const R = riverZ;
-/** control points [x, z, stop name?]. the walk does not wrap, it ends a few steps from where it starts. */
+/** control points [x, z, stop name?].
+    One track runs from the road through the gate (x = 0, z 127.7 to 106). The way back from the fire joins it there, so there
+    is a single track from that fork to the road, and the walk ends by turning out onto the road. */
 const CONTROL = [
-  [-2.4, 127, "gate"],          // on the shoulder of the road, looking in
+  [0, 127.7, "gate"],           // where the track meets the road, looking in
+  [0, 123],
   [0, 118],                     // through the gate
-  [-1, 104],
-  [-6, 86],
+  [0, 112],
+  [0, 106],                     // the fork: the way back comes in here
+  [-2.5, 97],
+  [-6.5, 85],
   [-9, 72, "films"],            // the bedsheet screen is off to the left
   [-5, 54],
   [8, 40],
   [22, 26, "make"],             // the table under the awning
   [20, 8],
-  [5, -10, "jewelry"],          // the old apple tree
+  [5, -10, "wear"],             // the old apple tree
   [3, -30],
   [-3, -52],                    // into the woods
   [-14, -74],
-  [-19, -97, "field-guide"],    // the bench half way down
+  [-19, -97],                   // the bench half way down
   [-12, -120],
   [2, R(2) + 12],
   [20, R(20) + 11, "land"],     // the river
   [40, R(40) + 13],
   [58, -124],
-  [70, -100],
+  [70, -100, "field-guide"],    // the bench on the way back up: a mossy log, the trail cam
   [73, -74],
   [68, -48],
   [58, -22],
   [45, 2],
   [37, 26, "follow"],           // the fire
   [34, 54],
-  [28, 80],
-  [18, 100],
-  [8, 111],
-  [1, 117],                     // back through the gate
-  [2, 122.5, "say-hi"],         // the mailbox
-  [1, 126.5, "road"],           // and the road
+  [27, 78],
+  [15.5, 94],
+  [5.5, 102.6],                 // swinging over to meet the track you came in on
+  [0, 106],                     // the fork again
+  [0, 112],
+  [0, 118],                     // out through the gate, on the same track
+  [0, 123.3, "say-hi"],         // the mailbox
+  [0, 127.7],                   // the edge of the road
+  [1.6, 130.4],                 // and out onto it
+  [7.5, roadZ(7.5) + 0.25],
+  [17, roadZ(17)],
+  [29, roadZ(29), "road"],      // walking east, into the first light
 ];
 
 const STEP = 0.5;                               // metres between trail samples
@@ -161,10 +172,18 @@ export function trailDist(x, z) {
   const a = GRID.dist[c], b = GRID.dist[c + 1], d = GRID.dist[c + GRID.w], e = GRID.dist[c + GRID.w + 1];
   return a + (b - a) * u + (d - a) * v + (a - b - d + e) * u * v;
 }
+/** where the footpath back from the fire meets the track, in samples: the first sample of the way back that lies on the track */
+export const FORK = (() => {
+  let i = trail.stops.follow;
+  while (i < trail.n - 1 && !(Math.abs(trail.x[i]) < 0.35 && trail.z[i] > 104)) i++;
+  return i;
+})();
+/** where the walk steps off the track onto the road, in samples */
+export const ROAD_START = (() => { let i = trail.stops["say-hi"]; while (i < trail.n - 1 && trail.z[i] < 127.7) i++; return i; })();
 /** true where the trail is the two rut track in from the gate (the rest is a mown footpath) */
 export function onTrack(x, z) {
   const i = trailNearest(x, z);
-  return i >= 0 && (i < trail.stops.make + 14 || i > trail.stops["say-hi"] - 50);
+  return i >= 0 && (i < trail.stops.make + 14 || i > FORK - 16);
 }
 function trailNearest(x, z) {
   const ix = Math.round((x - GRID.x0) / GRID.cell), iz = Math.round((z - GRID.z0) / GRID.cell);
@@ -186,8 +205,8 @@ export const PLACES = {
   shed: [21, -41],
   loneTree: [-46, 34],
   stakes: [-38, 27],            // the house site, someday
-  log: [-25.5, -100.5],
-  camTree: [-28.5, -98],
+  log: [77.3, -101.1],          // the field guide stop, on the bench on the way back up from the river
+  camTree: [78.2, -104.9],
   riverRock: [9, R(9) + 5.2],
 };
 const PADS = [                  // level patches [x, z, radius]

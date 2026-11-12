@@ -85,14 +85,17 @@ p { margin: 0; }
 .sky::after { content: ""; position: absolute; inset: -6px -5px 0; }   /* a little more to tap than the 36px circle you see (not downward: the menu is there on a phone) */
 .sky .sun { width: 16px; height: 16px; border-radius: 50%; background: var(--gold); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 30%, transparent); transition: all .5s; }
 :root[data-theme="night"] .sky .sun { background: transparent; box-shadow: inset -5px -2px 0 0 #f3e8c8; transform: rotate(-20deg); }
-@media (max-width: 720px) {
+/* on a phone the menu is a row of its own under the name. its seven words share the row's whole width, so there are no gaps
+   between the parts you can tap, and "the land" and "the road" drop their "the" to fit. */
+@media (max-width: 800px) {
   .top-in { flex-wrap: wrap; gap: 0 12px; padding-top: 8px; }
   .brand span { font-size: 18px; }
-  .links { order: 3; width: calc(100% + 12px); margin: -6px -6px 0; gap: 0; justify-content: space-between; }
-  .links a { font-size: 13px; }
+  .links { order: 3; width: calc(100% + 12px); margin: -6px -6px 0; gap: 0; }
+  .links a { flex: 1 1 auto; text-align: center; font-size: 13px; padding-inline: 2px; }
+  .links .the { display: none; }
   .sky { margin-left: auto; }
 }
-@media (max-width: 350px) { .links a { font-size: 12.5px; padding-inline: 2px; } }
+@media (max-width: 350px) { .links a { font-size: 12px; padding-inline: 0; } }
 
 /* ---------- hero with the turning ring ---------- */
 .hero { position: relative; padding: clamp(28px, 6vh, 70px) 0 40px; text-align: center; overflow: hidden; }

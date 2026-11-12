@@ -5,7 +5,7 @@
    Walking (html.walk-on, set in the head before first paint): the world is pinned behind the page and the cards scroll over it. */
 
 .walk { position: relative; --block: color-mix(in srgb, var(--moss) 82%, transparent); --top-h: 61px; }
-@media (max-width: 720px) { .walk { --top-h: 84px; } }
+@media (max-width: 800px) { .walk { --top-h: 84px; } }
 :root[data-theme="night"] .walk { --block: #14150b; }
 .walk-view { display: none; }
 .walk .label { letter-spacing: .05em; }

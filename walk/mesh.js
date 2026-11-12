@@ -209,7 +209,7 @@ export function gate() {
   for (let k = 0; k < 5; k++) leaf.add(tube([0, 0.32 + k * 0.24, 0], [3.5, 0.32 + k * 0.24, 0], 0.028, 0.028, 5, iron, 3, false));
   for (const x of [0, 1.75, 3.5]) leaf.add(tube([x, 0.26, 0], [x, 1.36, 0], 0.03, 0.03, 5, iron, 3, false));
   leaf.add(tube([0, 0.32, 0], [3.5, 1.28, 0], 0.022, 0.022, 4, iron, 3, false));
-  g.add(leaf, { pos: [-1.9, 0, -0.14], yaw: 1.18 });
+  g.add(leaf, { pos: [-1.9, 0, -0.14], yaw: 1.5 });        // all the way open, clear of the track
   return g;
 }
 
@@ -244,13 +244,17 @@ export function screen() {
   return g;
 }
 
+/** the camera on its tripod. the lens looks along +z. */
+export const LENS = [0, 1.53, 0.2];                                           // the front of the lens, where the picture leaves it
+export const FILM_CORNERS = [[-1.55, 0.748], [1.55, 0.748], [1.55, 2.492], [-1.55, 2.492]];   // the picture on the sheet (see STYLE.FILM in glsl.js)
 export function tripod() {
   const g = new Geo(), dark = P(INK.PEPPER, STYLE.PLAIN);
   for (let k = 0; k < 3; k++) { const a = (k / 3) * TAU + 0.5; g.add(tube([Math.cos(a) * 0.5, 0, Math.sin(a) * 0.5], [0, 1.38, 0], 0.016, 0.02, 4, dark, 1, false)); }
   g.add(cyl(0.03, 0.03, 0.12, 6, dark, 1), { pos: [0, 1.36, 0] });
-  g.add(box(0.15, 0.1, 0.09, dark, 2), { pos: [0, 1.53, 0] });
-  g.add(cyl(0.042, 0.048, 0.1, 8, dark, 3), { pos: [0, 1.53, 0.04], pitch: Math.PI / 2 });
-  g.add(box(0.02, 0.02, 0.01, P(INK.RUST, STYLE.PLAIN, 0, 1), 4), { pos: [0.05, 1.56, 0.047] });   // the record light
+  g.add(box(0.17, 0.12, 0.2, dark, 2), { pos: [0, 1.53, 0] });
+  g.add(cyl(0.05, 0.062, 0.1, 8, dark, 3), { pos: [0, 1.53, 0.1], pitch: Math.PI / 2 });
+  g.add(cyl(0.05, 0.05, 0.012, 8, P(INK.LAMP, STYLE.PLAIN, 0, 1), 5), { pos: [0, 1.53, 0.196], pitch: Math.PI / 2 });      // the lit lens
+  g.add(box(0.02, 0.02, 0.01, P(INK.RUST, STYLE.PLAIN, 0, 1), 4), { pos: [0.06, 1.575, -0.105] });   // the little red light, on the back
   return g;
 }
 

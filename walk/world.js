@@ -10,7 +10,7 @@ import { STRIDE } from "./mesh.js";
 import { INK, OBJ_VS, OBJ_FS, GROUND_VS, GROUND_FS, PLANT_VS, PLANT_FS, MOTE_VS, MOTE_FS, PRINT_VS, PRINT_FS } from "./glsl.js";
 import { lightAt, MOON_DIR } from "./light.js";
 
-export const STOP_IDS = ["gate", "films", "make", "jewelry", "field-guide", "land", "follow", "say-hi", "road"];
+export const STOP_IDS = ["gate", "films", "make", "wear", "land", "field-guide", "follow", "say-hi", "road"];
 const NEAR = 0.2, FAR = 900;
 const P = land.PLACES;
 const at = (x, z, dy = 0) => [x, land.height(x, z) + dy, z];
@@ -18,15 +18,15 @@ const at = (x, z, dy = 0) => [x, land.height(x, z) + dy, z];
 /* where the camera looks at each stop, and how far the picture is slid over to leave room for the words.
    side: which side the card sits on (wide screens). on narrow screens the card is underneath and the picture slides up. */
 const VIEWS = [
-  { look: at(19, 82, 1.3), lookN: at(24, 82, 1.3), shift: [0.1, -0.22], shiftN: [0, -0.4] },
-  { look: at(P.screen[0], P.screen[1], 1.55), shift: [0.27, 0], shiftN: [0, 0.42] },
-  { look: at(11.7, 18.0, 1.8), shift: [-0.27, 0], shiftN: [0, 0.42] },
-  { look: at(P.apple[0], P.apple[1], 2.9), shift: [0.27, 0.04], shiftN: [0, 0.42] },
-  { look: at(-26.6, -99.6, 0.75), shift: [-0.27, 0], shiftN: [0, 0.42] },
-  { look: at(-42, land.riverZ(-42) + 2, 2.6), shift: [0.25, -0.04], shiftN: [0, 0.36] },
-  { look: at(P.fire[0], P.fire[1], 1.0), shift: [-0.27, 0.02], shiftN: [0, 0.42] },
-  { look: at(P.mailbox[0], P.mailbox[1], 1.2), shift: [0.27, 0.02], shiftN: [0, 0.42] },
-  { look: at(40, 96, 1.5), lookN: at(36, 97, 1.5), shift: [0.25, -0.06], shiftN: [0, 0.3] },
+  { look: at(12, 84, 1.3), lookN: at(15, 84, 1.3), shift: [0.1, -0.22], shiftN: [0, -0.4] },          // the gate: straight up the one track
+  { look: at(P.screen[0], P.screen[1], 1.55), shift: [0.27, 0], shiftN: [0, 0.42] },                    // films
+  { look: at(11.7, 18.0, 1.8), shift: [-0.27, 0], shiftN: [0, 0.42] },                                 // make
+  { look: at(P.apple[0], P.apple[1], 2.9), shift: [0.27, 0.04], shiftN: [0, 0.42] },                    // wear
+  { look: at(-42, land.riverZ(-42) + 2, 2.6), shift: [0.25, -0.04], shiftN: [0, 0.36] },                // the land: down the river
+  { look: at(P.log[0] + 0.35, P.log[1] - 1.4, 0.75), lookN: at(P.log[0] + 0.15, P.log[1] - 0.2, 0.75), shift: [-0.27, 0], shiftN: [0, 0.42] },   // the field guide: the mossy log
+  { look: at(P.fire[0], P.fire[1], 1.0), shift: [-0.27, 0.02], shiftN: [0, 0.42] },                     // follow along: the fire
+  { look: at(P.mailbox[0], P.mailbox[1], 1.2), shift: [0.27, 0.02], shiftN: [0, 0.42] },                // say hi: the mailbox
+  { look: at(78, land.roadZ(78) - 1.2, 1.5), lookN: at(72, land.roadZ(72) - 1.2, 1.5), shift: [0.25, -0.06], shiftN: [0, 0.3] },   // the road, heading east
 ];
 const STOP_S = STOP_IDS.map((id) => land.trail.stops[id]);
 
@@ -108,10 +108,11 @@ export class World {
       for (let k = 0; k < n; k++) { mask[k * 4] = r.uv[k * 2]; mask[k * 4 + 1] = r.uv[k * 2 + 1]; mask[k * 4 + 2] = flat == null ? land.woodsAmt(r.pos[k * 3], r.pos[k * 3 + 2]) : 0; }
       return this.groundMesh(r.pos, null, mask, r.idx);
     };
-    const tp = land.trailRibbonPoints(), cut = Math.round((land.trail.stops.make + 14) / 2), back = Math.round((land.trail.stops["say-hi"] - 50) / 2);
+    // the two rut track runs from the road, through the gate, to the camper. the footpath goes round the loop and comes back
+    // into the track at the fork, so from there to the road there is one track and nothing else is drawn.
+    const tp = land.trailRibbonPoints(), cut = Math.round((land.trail.stops.make + 14) / 2), fork = Math.round(land.FORK / 2);
     this.track = ribbon(tp.slice(0, cut + 1), 1.45, 0.06);
-    this.path = ribbon(tp.slice(cut, back + 1), 0.82, 0.06);
-    this.track2 = ribbon(tp.slice(back), 1.45, 0.06);
+    this.path = ribbon(tp.slice(cut, fork + 2), 0.82, 0.06);
     this.road = ribbon(land.roadPoints(), 3.1, 0.07);
     this.river = ribbon(land.riverPoints(), 8.2, 0, land.WATER_Y);
 
@@ -149,7 +150,11 @@ export class World {
     this.mailbox = put(shapes.mailbox(), P.mailbox[0], P.mailbox[1], 0);
     this.flagProp = put(shapes.mailboxFlag(), P.mailbox[0], P.mailbox[1], 0);
     const scr = put(shapes.screen(), P.screen[0], P.screen[1], Math.atan2(standAt(1)[0] - P.screen[0], standAt(1)[2] - P.screen[1]));
-    put(shapes.tripod(), P.tripod[0], P.tripod[1], 2.3);
+    // the camera faces the sheet and throws the film on it: four fine lines run from the lens to the corners of the picture
+    const tri = put(shapes.tripod(), P.tripod[0], P.tripod[1], Math.atan2(P.screen[0] - P.tripod[0], P.screen[1] - P.tripod[1]));
+    const lens = local(tri, shapes.LENS), beam = new shapes.Geo();
+    for (const [x, y] of shapes.FILM_CORNERS) beam.add(shapes.tube(lens, local(scr, [x, y, 0.02]), 0.006, 0.004, 3, [INK.PEPPER, 0, 9, 0], 1, false));
+    this.props.push({ mesh: this.mesh(beam.build()), model: m4.create(), id: 240, noShadow: true });
     const camperYaw = 0.965;       // the door and the awning face the morning sun, and the trail
     this.camper = put(shapes.camper(), P.camper[0], P.camper[1], camperYaw);
     put(shapes.table(), P.table[0], P.table[1], camperYaw);
@@ -157,14 +162,18 @@ export class World {
     put(shapes.chair(INK.LEAF_DARK), P.table[0] + 1.0, P.table[1] - 1.15, camperYaw - 1.45);
     put(shapes.truck(), P.truck[0], P.truck[1], 0.4);
     put(shapes.fireRing(), P.fire[0], P.fire[1]);
-    this.chairA = put(shapes.chair(INK.LEAF_DARK), P.fire[0] + 1.8, P.fire[1] + 1.25, -1.2);
-    put(shapes.chair(INK.RUST), P.fire[0] + 2.0, P.fire[1] - 1.1, -1.85);
+    // two chairs pulled up to the fire, each turned to face it (so they angle in toward each other)
+    const seat = (ink, a) => { const x = P.fire[0] + Math.cos(a) * 2.05, z = P.fire[1] + Math.sin(a) * 2.05; return put(shapes.chair(ink), x, z, Math.atan2(P.fire[0] - x, P.fire[1] - z)); };
+    this.chairA = seat(INK.LEAF_DARK, 0.47);
+    seat(INK.RUST, -0.47);
     this.flames = put(shapes.flames(), P.fire[0], P.fire[1]);
     this.apple = put(shapes.appleTree(), P.apple[0], P.apple[1], 0.4, -0.1);
     this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true });
     put(shapes.shed(), P.shed[0], P.shed[1], -1.3);
-    this.log = put(shapes.mossyLog(), P.log[0], P.log[1], 0.55);
-    const camDir = Math.atan2(standAt(4)[0] - P.camTree[0], standAt(4)[2] - P.camTree[1]);
+    const FG = STOP_IDS.indexOf("field-guide");
+    // the log lies with its mushroom side toward you and the raven's end nearest. the trail cam's tree is behind it, to the left.
+    this.log = put(shapes.mossyLog(), P.log[0], P.log[1], Math.atan2(standAt(FG)[0] - P.log[0], standAt(FG)[2] - P.log[1]) - 0.53);
+    const camDir = Math.atan2(standAt(FG)[0] - P.camTree[0], standAt(FG)[2] - P.camTree[1]);
     put(shapes.trailCam(), P.camTree[0] + Math.sin(camDir) * 0.36, P.camTree[1] + Math.cos(camDir) * 0.36, camDir, 1.05);
     this.raccoon = put(shapes.raccoon(), P.camTree[0] + Math.sin(camDir + 1.35) * 0.62, P.camTree[1] + Math.cos(camDir + 1.35) * 0.62, camDir - 0.5);
     put(shapes.riverRocks(), P.riverRock[0], P.riverRock[1], 0.2, 0.25);
@@ -199,11 +208,11 @@ export class World {
       local(scr, [-1.85, 2.9, 0]),
       local(this.camper, [-4.55, 3.7, 0.95]),
       [P.apple[0] + 0.2, land.height(P.apple[0], P.apple[1]) + 5.45, P.apple[1] + 0.1],
-      local(this.log, [2.1, 0.74, 0]),
       [P.riverRock[0] - 3.2, land.WATER_Y + 0.95, P.riverRock[1] - 0.6],
+      local(this.log, [2.1, 0.74, 0]),
       local(this.chairA, [0.05, 1.06, -0.3]),
       [P.mailbox[0], this.mailbox.y + 1.5, P.mailbox[1] - 0.12],
-      at(30, 112, 9),
+      at(62, land.roadZ(62) - 1.5, 8),                       // off down the road, ahead of you
     ];
     this.lampAt = local(this.camper, [-1.1, 1.7, 2.7]);
 
@@ -211,7 +220,8 @@ export class World {
     const seeds = new Float32Array(64 * 4), r2 = rng(3);
     for (let k = 0; k < seeds.length; k++) seeds[k] = r2();
     this.motes = this.moteMesh(seeds);
-    this.monarchs = [70, 180, 262, 1090, 1170].map((i) => land.trailAt(i));     // a few spots along the meadow stretches of the trail
+    const S = land.trail.stops;                                                // a few spots along the meadow stretches of the trail
+    this.monarchs = [S.films - 44, S.films + 66, S.make + 32, S.follow + 65, S.follow + 145].map((i) => land.trailAt(i));
 
     // the shadow block
     const sres = (this.shadowRes = tier === 2 ? 2048 : tier === 1 ? 1024 : 0);
@@ -589,11 +599,11 @@ export class World {
     this.hot.apple = [this.apple.x, this.apple.y + 2.6, this.apple.z];
     this.hot.cam = [P.camTree[0], land.height(P.camTree[0], P.camTree[1]) + 1.05, P.camTree[1]];
     // the raccoon looks round the trunk when you stop at the trail cam
-    const peek = smooth(3.72, 3.95, u) * (1 - smooth(4.12, 4.4, u));
+    const peek = smooth(4.72, 4.95, u) * (1 - smooth(5.12, 5.4, u));
     this.raccoon.hidden = peek < 0.02;
     if (!this.raccoon.hidden) { const r = this.raccoon; rotY(r.model, r.x, r.y - (1 - peek) * 0.5, r.z, r.yaw + (1 - peek) * 0.9, 1.25); }
-    // geese going south at the end of the day
-    const gt = (u - 4.75) / 1.1;
+    // geese going south over the river at the end of the day
+    const gt = (u - 3.7) / 1.1;
     this.geeseOn = gt > 0 && gt < 1;
     if (this.geeseOn) rotY(this.geeseModel, lerp(-190, 150, gt), land.WATER_Y + 78 + Math.sin(gt * 9) * 2, lerp(-330, -40, gt), Math.atan2(340, 290), 1);
   }
@@ -631,7 +641,7 @@ export class World {
       gl.vertexAttrib3f(1, 0, 1, 0);
       gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(-2, -4);
       const rib = (mesh, kind) => { g.i("uKind", kind); gl.bindVertexArray(mesh.vao); gl.drawElements(gl.TRIANGLES, mesh.count, mesh.type, 0); };
-      rib(this.track, 2); rib(this.track2, 2); rib(this.path, 1); rib(this.road, 3);
+      rib(this.track, 2); rib(this.path, 1); rib(this.road, 3);
       gl.disable(gl.POLYGON_OFFSET_FILL);
       rib(this.river, 4);
     }

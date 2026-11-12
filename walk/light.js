@@ -98,7 +98,9 @@ const FIRST_LIGHT = {                                    // the hour before the 
   stars: 0.25, moon: 0.45, rule: 0.1, fire: 0.25, lamp: 0.7, glitter: 0, wind: 0.3,
 };
 
-/* u is the stop number: 0 gate, 1 films, 2 make, 3 jewelry, 4 field guide, 5 the land, 6 follow, 7 say hi, 8 the road */
+/* u is the stop number: 0 gate, 1 films, 2 make, 3 wear, 4 the land, 5 the field guide, 6 follow, 7 say hi, 8 the road.
+   The river (the land) gets the golden hour, the woods on the way back up get the sunset, and the walk ends walking east
+   down the road, so the last sunrise comes up at the end of it. */
 const DAY_WALK = [
   K(0, DAWN),
   K(1, { sunAz: 62, sunEl: 20, lightAz: 62, lightEl: 20, w: [0.62, 0.38, 0, 0, 0], paper: hex("#fff2d9"),
@@ -106,27 +108,32 @@ const DAY_WALK = [
          fogCol: hex("#f6ecd6"), fogD: 0.0022, fogLow: 3, fogMax: 0.75, haze: hex("#e6dcc0"), cloud: 0.5, cloudShade: hex("#dccfb0"), wind: 0.45 }),
   K(2, {}),
   K(3, { sunAz: 170, sunEl: 54, lightAz: 170, lightEl: 54, wind: 0.6 }),
-  K(4, { sunAz: 226, sunEl: 36, lightAz: 226, lightEl: 36, w: [0.8, 0, 0.2, 0, 0], sunCol: hex("#e3a434") }),
-  K(5, { sunAz: 271, sunEl: 8, lightAz: 271, lightEl: 11, shadow: 0.8, w: [0, 0, 1, 0, 0], paper: hex("#fdeac4"),
+  K(3.5, { sunAz: 226, sunEl: 36, lightAz: 226, lightEl: 36, w: [0.8, 0, 0.2, 0, 0], sunCol: hex("#e3a434") }),          // the afternoon, going down through the woods
+  K(4, { sunAz: 271, sunEl: 8, lightAz: 271, lightEl: 11, shadow: 0.8, w: [0, 0, 1, 0, 0], paper: hex("#fdeac4"),
          band: [...hex("#e8a044"), 0.95], band2: [...hex("#f3cb84"), 0.9], sunCol: hex("#df882b"), sunSize: 3.0,
          fogCol: hex("#f0d6a4"), fogD: 0.0024, fogLow: 2, fogMax: 0.72, haze: hex("#d8b987"),
          cloud: 0.5, cloudShade: hex("#d08a4b"), cloudLit: hex("#fff0cf"), rule: 0.18, glitter: 1, wind: 0.4 }),
-  K(5.55, { sunAz: 282, sunEl: -4, lightAz: 282, lightEl: 14, shadow: 0, w: [0, 0, 0.1, 0.9, 0], paper: hex("#a59b6b"),
-            key: hex("#3a3834"), keyAmt: 0.45, hatch: 0.2,
-            band: [...hex("#bb5830"), 1], band2: [...hex("#dba636"), 0.95], sunSize: 0,
-            fogCol: hex("#8e855a"), fogD: 0.003, fogLow: 2, fogMax: 0.62, haze: hex("#5e5a3c"),
-            cloud: 0.5, cloudShade: hex("#8a4a2c"), cloudLit: hex("#cf9349"), rule: 0.1, fire: 0.7, lamp: 0.6, glitter: 0, wind: 0.3 }),
+  K(5, { sunAz: 277, sunEl: 1.5, lightAz: 277, lightEl: 10, shadow: 0.5, w: [0, 0, 0.68, 0.32, 0], paper: hex("#e9cf9c"),            // sunset, in the woods
+         key: hex("#403d38"), keyAmt: 0.78, hatch: 0.65,
+         band: [...hex("#d9772f"), 1], band2: [...hex("#eeb85a"), 0.95], sunCol: hex("#d9702a"), sunSize: 3.2,
+         fogCol: hex("#d9bd87"), fogD: 0.0027, fogLow: 2, fogMax: 0.68, haze: hex("#b79a67"),
+         cloud: 0.5, cloudShade: hex("#b56a3a"), cloudLit: hex("#f7d9a3"), rule: 0.14, fire: 0.3, lamp: 0.25, glitter: 0.3, wind: 0.35 }),
+  K(5.6, { sunAz: 282, sunEl: -4, lightAz: 282, lightEl: 14, shadow: 0, w: [0, 0, 0.1, 0.9, 0], paper: hex("#a59b6b"),
+           key: hex("#3a3834"), keyAmt: 0.45, hatch: 0.2,
+           band: [...hex("#bb5830"), 1], band2: [...hex("#dba636"), 0.95], sunSize: 0,
+           fogCol: hex("#8e855a"), fogD: 0.003, fogLow: 2, fogMax: 0.62, haze: hex("#5e5a3c"),
+           cloud: 0.5, cloudShade: hex("#8a4a2c"), cloudLit: hex("#cf9349"), rule: 0.1, fire: 0.7, lamp: 0.6, glitter: 0, wind: 0.3 }),
   K(6, { ...NIGHT, sunAz: 292, sunEl: -14, shadow: 0.15, w: [0, 0, 0, 0.2, 0.8], paper: hex("#393a22"), key: hex("#b5ac8e"), keyAmt: 0.5, hatch: 0.45,
          band: [...hex("#7c4a2a"), 0.8], band2: [...hex("#4b4b2b"), 0.7], stars: 0.55, moon: 0.5 }),
   K(7, NIGHT),
-  K(7.45, { ...FIRST_LIGHT, sunAz: 392 }),
-  K(8, { ...DAWN, sunAz: 400 }),
+  K(7.45, { ...FIRST_LIGHT, sunAz: 425, lightAz: 62 }),
+  K(8, { ...DAWN, sunAz: 430, sunEl: 8.5, lightAz: 70 }),
 ];
 /* when the site is in its night colours the walk starts and ends in the dark instead of at sunrise */
 const NIGHT_WALK = [
   K(0, { ...NIGHT, sunAz: -15 }),
   K(0.6, { ...FIRST_LIGHT, lightAz: 36 }),
-  ...DAY_WALK.slice(1, 9),
+  ...DAY_WALK.slice(1, DAY_WALK.length - 2),          // the same day, up to the night at the mailbox
   K(8, { ...NIGHT, sunAz: 345 }),
 ];
 

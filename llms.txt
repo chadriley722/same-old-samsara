@@ -5,7 +5,7 @@
 Headings on this site are lowercase on purpose. Prices are in USD.
 
 ## Films
-- [Films](https://sameoldsamsara.xyz/films/): A documentary about our first year out here. It follows the whole process of getting the land. Episode 1 is from before we bought it. New episodes through the winter. Season 2 starts spring 2027.
+- [Films](https://sameoldsamsara.xyz/films/): A documentary about our first year out here. Episode 1 starts at the very beginning, when we first stepped onto the land. New episodes through the winter. Season 2 starts spring 2027.
 - [YouTube channel](https://www.youtube.com/@sameoldsamsara): Same Old Samsara, a season a year. Season 1 is 2026.
 - [Season 1 · Episode 1: we bought land.](https://www.youtube.com/watch?v=xSpspkCw9og) (41:24): 34 acres of goldenrod and woods in Central New York. How we found it, the rough perc test, and the first walk as owners.
 - [Season 1 · Episode 2: our first month on 34 acres.](https://www.youtube.com/watch?v=YDUcJU_dp78) (23:33): No tractor and no brush hog, just a scythe, a push mower and a lot of goldenrod. We cut a path to the old shed, move the RV onto the land and ride out the first thunderstorm.
@@ -46,13 +46,14 @@ PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy](ht
 ## Recipes
 - [Maple Pecan Sweet Potato Mash](https://sameoldsamsara.xyz/recipes/maple-pecan-sweet-potato-mash/): Creamy sweet potatoes baked under toasted pecans and a drizzle of maple syrup.
 
-## Jewelry
-- [Jewelry](https://sameoldsamsara.xyz/jewelry/): a dozen pieces with photos, each linking to its Etsy listing.
+## Wear
+- [Wear](https://sameoldsamsara.xyz/wear/): a dozen pieces of handmade jewelry with photos, each linking to its Etsy listing.
 - [Same Old Samsara on Etsy](https://sameoldsamsara.etsy.com): handmade beaded earrings, bracelets and necklaces. Many are made to order.
 - [Depop](https://depop.com/sameoldsamsara)
 
 ## About
-- [About](https://sameoldsamsara.xyz/about/): who we are, and how to write to us.
+- [About](https://sameoldsamsara.xyz/about/): who we are.
+- [Say hi](https://sameoldsamsara.xyz/say-hi/): how to write to us, and the newsletter.
 - [The land](https://sameoldsamsara.xyz/land/): 34 acres of meadow, woods and river in Central New York, bought in September 2026. The exact location is private.
 - Winter travel channel: [Pneuma Nomads](https://sameoldsamsara.xyz/road/)
 

@@ -113,7 +113,7 @@ async function start() {
   /* ---------- little buttons on things in the world ---------- */
   const hotBox = walk.querySelector(".walk-hot"), sayEl = walk.querySelector(".walk-say");
   const RAVEN = ["you made it. i'll show you around.", "they point that thing at everything.", "beads. thousands of them. i counted.", "shiny. i approve.",
-    "the raccoon thinks nobody can see him.", "the river was here before any of us.", "pull up a chair. not that one.", "they do read the mail.", "they leave every winter. i stay."];
+    "the river was here before any of us.", "the raccoon thinks nobody can see him.", "pull up a chair. not that one.", "they do read the mail.", "they leave every winter. i stay."];
   let sayTimer = 0, sayAt = null;
   function say(text, at) {
     sayEl.textContent = text; sayAt = at; sayEl.classList.add("on");
@@ -124,7 +124,7 @@ async function start() {
     { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(); } },
     { id: "fire", label: "poke the fire", range: 30, when: () => world.fire > 0.3, act: () => { world.fireKick = 0.9; say("sparks.", "fire"); } },
     { id: "apple", label: "shake the apple tree", range: 26, when: () => Math.abs(uS - 3) < 0.7, act: () => { world.beadKick = 1; say("they don't fall off. we tried.", "apple"); } },
-    { id: "cam", label: "the trail cam", range: 22, when: () => Math.abs(uS - 4) < 0.6, act: () => { flash(); say("the trail cam got you. now you're in the field guide.", "cam"); } },
+    { id: "cam", label: "the trail cam", range: 22, when: () => Math.abs(uS - 5) < 0.6, act: () => { flash(); say("the trail cam got you. now you're in the field guide.", "cam"); } },
     { id: "mailbox", label: "the mailbox", range: 16, when: () => Math.abs(uS - 7) < 0.7, act: () => say("flag's up. that means there's mail going out.", "mailbox") },
   ];
   HOT.forEach((h) => {
