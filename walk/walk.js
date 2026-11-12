@@ -1,7 +1,8 @@
 /* same old samsara · the walk · the page side
    Scrolling the page is walking the trail. This file reads the scroll, tells the world where you are,
    keeps the trail list and the little buttons on things in step, and backs off to the plain page if anything goes wrong.
-   The html for every stop is already on the page (see _build/build.py), so nothing here is needed to reach a link. */
+   The html for every stop is already on the page (see _build/build.py), so nothing here is needed to reach a link.
+   It drives the road trip too (/road): that page names its own scene in data-scene, and the scene brings its own buttons. */
 
 const root = document.documentElement;
 const walk = document.getElementById("walk");
@@ -34,7 +35,7 @@ function everyMode() {
 }
 
 async function start() {
-  const { World, STOP_IDS } = await import("./world.js");
+  const scene = await import(walk.dataset.scene || "./world.js"), { World, STOP_IDS } = scene;
   const view = walk.querySelector(".walk-view"), canvas = walk.querySelector(".walk-gl");
   const stops = [...walk.querySelectorAll(".stop[data-stop]")];
   const q = new URLSearchParams(location.search);
@@ -120,7 +121,7 @@ async function start() {
     clearTimeout(sayTimer); sayTimer = setTimeout(() => sayEl.classList.remove("on"), 3600);
     wake();
   }
-  const HOT = [
+  const HOT = scene.hot ? scene.hot({ world, say, flash, u: () => uS }) : [
     { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(); } },
     { id: "fire", label: "poke the fire", range: 30, when: () => world.fire > 0.3, act: () => { world.fireKick = 0.9; say("sparks.", "fire"); } },
     { id: "apple", label: "shake the apple tree", range: 26, when: () => Math.abs(uS - 3) < 0.7, act: () => { world.beadKick = 1; say("they don't fall off. we tried.", "apple"); } },
@@ -204,7 +205,7 @@ async function start() {
     const pn = nS; nS += (nT - nS) * (1 - Math.exp(-dt * 2.4)); if (Math.abs(nT - nS) < 0.002) nS = nT;
     const ph0 = head[0], ph1 = head[1];
     head[0] += (headTo[0] - head[0]) * (1 - Math.exp(-dt * 6)); head[1] += (headTo[1] - head[1]) * (1 - Math.exp(-dt * 6));
-    const moving = uS !== prev || nS !== pn || Math.abs(head[0] - ph0) + Math.abs(head[1] - ph1) > 1e-5 || world.fireKick > 0.02 || world.beadKick > 0.02 || world.ravenHop > 0.02 || gust > 0.02;
+    const moving = uS !== prev || nS !== pn || Math.abs(head[0] - ph0) + Math.abs(head[1] - ph1) > 1e-5 || world.fireKick > 0.02 || world.beadKick > 0.02 || world.ravenHop > 0.02 || world.honk > 0.02 || gust > 0.02;
     const tick = Math.floor(now / 1000 * 12);                     // things that sway are redrawn 12 times a second
     if (moving || dirty || tick !== lastTick) {
       world.render({ u: uS, time: now / 1000, head, night: nS, gust, moonPhase, seen: clamp(window.innerHeight / (view.clientHeight || 1), 0.6, 1) });

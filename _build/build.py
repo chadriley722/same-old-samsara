@@ -716,9 +716,11 @@ ORG = {
 # One stop per part of the site. Order = the order you meet them on the trail. The 3D picture is drawn by walk/walk.js.
 # Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
 
-WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
-<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);}})();</script>
+# decides, before anything is painted, whether this device gets the moving world or the plain page (the road page uses it too)
+WALK_SWITCH = """<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);}})();</script>
 """
+WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
+""" + WALK_SWITCH
 
 # the first thing a stranger reads. one plain line, then who we are.
 WHAT_LINE = "two guys, 34 acres and a camera."
@@ -1160,7 +1162,7 @@ def say_hi_page():
 def moved(title, to, canonical):
     """a tiny page for an address people guess (/shop, /contact). it sends them on, and tells search engines where the real page is."""
     return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{e(title)} | Same Old Samsara</title>
-<link rel="canonical" href="{SITE}/{canonical}"><meta name="robots" content="noindex, follow"><meta http-equiv="refresh" content="0; url={to}"></head>
+<link rel="canonical" href="{SITE}/{canonical}"><meta name="robots" content="noindex, follow"><link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"><meta http-equiv="refresh" content="0; url={to}"></head>
 <body><p>this way: <a href="{to}">sameoldsamsara.xyz/{canonical}</a></p></body></html>
 """
 
@@ -1202,15 +1204,60 @@ def pn_pin():
     return f'<svg class="pin" viewBox="0 0 11 14" shape-rendering="crispEdges" aria-hidden="true">{r}</svg>'
 
 def road_page():
-    """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html). self-contained css."""
+    """pneuma nomads, in its own look (brand sheet: Pneuma Nomads/Brand/brand-sheet.html): a road trip you scroll, like the walk.
+    The 3D picture is road/roadworld.js, drawn by the walk's print engine and driven by walk/walk.js. The look is road/road.css.
+    Every stop is real html, so the links work with scripts off and when a browser can't draw the world.
+    The stop ids are the world's stop ids (road/roadworld.js STOP_IDS), so keep the two in step."""
     base = "../"; v = ROAD_LATEST
     title = "Pneuma Nomads | Chad & Daniel on the Road"
     desc = "Chad and Daniel's winter travel videos. Summers on our land in Central New York, winters in the fifth wheel following the warm air south."
-    links = [("youtube", PN_YT, "the road videos"), ("instagram", PN_IG, "photos from the road"), ("tiktok", PN_TT, "short clips"),
-             ("spotify", PN_SPOTIFY, "what we play in the truck"), ("buy us a coffee", PN_COFFEE, "fuel for the truck")]
-    btns = "".join(f'<a class="lnk" href="{u}" target="_blank" rel="noopener"><b>{e(n)}</b><span>{e(d)}</span><i aria-hidden="true">&gt;</i></a>' for n, u, d in links)
-    ld = [{"@context": "https://schema.org", "@type": "WebPage", "name": "Pneuma Nomads", "url": SITE + "/road/", "description": desc,
-           "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}, "sameAs": [PN_YT, PN_IG, PN_TT]}]
+    vlog_url = f"https://www.youtube.com/watch?v={v['id']}"
+    ext = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{u}" target="_blank" rel="noopener">{e(t)}</a>'
+    loc = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{base}{u}">{e(t)}</a>'
+    # four boards on the signpost, four ways to follow. each row carries its board's colour.
+    follow = [("youtube", PN_YT, "the road videos", "brick"), ("instagram", PN_IG, "photos from the road", "mustard"),
+              ("tiktok", PN_TT, "short clips", "sage"), (PN_SPOTIFY_TEXT, PN_SPOTIFY, "what we play in the truck", "denim")]
+    rows = "".join(f'<a class="lnk" style="--c:var(--{c})" href="{u}" target="_blank" rel="noopener"><b>{e(n)}</b><span>{e(d)}</span><i aria-hidden="true">&gt;</i></a>' for n, u, d, c in follow)
+    stops = [
+        {"id": "vlog", "name": "the latest vlog", "where": "the hills · morning", "side": "right",
+         "alt": "A print of a big roadside movie screen on a hilltop in fall colour, with a map pin floating over it and the truck and camper pulled over beside it.",
+         "body": f"""<p>Our newest video from the road. Pull over and watch.</p>
+        <a class="vlog" href="{vlog_url}" target="_blank" rel="noopener">
+          <span class="thumb">{pic(base, v['img'], v['title'], (330, 390))}<span class="play" aria-hidden="true"></span></span>
+          <span class="meta"><span class="place">{pn_pin()}{e(v['place'])}</span><span class="sub">{e(v['label'])} · {e(v['len'])} · {e(v['title'])}</span></span>
+        </a>""",
+         "links": ext("watch it on youtube", vlog_url, True) + ext("all the road videos", PN_YT)},
+        {"id": "follow", "name": "follow along", "where": "the pines · midday", "side": "left",
+         "alt": "A print of a wooden signpost with four coloured boards pointing four ways, beside a road through pine woods. The camper is pulled over a little way on.",
+         "body": f"""<p>Four signs, four ways to come along. The long videos go up on YouTube first.</p>
+        <div class="links">{rows}</div>""",
+         "links": ""},
+        {"id": "fuel", "name": "fuel", "where": "last gas · afternoon", "side": "right",
+         "alt": "A print of an old red gas pump with a lit globe, a giant coffee cup on a pole, and the truck and camper pulled in beside them. Palms and water show down the road.",
+         "body": "<p>The truck runs on diesel. We run on coffee. If the videos are worth a cup to you, here's the jar.</p>",
+         "links": ext("buy us a coffee", PN_COFFEE, True)},
+        {"id": "home", "name": "the rest of the year", "where": "the water · sunset", "side": "left",
+         "alt": "A print of the truck and camper parked by the water at sunset, with two camp chairs facing the sun, palm trees, and a small road sign with a house on it.",
+         "body": "<p>This is where the road stops for the winter. Summers we're home on 34 acres in Central New York, building a homestead. That story lives on Same Old Samsara, along with the jewelry and the patterns.</p>",
+         "links": loc("watch the land", "films/", True) + loc("jewelry", "wear/") + loc("patterns", "patterns/") + loc("same old samsara", "")},
+    ]
+    still = lambda n, sid, alt, lazy=True: pic(base, f"images/road/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
+    trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
+    cards = "".join(f"""
+  <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
+    {still(i, st['id'], st['alt'])}
+    <div class="card">
+      <div class="bar"><span>log {i} of {len(stops)}</span><span>{e(st['where'])}</span></div>
+      <div class="in">
+        <h2>{e(st['name'])}</h2>
+        {st['body']}
+        {f'<div class="btns">{st["links"]}</div>' if st['links'] else ''}
+      </div>
+    </div>
+  </article>""" for i, st in enumerate(stops, 1))
+    six = '<div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>'
+    ld = {"@context": "https://schema.org", "@type": "WebPage", "name": "Pneuma Nomads", "url": SITE + "/road/", "description": desc,
+          "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": SITE + "/"}, "sameAs": [PN_YT, PN_IG, PN_TT]}
     return f"""<!DOCTYPE html>
 <html lang="en">
 <head>
@@ -1232,90 +1279,59 @@ def road_page():
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Work+Sans:wght@400;500;600&display=swap">
-<script type="application/ld+json">{json.dumps(ld[0], ensure_ascii=False)}</script>
-<style>
-:root {{ --cream:#fff4d9; --sand:#ecdcb8; --pepper:#514f4c; --night:#2e2d2b;
-  --brick:#b8645a; --clay:#c97b4a; --mustard:#d8ae55; --sage:#7f9a6a; --denim:#5f84a0; --plum:#87709b;
-  --pixel:'Press Start 2P','Courier New',monospace; --term:'VT323','Courier New',monospace; --body:'Work Sans','Helvetica Neue',sans-serif; }}
-* {{ box-sizing:border-box; }}
-html {{ background:var(--night); }}
-body {{ margin:0; background:var(--cream); color:var(--pepper); font-family:var(--body); font-size:16px; line-height:1.55; -webkit-font-smoothing:antialiased; }}
-a {{ color:inherit; }}
-.wrap {{ max-width:560px; margin:0 auto; padding-left:max(18px, env(safe-area-inset-left, 0px)); padding-right:max(18px, env(safe-area-inset-right, 0px)); }}
-.screen {{ background:var(--night); color:var(--cream); padding-block:max(34px, env(safe-area-inset-top, 0px)) 30px; }}
-.mark {{ width:64px; display:block; color:var(--cream); }}
-.mark svg {{ width:100%; height:auto; display:block; }}
-h1 {{ font-family:var(--pixel); font-weight:400; font-size:clamp(19px, 6vw, 28px); line-height:1.5; margin:22px 0 6px; white-space:nowrap; min-height:1.5em; }}
-.cur {{ display:inline-block; width:.62em; height:1em; vertical-align:-.12em; margin-left:.12em; background:var(--clay); animation:blink 1.06s steps(1) infinite; }}
-@keyframes blink {{ 50% {{ opacity:0; }} }}
-.stripe {{ display:flex; width:104px; height:4px; }}
-.stripe i {{ flex:1; }}
-.stripe i:nth-child(1){{background:var(--brick)}} .stripe i:nth-child(2){{background:var(--clay)}} .stripe i:nth-child(3){{background:var(--mustard)}}
-.stripe i:nth-child(4){{background:var(--sage)}} .stripe i:nth-child(5){{background:var(--denim)}} .stripe i:nth-child(6){{background:var(--plum)}}
-.tag {{ font-family:var(--term); font-size:26px; line-height:1.1; color:var(--sand); margin:14px 0 18px; }}
-.bio {{ margin:0; max-width:34em; color:var(--cream); opacity:.92; }}
-.label {{ font-family:var(--pixel); font-size:12px; line-height:1.7; margin:0 0 12px; }}
-.label::before {{ content:"> "; color:var(--clay); }}
-section {{ padding-block:30px 6px; }}
-.vlog {{ display:block; text-decoration:none; border:3px solid var(--night); background:var(--night); box-shadow:6px 6px 0 var(--sand); }}
-.vlog .thumb {{ position:relative; aspect-ratio:16/9; overflow:hidden; }}
-picture {{ display:contents; }} picture > source {{ display:none; }}
-.vlog img {{ width:100%; height:100%; object-fit:cover; display:block; }}
-.play {{ position:absolute; left:50%; top:50%; transform:translate(-50%,-50%); width:58px; height:58px; background:var(--night); display:grid; place-items:center; }}
-.play::after {{ content:""; border-left:18px solid var(--cream); border-top:11px solid transparent; border-bottom:11px solid transparent; margin-left:5px; }}
-.vlog .meta {{ color:var(--cream); padding:12px 14px 14px; display:grid; gap:4px; }}
-.vlog .place {{ font-family:var(--pixel); font-size:12px; line-height:1.8; display:flex; align-items:center; gap:8px; }}
-.pin {{ height:15px; width:auto; flex-shrink:0; }}
-.vlog .sub {{ font-family:var(--term); font-size:21px; line-height:1; color:var(--sand); }}
-.links {{ display:grid; gap:10px; }}
-.lnk {{ display:grid; grid-template-columns:1fr auto; align-items:center; gap:0 10px; text-decoration:none; background:#fffaf0; border:2px solid var(--pepper); padding:10px 14px 12px; }}
-.lnk b {{ font-family:var(--term); font-weight:400; font-size:25px; line-height:1.15; }}
-.lnk span {{ grid-row:2; font-size:15px; opacity:.85; }}
-.lnk i {{ grid-row:1 / 3; grid-column:2; font-style:normal; font-family:var(--pixel); font-size:12px; color:var(--clay); }}
-.lnk:hover, .lnk:focus-visible {{ background:var(--sand); }}
-a:focus-visible {{ outline:3px solid var(--mustard); outline-offset:2px; }}
-.land {{ border:2px dashed var(--pepper); padding:16px; display:grid; gap:10px; }}
-.land p {{ margin:0; }}
-.land .row {{ display:flex; flex-wrap:wrap; gap:8px; }}
-.btn {{ font-family:var(--term); font-size:22px; line-height:1; padding:11px 14px 12px; text-decoration:none; background:var(--pepper); color:var(--cream); border:2px solid var(--pepper); }}
-.btn.ghost {{ background:transparent; color:var(--pepper); }}
-footer {{ padding-block:34px max(34px, env(safe-area-inset-bottom, 0px)); font-size:14px; opacity:.8; }}
-footer .stripe {{ margin-bottom:14px; }}
-@media (prefers-reduced-motion: reduce) {{ .cur {{ animation:none; }} }}
-</style>
+<link rel="stylesheet" href="{base}road/road.css?v={ver('road/road.css')}">
+{WALK_SWITCH.format()}<script type="application/ld+json">{json.dumps(ld, ensure_ascii=False)}</script>
 </head>
 <body>
-<header class="screen"><div class="wrap">
-  <span class="mark">{PN_MARK}</span>
-  <h1 aria-label="Pneuma Nomads"><span id="word" aria-hidden="true">Pneuma Nomads</span><span class="cur" aria-hidden="true"></span></h1>
-  <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <p class="tag">following the warm air.</p>
-  <p class="bio">We're Chad and Daniel. Summers we live on our land in Central New York, and winters we hitch up the fifth wheel with our cat Lucy and our dog Miley and head south. This is where the road videos live.</p>
-</div></header>
-<main id="main" class="wrap">
-  <section>
-    <p class="label">latest vlog</p>
-    <a class="vlog" href="https://www.youtube.com/watch?v={v['id']}" target="_blank" rel="noopener">
-      <span class="thumb">{pic(base, v['img'], v['title'], (354, 524), lazy=False)}<span class="play" aria-hidden="true"></span></span>
-      <span class="meta"><span class="place">{pn_pin()}{e(v['place'])}</span><span class="sub">{e(v['label'])} · {e(v['len'])} · {e(v['title'])}</span></span>
-    </a>
-  </section>
-  <section>
-    <p class="label">follow along</p>
-    <div class="links">{btns}</div>
-  </section>
-  <section>
-    <p class="label">the rest of the year</p>
-    <div class="land">
-      <p>Summers we're home on 34 acres, building a homestead. That story lives on Same Old Samsara, along with Chad's handmade jewelry and beading patterns.</p>
-      <div class="row"><a class="btn" href="{base}films/">watch the land</a><a class="btn ghost" href="{base}wear/">jewelry</a><a class="btn ghost" href="{base}patterns/">patterns</a></div>
+<a class="skip" href="#main">skip to the links</a>
+<header class="top">
+  <a class="brand" href="{base}road/" aria-label="Pneuma Nomads">{pn_pin()}<span>pneuma nomads</span></a>
+  <nav aria-label="more"><a href="{PN_YT}" target="_blank" rel="noopener">youtube</a><a href="{base}">the land</a></nav>
+</header>
+<main id="main">
+<section class="walk" id="walk" aria-label="the road south" data-scene="../road/roadworld.js" data-film="{base}{variant(v['img'], 480)}">
+<nav class="trail" aria-label="stops on the road"><div class="trail-in">
+  <ol id="trail-list">
+    <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>leaving</span></a></li>
+    {trail}
+  </ol>
+</div></nav>
+<div class="walk-view">
+  <canvas class="walk-gl" aria-hidden="true"></canvas>
+  <div class="walk-hot"></div>
+  <p class="walk-say" role="status"></p>
+</div>
+<div class="walk-stops">
+  <header class="stop gate" id="stop-leave" data-stop="0">
+    {still(0, "leave", "A print of a pickup truck pulling a fifth wheel camper out of a gate and onto a country road at first light. Bare trees, frost on the grass, and hills far off.", lazy=False)}
+    <div class="gate-text">
+      <div class="bar" aria-hidden="true"><span>travel log</span><span>heading: south</span></div>
+      <div class="in">
+        <span class="mark">{PN_MARK}</span>
+        <h1 aria-label="Pneuma Nomads"><span id="word" aria-hidden="true">Pneuma Nomads</span><span class="cur" aria-hidden="true"></span></h1>
+        {six}
+        <p class="tag">following the warm air.</p>
+        <p class="def">We're Chad and Daniel. Summers we live on our land in Central New York, and winters we hitch up the fifth wheel with our cat Lucy and our dog Miley and head south. This is where the road videos live.</p>
+        <div class="btns">{ext("watch the latest vlog", vlog_url, True)}{ext("all the road videos", PN_YT)}</div>
+      </div>
     </div>
-  </section>
+    <p class="walk-hint"><span class="on">scroll to drive south</span><span class="off">the road, stop by stop</span>
+      <span class="try">this is the still version, because your device asks for less motion. <a href="?walk">show the moving one</a></span></p>
+  </header>{cards}
+  <div class="stop end" id="stop-end">
+    <div class="end-text">
+      <p class="tag">that's the road.</p>
+      <p>We're back on the land in May.</p>
+      <div class="btns"><a class="btn solid" href="#walk" data-again>drive it again</a><a class="btn" href="{base}">back to the land</a></div>
+    </div>
+  </div>
+</div>
+</section>
 </main>
-<footer><div class="wrap">
-  <div class="stripe" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div>
-  <p>Pneuma Nomads is part of the <a href="{base}index.html">Same Old Samsara</a> family. &copy; <span id="y">2026</span></p>
-</div></footer>
+<footer>
+  {six}
+  <p>Pneuma Nomads is part of the <a href="{base}">Same Old Samsara</a> family. &copy; <span id="y">2026</span></p>
+</footer>
 <script>
 (function(){{
   document.getElementById('y').textContent = new Date().getFullYear();
@@ -1324,6 +1340,7 @@ footer .stripe {{ margin-bottom:14px; }}
   (function step(){{ if (i >= t.length) return; el.textContent += t[i++]; setTimeout(step, (1000/14) * (0.7 + Math.random()*0.6)); }})();
 }})();
 </script>
+<script type="module" src="{base}walk/walk.js?v={ver('walk/walk.js')}"></script>
 </body>
 </html>
 """
@@ -1498,5 +1515,6 @@ if __name__ == "__main__":
     write("robots.txt", robots_txt())
     write("sitemap.xml", sitemap(["", "films/", "make/", "wear/", "land/", "field-guide/", "road/", "say-hi/", "patterns/", "bead-lab/", "about/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paged] + [f"recipes/{r['slug']}/" for r in RECIPES]))
     for night in ("", "-night"): variant(f"images/walk/0-gate{night}.webp", 720)      # walk.css paints these behind the walk on a phone
+    variant("images/road/0-leave.webp", 720)                                         # and road.css paints this one behind the road
     check_jewelry()
     print("built", 17 + len(paged) + len(RECIPES), "pages")

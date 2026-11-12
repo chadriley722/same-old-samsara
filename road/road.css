@@ -1,0 +1,219 @@
+/* pneuma nomads · the road
+   The road trip page (/road). It is the walk's idea in the Pneuma Nomads look: a retro computer travel log.
+   Two layouts from the same html, like the walk (walk/walk.css):
+   plain (the default): each stop is a still print with its card beside it. This is what you get with scripts off,
+   with reduced motion, or when the browser can't draw the world.
+   driving (html.walk-on, set in the head before first paint): the world is pinned behind the page and the cards scroll over it.
+   walk/walk.js drives this page too, so the class names it looks for (walk, stop, card, trail, hot) are the walk's.
+   This file stands alone: the page does not load style.css or walk.css. */
+
+:root { --cream: #fff4d9; --paper: #fffaf0; --sand: #ecdcb8; --pepper: #514f4c; --night: #2e2d2b;
+  --brick: #b8645a; --clay: #c97b4a; --mustard: #d8ae55; --sage: #7f9a6a; --denim: #5f84a0; --plum: #87709b;
+  --pixel: 'Press Start 2P', 'Courier New', monospace; --term: 'VT323', 'Courier New', monospace; --body: 'Work Sans', 'Helvetica Neue', sans-serif;
+  --block: rgba(46, 45, 43, .32); --top-h: 46px; }
+* { box-sizing: border-box; }
+html { background: var(--night); }
+body { margin: 0; background: var(--cream); color: var(--pepper); font-family: var(--body); font-size: 16px; line-height: 1.55; -webkit-font-smoothing: antialiased; }
+a { color: inherit; }
+img { display: block; max-width: 100%; }
+picture { display: contents; }
+picture > source { display: none; }
+p, h1, h2, ol { margin: 0; }
+a:focus-visible, button:focus-visible { outline: 3px solid var(--mustard); outline-offset: 2px; }
+.skip { position: absolute; left: -999px; top: 0; z-index: 20; padding: 10px 14px; background: var(--cream); font-family: var(--term); font-size: 22px; }
+.skip:focus { left: 8px; top: 8px; }
+
+/* the six, sun-faded. used small: under the name, and at the foot of the page */
+.stripe { display: flex; width: 104px; height: 4px; }
+.stripe i { flex: 1; }
+.stripe i:nth-child(1) { background: var(--brick); } .stripe i:nth-child(2) { background: var(--clay); } .stripe i:nth-child(3) { background: var(--mustard); }
+.stripe i:nth-child(4) { background: var(--sage); } .stripe i:nth-child(5) { background: var(--denim); } .stripe i:nth-child(6) { background: var(--plum); }
+.pin { height: 15px; width: auto; flex: none; }
+
+/* ---------- the bar across the top ---------- */
+header.top { position: sticky; top: 0; z-index: 8; height: 46px; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 0 max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px)); background: var(--night); color: var(--cream); }
+.brand { display: flex; align-items: center; gap: 10px; min-height: 44px; text-decoration: none; font-family: var(--pixel); font-size: 12px; line-height: 1; white-space: nowrap; }
+.brand .pin { height: 20px; }
+.top nav { display: flex; gap: 4px; }
+.top nav a { display: flex; align-items: center; min-height: 44px; padding: 0 8px 2px; font-family: var(--term); font-size: 21px; line-height: 1; color: var(--sand); text-decoration: none; white-space: nowrap; }
+.top nav a:hover { color: var(--cream); text-decoration: underline; text-underline-offset: 4px; }
+@media (max-width: 420px) { .brand { gap: 8px; } .top nav { gap: 0; } .top nav a { font-size: 19px; padding-inline: 5px; } }
+@media (max-width: 350px) { .brand span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); } }
+
+/* ---------- buttons ---------- */
+.btns { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.btn { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px 2px; font-family: var(--term); font-size: 22px; line-height: 1; text-decoration: none; cursor: pointer;
+  background: transparent; color: var(--pepper); border: 2px solid var(--pepper); }
+.btn.solid { background: var(--pepper); color: var(--cream); }
+.btn:hover, .btn:focus-visible { background: var(--sand); color: var(--pepper); }
+.btn.solid:hover, .btn.solid:focus-visible { background: var(--night); color: var(--cream); }
+
+/* ---------- the cards: one log entry each ---------- */
+.card { position: relative; background: var(--paper); color: var(--pepper); border: 2px solid var(--night); box-shadow: 6px 6px 0 var(--block); }
+.bar { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 5px 10px 7px; background: var(--night); color: var(--sand); font-family: var(--term); font-size: 19px; line-height: 1; }
+.bar span:first-child { color: var(--cream); white-space: nowrap; }
+.bar span:last-child { text-align: right; }
+.card .in { padding: 16px 18px 18px; }
+.card h2 { font-family: var(--pixel); font-weight: 400; font-size: 16px; line-height: 1.6; margin-bottom: 10px; }
+.card h2::before { content: "> "; color: var(--clay); }
+.card h2:focus { outline: none; }
+.card p { font-size: 16px; }
+.card p + p { margin-top: 8px; }
+.vlog { display: block; margin-top: 12px; text-decoration: none; border: 2px solid var(--night); background: var(--night); }
+.vlog .thumb { position: relative; display: block; aspect-ratio: 16 / 9; overflow: hidden; }
+.vlog img { width: 100%; height: 100%; object-fit: cover; }
+.play { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 54px; height: 54px; background: var(--night); display: grid; place-items: center; }
+.play::after { content: ""; border-left: 17px solid var(--cream); border-top: 10px solid transparent; border-bottom: 10px solid transparent; margin-left: 5px; }
+.vlog:hover .play, .vlog:focus-visible .play { background: var(--brick); }
+.vlog .meta { display: grid; gap: 4px; padding: 10px 12px 12px; color: var(--cream); }
+.vlog .place { display: flex; align-items: center; gap: 8px; font-family: var(--pixel); font-size: 12px; line-height: 1.7; }
+.vlog .sub { font-family: var(--term); font-size: 21px; line-height: 1; color: var(--sand); }
+/* four boards on the signpost, four ways to follow: each row carries its board's colour */
+.links { display: grid; gap: 8px; margin-top: 12px; }
+.lnk { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 0 10px; min-height: 44px; padding: 6px 12px 8px; text-decoration: none; background: var(--cream);
+  border: 2px solid var(--pepper); border-left: 9px solid var(--c, var(--pepper)); }
+.lnk b { font-family: var(--term); font-weight: 400; font-size: 24px; line-height: 1.1; }
+.lnk span { grid-row: 2; font-size: 14.5px; line-height: 1.3; opacity: .88; }
+.lnk i { grid-row: 1 / 3; grid-column: 2; font-style: normal; font-family: var(--pixel); font-size: 12px; color: var(--clay); }
+.lnk:hover, .lnk:focus-visible { background: var(--sand); }
+
+/* ---------- plain layout ---------- */
+.walk { position: relative; }
+.walk-view, .trail { display: none; }
+.stop { max-width: 1060px; margin: 0 auto; padding: 22px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 28px; align-items: center; }
+.stop.right .still { order: 2; }
+.still { width: 100%; height: auto; aspect-ratio: 16 / 10; object-fit: cover; border: 2px solid var(--night); background: var(--sand); }
+.stop.gate { max-width: none; padding: 0 0 22px; display: block; background: var(--night); color: var(--cream); }
+.stop.gate .still { border-width: 0 0 2px; aspect-ratio: auto; height: min(50vh, 62vw); }
+.gate-text { max-width: 600px; margin: 0 auto; padding: 26px 18px 0; }
+.gate-text .bar { display: none; }
+.mark { display: block; width: 60px; color: var(--cream); }
+.mark svg { display: block; width: 100%; height: auto; }
+.gate-text h1 { font-family: var(--pixel); font-weight: 400; font-size: clamp(19px, 6vw, 28px); line-height: 1.5; margin: 20px 0 6px; white-space: nowrap; min-height: 1.5em; }
+.cur { display: inline-block; width: .62em; height: 1em; vertical-align: -.12em; margin-left: .12em; background: var(--clay); animation: blink 1.06s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.gate-text .tag { font-family: var(--term); font-size: 27px; line-height: 1.1; color: var(--sand); margin: 13px 0 14px; }
+.gate-text .def { max-width: 34em; color: var(--cream); }
+.gate-text .btn { color: var(--cream); border-color: var(--sand); }
+.gate-text .btn.solid { background: var(--cream); color: var(--night); border-color: var(--cream); }
+.gate-text .btn:hover, .gate-text .btn:focus-visible { background: var(--sand); color: var(--night); border-color: var(--sand); }
+.walk-hint { display: block; max-width: 600px; margin: 18px auto 0; padding: 0 18px; font-family: var(--term); font-size: 20px; line-height: 1.2; color: var(--sand); }
+.walk-hint .on, .walk-hint .try { display: none; }
+.walk-can .walk-hint .try { display: block; margin-top: 4px; }
+.walk-hint a { color: var(--cream); }
+.stop.end { display: block; padding: 26px 18px 34px; text-align: center; }
+.stop.end [data-again] { display: none; }
+.end-text .tag { font-family: var(--term); font-size: 27px; line-height: 1.1; }
+.end-text .btns { justify-content: center; }
+@media (max-width: 760px) {
+  .stop { grid-template-columns: 1fr; gap: 14px; }
+  .stop.right .still { order: 0; }
+}
+
+/* ---------- driving layout ---------- */
+/* the world starts at the very top of the window, behind the bar */
+.walk-on .walk { margin-top: calc(-1 * var(--top-h)); }
+.walk-on .walk-view { display: block; position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; z-index: 0;
+  background: var(--cream) url("../images/road/0-leave.webp") center / cover no-repeat; }
+@media (max-width: 760px) { .walk-on .walk-view { background-image: url("../images/r/road/0-leave-720.webp"); } }
+.walk-gl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity .8s ease; touch-action: pan-y; }
+.walk-ready .walk-gl { opacity: 1; }
+.walk-on .walk-stops { position: relative; z-index: 2; margin-top: -100vh; margin-top: -100lvh; pointer-events: none; }
+.walk-on .still { display: none; }
+.walk-on .stop { max-width: none; margin: 0; padding: 0; display: flex; align-items: center; min-height: 138vh; }
+.walk-on .card { pointer-events: auto; width: min(430px, calc(100% - 28px)); margin-left: clamp(16px, 6vw, 110px); }
+.walk-on .stop.right .card { margin-left: auto; margin-right: clamp(16px, 6vw, 110px); }
+
+/* the first screen: the name, in a little window of its own */
+.walk-on .stop.gate { min-height: 100vh; min-height: 100svh; flex-direction: column; align-items: flex-start; justify-content: space-between; padding: 0; background: none; color: inherit; }
+.walk-on .gate-text { pointer-events: auto; width: min(500px, calc(100% - 28px)); max-width: none; margin: calc(var(--top-h) + 38px + clamp(14px, 5vh, 56px)) 0 0 clamp(16px, 6vw, 110px); padding: 0;
+  background: var(--night); color: var(--cream); border: 2px solid var(--night); box-shadow: 6px 6px 0 var(--block); }
+.walk-on .gate-text .bar { display: flex; border-bottom: 1px solid rgba(255, 244, 217, .22); }
+.walk-on .gate-text .in { padding: clamp(14px, 2.6vh, 22px) 20px clamp(16px, 2.8vh, 22px); }
+.walk-on .mark { width: clamp(40px, 7vh, 58px); }
+.walk-on .gate-text h1 { font-size: clamp(18px, min(2.6vw, 4.4vh), 26px); margin-top: clamp(12px, 2.2vh, 20px); }
+.walk-on .gate-text .tag { font-size: clamp(23px, 3.6vh, 27px); margin: clamp(9px, 1.6vh, 13px) 0 clamp(8px, 1.6vh, 14px); }
+.walk-on .gate-text .def { font-size: clamp(14.5px, 2.1vh, 16px); line-height: 1.5; }
+.walk-on .gate-text .btns { margin-top: clamp(10px, 2vh, 16px); }
+.walk-on .walk-hint { pointer-events: auto; align-self: center; max-width: none; margin: 0 0 22px; padding: 5px 13px 7px; background: var(--night); color: var(--cream); text-align: center; box-shadow: 4px 4px 0 var(--block); }
+.walk-on .walk-hint .on { display: inline; }
+.walk-on .walk-hint .off { display: none; }
+.walk-on .walk-hint > .on::after { content: "v"; display: inline-block; margin-left: .5em; color: var(--mustard); animation: blink 1.06s steps(1) infinite; }
+.walk-on .walk-hint a { color: var(--sand); }
+
+.walk-on .stop.end { min-height: 96vh; display: flex; align-items: flex-end; justify-content: center; padding: 0 16px 16vh; }
+.walk-on .stop.end [data-again] { display: inline-flex; }
+.walk-on .end-text { pointer-events: auto; padding: 16px 22px 20px; background: var(--night); color: var(--cream); border: 2px solid var(--night); box-shadow: 6px 6px 0 var(--block); }
+.walk-on .end-text .tag { color: var(--sand); }
+.walk-on .end-text .btn { color: var(--cream); border-color: var(--sand); }
+.walk-on .end-text .btn.solid { background: var(--cream); color: var(--night); border-color: var(--cream); }
+.walk-on .end-text .btn:hover, .walk-on .end-text .btn:focus-visible { background: var(--sand); color: var(--night); border-color: var(--sand); }
+
+@media (max-width: 760px) {
+  .walk-on .stop { min-height: 128vh; }
+  .walk-on .card, .walk-on .stop.right .card { margin: 0 auto; }
+  .walk-on .card .in { padding: 14px 16px 16px; }
+  .walk-on .card p { font-size: 15.5px; }
+  /* the first screen is the name, the line and the buttons. the "who we are" paragraph becomes the first card you pass. */
+  .walk-on .stop.gate { position: relative; align-items: center; padding-bottom: 230px; min-height: calc(100vh + 230px); min-height: calc(100svh + 230px); }
+  .walk-on .gate-text { margin: calc(var(--top-h) + 58px) auto 0; }
+  .walk-on .gate-text .in { padding: 14px 16px 16px; }
+  .walk-on .gate-text .def { position: absolute; top: calc(100vh + 8px); top: calc(100svh + 8px); left: 14px; right: 14px; max-width: none; margin: 0; padding: 14px 16px 16px;
+    font-size: 15.5px; background: var(--paper); color: var(--pepper); border: 2px solid var(--night); box-shadow: 6px 6px 0 var(--block); }
+}
+/* very short windows (a phone on its side): keep the first screen to the name and the buttons */
+@media (max-height: 560px) and (min-width: 761px) {
+  .walk-on .gate-text { margin-top: calc(var(--top-h) + 48px); }
+  .walk-on .gate-text .def, .walk-on .mark { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
+  .walk-on .stop { min-height: 190vh; }
+}
+
+/* ---------- the list of stops ---------- */
+/* a zero height strip that sticks to the top of the window for the whole drive, so the list rides above the cards */
+.walk-on .trail { display: block; position: sticky; top: 0; height: 0; z-index: 6; }
+.trail-in { position: absolute; top: var(--top-h); left: 0; right: 0; display: flex; align-items: center; padding: 0 max(14px, env(safe-area-inset-right, 0px)) 0 max(14px, env(safe-area-inset-left, 0px));
+  background: var(--night); border-top: 1px solid rgba(255, 244, 217, .2); }
+.trail ol { list-style: none; padding: 0; display: flex; }
+.trail li + li { margin-left: 30px; }
+.trail a { display: flex; align-items: center; gap: 8px; height: 38px; padding-bottom: 2px; font-family: var(--term); font-size: 20px; line-height: 1; color: var(--sand); text-decoration: none; white-space: nowrap; }
+.trail a:hover { color: var(--cream); }
+.trail a i { position: relative; flex: none; width: 10px; height: 10px; border: 2px solid currentColor; background: var(--night); }
+.trail li + li a i::before { content: ""; position: absolute; right: calc(100% + 7px); top: 50%; width: 14px; border-top: 2px dotted currentColor; transform: translateY(-50%); opacity: .6; }
+.trail a.done i { background: currentColor; }
+.trail a[aria-current] { color: var(--cream); }
+.trail a[aria-current] i { background: var(--brick); border-color: var(--cream); }
+.trail-now { display: none; }
+@media (max-width: 899px) {
+  /* on small screens: the name of where you are, and a row of squares */
+  .trail-in { gap: 6px; padding-right: 8px; }
+  .trail-now { display: block; flex: 1; min-width: 0; font-family: var(--term); font-size: 21px; line-height: 1; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .trail-now::before { content: "> "; color: var(--clay); }
+  .trail li + li { margin-left: 0; }
+  .trail a { height: auto; padding: 17px 9px; }        /* each square is 28 by 44 to tap */
+  .trail a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
+  .trail li + li a i::before { right: calc(100% + 3px); width: 12px; }
+}
+
+/* ---------- little buttons on things in the picture ---------- */
+.walk-hot { position: absolute; inset: 0; z-index: 3; pointer-events: none; }
+.hot { position: absolute; left: 0; top: 0; width: 46px; height: 46px; margin: -23px 0 0 -23px; padding: 0; border: 0; background: none; cursor: pointer; pointer-events: auto; }
+.hot[hidden] { display: none; }
+.hot::after { content: ""; position: absolute; inset: 15px; border: 3px solid var(--mustard); background: rgba(255, 244, 217, .6); box-shadow: 0 0 0 2px var(--night); animation: ping 1.06s steps(1) infinite; }
+.hot:hover::after, .hot:focus-visible::after { inset: 10px; animation: none; }
+@keyframes ping { 50% { border-color: var(--cream); } }
+.walk-say { position: absolute; left: 0; top: 0; z-index: 4; max-width: 240px; padding: 5px 10px 7px; border: 2px solid var(--night); background: var(--paper); color: var(--pepper);
+  font-family: var(--term); font-size: 20px; line-height: 1.05; text-align: center; opacity: 0; pointer-events: none; transition: opacity .2s; box-shadow: 3px 3px 0 var(--block); }
+.walk-say.on { opacity: 1; }
+.walk-flash { display: none; }
+
+/* ---------- the foot of the page ---------- */
+footer { position: relative; z-index: 3; background: var(--night); color: var(--sand); font-size: 14px;
+  padding: 26px max(18px, env(safe-area-inset-right, 0px)) max(30px, env(safe-area-inset-bottom, 0px)) max(18px, env(safe-area-inset-left, 0px)); }
+footer .stripe { margin-bottom: 12px; }
+footer a { color: var(--cream); }
+
+@media (prefers-reduced-motion: reduce) {
+  .cur, .hot::after, .walk-on .walk-hint > .on::after { animation: none; }
+  .walk-gl { transition: none; }
+}

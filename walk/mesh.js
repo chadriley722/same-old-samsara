@@ -8,6 +8,7 @@ import { rng, TAU, lerp, clamp } from "./m.js";
 
 export const STRIDE = 11;
 const P = (ink, style = STYLE.NONE, sway = 0, glow = 0) => [ink, sway, style, glow];
+export const paint = P;        // for the other scenes' shapes
 
 export class Geo {
   constructor() { this.v = []; this.i = []; this.n = 0; }
@@ -258,14 +259,15 @@ export function tripod() {
   return g;
 }
 
-export function camper() {
+/** the fifth wheel. travel = hitched up and on the road: awning rolled in, steps up, no legs down, no string of lights. */
+export function camper(travel = false) {
   const g = new Geo(), skin = P(INK.WHITE), glass = P(INK.WINDOW, STYLE.PLAIN), dark = P(INK.PEPPER, STYLE.PLAIN);
   g.add(box(7.3, 2.55, 2.5, skin, 1), { pos: [-1.25, 2.225, 0] });
   g.add(box(2.5, 1.75, 2.5, skin, 1), { pos: [3.65, 2.625, 0] });
   g.add(box(0.9, 0.9, 2.5, skin, 1), { pos: [4.75, 2.7, 0], roll: 0.5 });                          // the slanted nose
   g.add(box(7.0, 0.36, 2.1, dark, 2), { pos: [-1.1, 0.78, 0] });
   for (const x of [-2.2, -1.25]) for (const z of [-1.13, 1.13]) g.add(cyl(0.38, 0.38, 0.26, 12, dark, 3), { pos: [x, 0.38, z - 0.13], pitch: Math.PI / 2 });
-  for (const z of [-0.9, 0.9]) g.add(box(0.12, 1.75, 0.12, dark, 2), { pos: [2.95, 0.875, z] });
+  if (!travel) for (const z of [-0.9, 0.9]) g.add(box(0.12, 1.75, 0.12, dark, 2), { pos: [2.95, 0.875, z] });      // the front legs, down
   for (const z of [-1.262, 1.262]) {
     g.add(box(7.3, 0.17, 0.02, P(INK.LEAF_DARK, STYLE.PLAIN), 4), { pos: [-1.25, 1.56, z] });
     g.add(box(7.3, 0.07, 0.02, P(INK.RUST, STYLE.PLAIN), 5), { pos: [-1.25, 1.37, z] });
@@ -278,15 +280,19 @@ export function camper() {
   // the door, the steps
   g.add(box(0.76, 1.95, 0.04, P(INK.CREAM, STYLE.PLAIN), 7), { pos: [0.55, 1.93, 1.27] });
   g.add(box(0.4, 0.45, 0.02, glass, 6), { pos: [0.55, 2.45, 1.295] });
-  g.add(box(0.85, 0.05, 0.32, dark, 2), { pos: [0.55, 0.66, 1.45] });
-  g.add(box(0.85, 0.05, 0.32, dark, 2), { pos: [0.55, 0.34, 1.74] });
-  // the awning, its arms, and a string of lights along its edge
-  const cloth = plane(5.0, 2.62, P(INK.CREAM, STYLE.CLOTH), 3, 6, 3);
-  cloth.sway((x, y) => (0.5 - y / 2.62) * 0.12);
-  g.add(cloth, { pos: [-1.1, 2.88, 2.46], pitch: -1.235 });
-  for (const x of [-3.6, 1.4]) g.add(tube([x, 1.25, 1.28], [x, 2.47, 3.68], 0.022, 0.022, 4, dark, 2, false));
-  g.add(box(5.0, 0.07, 0.07, P(INK.RUST, STYLE.PLAIN), 5), { pos: [-1.1, 2.46, 3.7] });
-  for (let k = 0; k < 11; k++) g.add(blob(0.045, 0.06, 0.045, 0, P(INK.LAMP, STYLE.PLAIN, 0, 1), 4), { pos: [-3.5 + k * 0.48, 2.34 - Math.sin((k / 10) * Math.PI) * 0.07, 3.72] });
+  if (travel) {
+    g.add(cyl(0.07, 0.07, 5.0, 6, P(INK.CREAM, STYLE.PLAIN), 3), { pos: [-3.6, 3.42, 1.3], roll: -Math.PI / 2 });      // the awning, rolled up along the top of the wall
+  } else {
+    g.add(box(0.85, 0.05, 0.32, dark, 2), { pos: [0.55, 0.66, 1.45] });
+    g.add(box(0.85, 0.05, 0.32, dark, 2), { pos: [0.55, 0.34, 1.74] });
+    // the awning, its arms, and a string of lights along its edge
+    const cloth = plane(5.0, 2.62, P(INK.CREAM, STYLE.CLOTH), 3, 6, 3);
+    cloth.sway((x, y) => (0.5 - y / 2.62) * 0.12);
+    g.add(cloth, { pos: [-1.1, 2.88, 2.46], pitch: -1.235 });
+    for (const x of [-3.6, 1.4]) g.add(tube([x, 1.25, 1.28], [x, 2.47, 3.68], 0.022, 0.022, 4, dark, 2, false));
+    g.add(box(5.0, 0.07, 0.07, P(INK.RUST, STYLE.PLAIN), 5), { pos: [-1.1, 2.46, 3.7] });
+    for (let k = 0; k < 11; k++) g.add(blob(0.045, 0.06, 0.045, 0, P(INK.LAMP, STYLE.PLAIN, 0, 1), 4), { pos: [-3.5 + k * 0.48, 2.34 - Math.sin((k / 10) * Math.PI) * 0.07, 3.72] });
+  }
   g.add(box(0.95, 0.28, 0.85, skin, 1), { pos: [-1.4, 3.64, 0] });                                 // the roof unit
   return g;
 }

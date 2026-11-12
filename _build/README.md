@@ -35,7 +35,7 @@ The build also makes the phone sized copies of the thumbnail (in `images/r/`), s
 4. **While you're there, look at the jewelry.** Open each piece in `JEWELRY` on Etsy. Take out any that are gone and set `JEWELRY_CHECKED` to today. The build prints a reminder when it's been more than 45 days.
 
 ## other things that need a hand edit
-- Road vlog: `ROAD_LATEST` in build.py + `images/road/latest-vlog.jpg` (960x540).
+- Road vlog: `ROAD_LATEST` in build.py + `images/road/latest-vlog.jpg` (960x540). That also changes the picture on the big screen on /road. Nothing else to do.
 - Pattern relisted on Etsy: set its `"live": True` in `PATTERNS`.
 - The free pattern to feature: move `"featured": True` to another free pattern. `"hold": True` keeps a free one at the back of the line (the christmas tree has it until its redo is test stitched).
 - A new free pattern: `"free": True`, its PDF at `assets/<file>.pdf`. Every free pattern gets its own page with the download button, so no card ever opens a bare PDF.
@@ -63,3 +63,14 @@ The top of the home page is a loop trail you scroll along, drawn like a woodcut.
 - **Preview:** `python3 _build/serve.py` then http://127.0.0.1:8811/ . Add `?plain` for the page without 3D, `?sky=night` for night, `?u=3` to stand at stop 3.
 - **The 3D on its own:** http://127.0.0.1:8811/_build/walk-dev.html (arrow keys walk, `n` flips night).
 - **If the look changes, redo the still prints** the plain page uses: run `python3 _build/serve.py 8811 127.0.0.1 --shots /tmp/walk-shots`, open `_build/walk-dev.html?shoot=1`, then turn each PNG into `images/walk/<name>.webp` at 1280 x 800 (`cwebp -q 80 -resize 1280 800 -metadata none`).
+
+## the road (/road, the Pneuma Nomads page)
+
+/road is a road trip you scroll, in the Pneuma Nomads look (retro computer travel log). It is the walk's idea on a made up road south: no real route, no real place. Five stops: leaving, the latest vlog, follow along, fuel, the rest of the year.
+
+- **The page's words and links:** `road_page()` in `build.py`. The look is `road/road.css` (the page does not load `style.css`).
+- **The 3D:** `road/roadworld.js` (the scene), `road/land.js` (the road and where things stand), `road/shapes.js` (the screen, signpost, pump, cup), `road/light.js` (first light to sunset, in the Pneuma Nomads colors).
+- **It shares the walk's engine.** `walk/print.js` draws both, and `walk/walk.js` drives both (the page names its scene in `data-scene`). A change to either of those two files changes both pages, so look at both after.
+- **A new vlog needs nothing extra** past `ROAD_LATEST` and the thumbnail: the screen in the 3D reads them. The still print of that stop shows a plain Pneuma Nomads card on the screen on purpose, so it never shows an old vlog.
+- **Preview:** http://127.0.0.1:8811/road/ . `?plain` and `?u=2` work here too. The 3D on its own: `_build/walk-dev.html?scene=road`.
+- **If the look changes, redo its five still prints:** same as the walk's, with `_build/walk-dev.html?scene=road&shoot=1`. The PNGs come out as `road-<n>-<name>.png` and go to `images/road/<n>-<name>.webp`.

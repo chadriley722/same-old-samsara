@@ -9,10 +9,13 @@
      ?u=3.5 where on the walk · ?night=1 the walk that starts in the dark · ?tier=0..2 · ?t=12 freeze the clock
      arrow keys walk, n flips night, drag looks around.
      ?shoot=1 saves the still prints the plain page uses (needs _build/serve.py --shots <folder>).
-     ?shoot=og&w=2400&h=1260 saves the scene for the share picture. -->
+     ?shoot=og&w=2400&h=1260 saves the scene for the share picture.
+     ?scene=road shows the road trip (road/roadworld.js) instead of the walk. ?film=<picture url> puts a picture on the screen. -->
 <script type="module">
-import { World, STOP_IDS } from "../walk/world.js";
 const q = new URLSearchParams(location.search), num = (k, d) => (q.has(k) ? +q.get(k) : d);
+const ROAD = q.get("scene") === "road";
+const { World, STOP_IDS } = await import(ROAD ? "../road/roadworld.js" : "../walk/world.js");
+const LAST = STOP_IDS.length - 1;
 const hud = document.getElementById("hud"), canvas = document.getElementById("c");
 let world;
 try { world = new World(canvas, { tier: num("tier", 2), capture: true }); } catch (e) { hud.textContent = "ERROR " + e.message; throw e; }
@@ -23,12 +26,13 @@ window.S = S;
 if (q.has("spy")) { const [d, y, p] = q.get("spy").split(",").map(Number); S.spy = { dist: d || 6, yaw: (y || 0) * Math.PI / 180, pitch: (p || 0) * Math.PI / 180, fov: num("fov", 30) }; }
 if (q.has("still")) S.still = true;
 if (q.has("hop")) setInterval(() => (world.ravenHop = 1), 1600);
-if (q.has("fold")) world.raven.settle = 0;       // skip the wings-up moment it starts with
+if (q.has("fold") && world.raven) world.raven.settle = 0;       // skip the wings-up moment it starts with
+if (q.has("film")) await new Promise((done) => { const im = new Image(); im.onload = () => { world.setFilm(im); done(); }; im.onerror = done; im.src = q.get("film"); });
 
 if (q.has("shoot")) {
   // each stop as a 1600 x 1000 picture. the gate keeps the framing the live page uses, so it can stand in while the world loads.
-  let shots = STOP_IDS.map((id, i) => ({ name: i + "-" + id, u: i, night: 0, slide: i === 0 ? 1 : 0 }));
-  shots.push({ name: "0-gate-night", u: 0, night: 1, slide: 1 });
+  let shots = STOP_IDS.map((id, i) => ({ name: (ROAD ? "road-" : "") + i + "-" + id, u: i, night: 0, slide: i === 0 ? 1 : 0 }));
+  if (!ROAD) shots.push({ name: "0-gate-night", u: 0, night: 1, slide: 1 });
   if (q.get("shoot") === "og") shots = [{ name: "og-scene", u: 0, night: 0, slide: 1 }];      // the share picture: ?shoot=og&w=2400&h=1260
   const W = num("w", 1600), H = num("h", 1000);
   canvas.style.width = W / 2 + "px"; canvas.style.height = H / 2 + "px";
@@ -47,12 +51,12 @@ if (q.has("shoot")) {
   const fixedT = q.has("t");
   const size = () => world.resize(innerWidth, innerHeight, Math.min(devicePixelRatio || 1, num("dpr", 2)));
   addEventListener("resize", size); size();
-  addEventListener("keydown", (e) => { const d = e.shiftKey ? 0.25 : 0.03; if (e.key === "ArrowRight") S.u = Math.min(8, S.u + d); if (e.key === "ArrowLeft") S.u = Math.max(0, S.u - d); if (e.key === "n") S.night = S.night ? 0 : 1; });
+  addEventListener("keydown", (e) => { const d = e.shiftKey ? 0.25 : 0.03; if (e.key === "ArrowRight") S.u = Math.min(LAST, S.u + d); if (e.key === "ArrowLeft") S.u = Math.max(0, S.u - d); if (e.key === "n") S.night = S.night ? 0 : 1; });
   let drag = null;
   addEventListener("pointerdown", (e) => (drag = [e.clientX, e.clientY, S.head[0], S.head[1]]));
   addEventListener("pointermove", (e) => { if (drag) { S.head[0] = drag[2] + (e.clientX - drag[0]) * 0.004; S.head[1] = drag[3] - (e.clientY - drag[1]) * 0.004; } });
   addEventListener("pointerup", () => (drag = null));
-  addEventListener("wheel", (e) => { S.u = Math.max(0, Math.min(8, S.u + e.deltaY * 0.0006)); });
+  addEventListener("wheel", (e) => { S.u = Math.max(0, Math.min(LAST, S.u + e.deltaY * 0.0006)); });
   let last = performance.now(), n = 0;
   (function frame(now) {
     if (!fixedT) S.time = now / 1000;

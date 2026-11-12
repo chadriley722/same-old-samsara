@@ -1,17 +1,15 @@
 /* same old samsara · the walk · the world
-   A small WebGL2 renderer written for this one page. No library.
-   Each frame: (1) a shadow block from where the light is, (2) every surface drawn into two blocks (flat ink, and
-   line data), (3) the print pass that cuts the key lines and prints it on paper. See glsl.js. */
+   The walk's scene: the made up land, the things on it, where the camera goes, and what moves.
+   The drawing itself is done by the print engine (print.js). */
 
 import { m4, v3, lerp, clamp, smooth, DEG, TAU, rng } from "./m.js";
 import * as land from "./land.js";
 import * as shapes from "./mesh.js";
-import { STRIDE } from "./mesh.js";
-import { INK, OBJ_VS, OBJ_FS, GROUND_VS, GROUND_FS, PLANT_VS, PLANT_FS, MOTE_VS, MOTE_FS, PRINT_VS, PRINT_FS } from "./glsl.js";
+import { INK } from "./glsl.js";
 import { lightAt, MOON_DIR } from "./light.js";
+import { Printer, NEAR, FAR, rotY, local, angDiff, angLerp, mMove, mTurnX, mTurnY, mTurnZ } from "./print.js";
 
 export const STOP_IDS = ["gate", "films", "make", "wear", "land", "field-guide", "follow", "say-hi", "road"];
-const NEAR = 0.2, FAR = 900;
 const P = land.PLACES;
 const at = (x, z, dy = 0) => [x, land.height(x, z) + dy, z];
 
@@ -30,76 +28,21 @@ const VIEWS = [
 ];
 const STOP_S = STOP_IDS.map((id) => land.trail.stops[id]);
 
-/* ---------------- tiny GL helpers ---------------- */
-class Prog {
-  constructor(gl, vs, fs, name) {
-    this.gl = gl; this.loc = new Map();
-    const sh = (type, src) => {
-      const s = gl.createShader(type); gl.shaderSource(s, src); gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) throw new Error(name + " shader: " + gl.getShaderInfoLog(s));
-      return s;
-    };
-    const p = (this.p = gl.createProgram());
-    gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
-    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(name + " link: " + gl.getProgramInfoLog(p));
-  }
-  use() { this.gl.useProgram(this.p); return this; }
-  l(n) { let x = this.loc.get(n); if (x === undefined) { x = this.gl.getUniformLocation(this.p, n); this.loc.set(n, x); } return x; }
-  f(n, a, b, c, d) {
-    const l = this.l(n), gl = this.gl; if (!l) return;
-    if (d !== undefined) gl.uniform4f(l, a, b, c, d); else if (c !== undefined) gl.uniform3f(l, a, b, c); else if (b !== undefined) gl.uniform2f(l, a, b); else gl.uniform1f(l, a);
-  }
-  i(n, v) { const l = this.l(n); if (l) this.gl.uniform1i(l, v); }
-  v3(n, a) { const l = this.l(n); if (l) this.gl.uniform3f(l, a[0], a[1], a[2]); }
-  v4(n, a, w) { const l = this.l(n); if (l) this.gl.uniform4f(l, a[0], a[1], a[2], w === undefined ? a[3] : w); }
-  m(n, a) { const l = this.l(n); if (l) this.gl.uniformMatrix4fv(l, false, a); }
-  a3(n, a) { const l = this.l(n); if (l) this.gl.uniform3fv(l, a); }
-  a4(n, a) { const l = this.l(n); if (l) this.gl.uniform4fv(l, a); }
-}
-
-const rotY = (out, x, y, z, yaw, s = 1) => {
-  const c = Math.cos(yaw) * s, n = Math.sin(yaw) * s;
-  out[0] = c; out[1] = 0; out[2] = -n; out[3] = 0; out[4] = 0; out[5] = s; out[6] = 0; out[7] = 0;
-  out[8] = n; out[9] = 0; out[10] = c; out[11] = 0; out[12] = x; out[13] = y; out[14] = z; out[15] = 1;
-  return out;
-};
-const local = (p, l) => [p.x + Math.cos(p.yaw) * l[0] + Math.sin(p.yaw) * l[2], p.y + l[1], p.z - Math.sin(p.yaw) * l[0] + Math.cos(p.yaw) * l[2]];
-const angDiff = (a, b) => { let d = (b - a) % TAU; if (d > Math.PI) d -= TAU; if (d < -Math.PI) d += TAU; return d; };
-const angLerp = (a, b, t) => a + angDiff(a, b) * t;
-/* posing a jointed thing (the raven): each of these multiplies a matrix on the right, in place.
-   turns follow the right hand rule: tX tips +z down, tY swings +x back toward -z, tZ lifts +x. */
-const mMove = (m, x, y, z) => { m[12] += m[0] * x + m[4] * y + m[8] * z; m[13] += m[1] * x + m[5] * y + m[9] * z; m[14] += m[2] * x + m[6] * y + m[10] * z; return m; };
-const mTurnX = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const y = m[4 + i], z = m[8 + i]; m[4 + i] = y * c + z * s; m[8 + i] = z * c - y * s; } return m; };
-const mTurnY = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const x = m[i], z = m[8 + i]; m[i] = x * c - z * s; m[8 + i] = x * s + z * c; } return m; };
-const mTurnZ = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (let i = 0; i < 3; i++) { const x = m[i], y = m[4 + i]; m[i] = x * c + y * s; m[4 + i] = y * c - x * s; } return m; };
 const RAVEN_SIZE = 1.5;        // a good deal bigger than life, so it reads from across the meadow
 
-export class World {
+export class World extends Printer {
   /** tier: 2 desktop, 1 phone, 0 weak. throws if WebGL2 is not there. */
-  constructor(canvas, { tier = 2, capture = false } = {}) {
-    this.canvas = canvas; this.tier = tier;
-    const gl = (this.gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: false, stencil: false,
-      powerPreference: "high-performance", preserveDrawingBuffer: capture }));
-    if (!gl) throw new Error("no webgl2");
-    this.lit = new Float32Array(INK.COUNT * 3); this.shade = new Float32Array(INK.COUNT * 3);
-    this.view = m4.create(); this.proj = m4.create(); this.vp = m4.create(); this.lightVP = m4.create(); this.tmp = m4.create();
-    this.ident = m4.create();
-    this.w = this.h = 0; this.scale = 1;
-    this.pull = 0;                 // changes the ink grain; bumped when the print is "pulled" again
+  constructor(canvas, opts = {}) {
+    super(canvas, opts);
     this.fireKick = 0; this.beadKick = 0; this.flag = 0; this.ravenHop = 0;
-    this.hot = {};
+    this.moonDir = MOON_DIR; this.lowGround = land.WATER_Y + 4;
     this.build();
   }
+  lightAt(u, night) { return lightAt(u, night, this.lit, this.shade); }
 
-  /* ---------- build everything (also runs again if the browser drops the GL context) ---------- */
-  build() {
-    const gl = this.gl, tier = this.tier;
-    this.prog = {
-      obj: new Prog(gl, OBJ_VS, OBJ_FS, "obj"), ground: new Prog(gl, GROUND_VS, GROUND_FS, "ground"),
-      plant: new Prog(gl, PLANT_VS, PLANT_FS, "plant"), mote: new Prog(gl, MOTE_VS, MOTE_FS, "mote"), print: new Prog(gl, PRINT_VS, PRINT_FS, "print"),
-    };
-    const q = tier === 2 ? 1 : tier === 1 ? 0.55 : 0.35;      // how much is planted: phones get about half
-
+  /* ---------- everything on the land (runs again if the browser drops the GL context) ---------- */
+  scene(q) {
+    const tier = this.tier;
     // the ground and the ribbons on it
     const G = land.buildGround(tier === 2 ? 220 : tier === 1 ? 180 : 150);
     this.ground = this.groundMesh(G.pos, G.nor, G.mask, G.idx);
@@ -111,16 +54,13 @@ export class World {
     // the two rut track runs from the road, through the gate, to the camper. the footpath goes round the loop and comes back
     // into the track at the fork, so from there to the road there is one track and nothing else is drawn.
     const tp = land.trailRibbonPoints(), cut = Math.round((land.trail.stops.make + 14) / 2), fork = Math.round(land.FORK / 2);
-    this.track = ribbon(tp.slice(0, cut + 1), 1.45, 0.06);
-    this.path = ribbon(tp.slice(cut, fork + 2), 0.82, 0.06);
-    this.road = ribbon(land.roadPoints(), 3.1, 0.07);
-    this.river = ribbon(land.riverPoints(), 8.2, 0, land.WATER_Y);
+    this.ribbons.push({ mesh: ribbon(tp.slice(0, cut + 1), 1.45, 0.06), kind: 2 }, { mesh: ribbon(tp.slice(cut, fork + 2), 0.82, 0.06), kind: 1 },
+                      { mesh: ribbon(land.roadPoints(), 3.1, 0.07), kind: 3 }, { mesh: ribbon(land.riverPoints(), 8.2, 0, land.WATER_Y), kind: 4, flat: true });
 
     // trees: one mesh per kind and distance, drawn many times
     const trees = land.plantTrees(q);
     trees.push({ x: P.camTree[0], y: land.height(P.camTree[0], P.camTree[1]) - 0.1, z: P.camTree[1], scale: 1.15, yaw: 1, species: 2, ink: 1, lod: 0 });
     if (tier < 2) for (const t of trees) if (t.lod === 0 && land.trailDist(t.x, t.z) > 9) t.lod = 1;
-    this.trees = [];
     const rand = rng(7);
     for (let sp = 0; sp < 3; sp++) for (let lod = 0; lod < 3; lod++) {
       const list = trees.filter((t) => t.species === sp && t.lod === lod);
@@ -135,10 +75,9 @@ export class World {
     // goldenrod, grass, fern
     const plants = land.plantMeadow(q), gold = [], green = [];
     for (let k = 0; k < plants.length; k += 6) (plants[k + 5] === 0 ? gold : green).push(plants[k], plants[k + 1], plants[k + 2], plants[k + 3], plants[k + 4], plants[k + 5]);
-    this.plants = [this.plantMesh(new Float32Array(gold), 0), this.plantMesh(new Float32Array(green), 1)];
+    this.plants.push(this.plantMesh(new Float32Array(gold), 0), this.plantMesh(new Float32Array(green), 1));
 
     // things
-    this.props = [];
     let nextId = 16;
     const standAt = (i) => land.trailAt(STOP_S[i]);          // where you stand at stop i: things are turned to face it
     const put = (geo, x, z, yaw = 0, dy = 0, extra = {}) => {
@@ -168,7 +107,7 @@ export class World {
     seat(INK.RUST, -0.47);
     this.flames = put(shapes.flames(), P.fire[0], P.fire[1]);
     this.apple = put(shapes.appleTree(), P.apple[0], P.apple[1], 0.4, -0.1);
-    this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true });
+    this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true, kick: () => this.beadKick * 1.1 });
     put(shapes.shed(), P.shed[0], P.shed[1], -1.3);
     const FG = STOP_IDS.indexOf("field-guide");
     // the log lies with its mushroom side toward you and the raven's end nearest. the trail cam's tree is behind it, to the left.
@@ -222,138 +161,6 @@ export class World {
     this.motes = this.moteMesh(seeds);
     const S = land.trail.stops;                                                // a few spots along the meadow stretches of the trail
     this.monarchs = [S.films - 44, S.films + 66, S.make + 32, S.follow + 65, S.follow + 145].map((i) => land.trailAt(i));
-
-    // the shadow block
-    const sres = (this.shadowRes = tier === 2 ? 2048 : tier === 1 ? 1024 : 0);
-    const depthTex = (res) => {
-      const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.DEPTH_COMPONENT24, res, res, 0, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_MODE, gl.COMPARE_REF_TO_TEXTURE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_COMPARE_FUNC, gl.LEQUAL);
-      return t;
-    };
-    this.noShadowTex = depthTex(1);
-    if (sres) {
-      this.shadowTex = depthTex(sres);
-      this.shadowFbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFbo);
-      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.shadowTex, 0);
-      gl.drawBuffers([gl.NONE]); gl.readBuffer(gl.NONE);
-      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { this.shadowRes = 0; }
-      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    }
-    // the film on the bedsheet: blank until the thumbnail arrives
-    this.blankTex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, this.blankTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([255, 255, 255, 255]));
-    this.filmTex = null;
-    if (this.filmImg) this.setFilm(this.filmImg);
-    this.fbo = null;
-    if (this.w) this.targets();
-  }
-
-  /** put a picture on the bedsheet screen (the newest episode's thumbnail) */
-  setFilm(img) {
-    const gl = this.gl; this.filmImg = img;
-    const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
-    gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
-    try { gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img); } catch (_) { gl.deleteTexture(t); return; }
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    this.filmTex = t;
-  }
-
-  mesh(geo) {
-    const gl = this.gl, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, geo.data, gl.STATIC_DRAW);
-    const B = STRIDE * 4;
-    [[0, 3, 0], [1, 3, 12], [2, 4, 24], [5, 1, 40]].forEach(([loc, n, off]) => { gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, B, off); });
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, geo.idx, gl.STATIC_DRAW);
-    gl.bindVertexArray(null);
-    return { vao, count: geo.count, type: geo.idx instanceof Uint32Array ? gl.UNSIGNED_INT : gl.UNSIGNED_SHORT, n: 0 };
-  }
-  instances(mesh, data) {
-    const gl = this.gl; gl.bindVertexArray(mesh.vao);
-    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 32, 0); gl.vertexAttribDivisor(3, 1);
-    gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 4, gl.FLOAT, false, 32, 16); gl.vertexAttribDivisor(4, 1);
-    gl.bindVertexArray(null); mesh.n = data.length / 8;
-  }
-  groundMesh(pos, nor, mask, idx) {
-    const gl = this.gl, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    const buf = (loc, data, n) => { const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, n, gl.FLOAT, false, 0, 0); };
-    buf(0, pos, 3); if (nor) buf(1, nor, 3); buf(2, mask, 4);
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, idx, gl.STATIC_DRAW);
-    gl.bindVertexArray(null);
-    return { vao, count: idx.length, type: gl.UNSIGNED_INT };
-  }
-  plantMesh(data, which) {
-    const gl = this.gl, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    // cut shapes, made of "kites": a point, a width half way, a point. x and y are in plant heights, z marks the plume.
-    const v = [], ix = [];
-    const kite = (c0, c1, c2, w, part) => {
-      const dx = c2[0] - c0[0], dy = c2[1] - c0[1], l = Math.hypot(dx, dy), nx = (-dy / l) * w, ny = (dx / l) * w, b = v.length / 3;
-      v.push(c0[0], c0[1], part, c1[0] + nx, c1[1] + ny, part, c1[0] - nx, c1[1] - ny, part, c2[0], c2[1], part);
-      ix.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
-    };
-    if (which === 0) {             // goldenrod: a stem, two leaves, four arching sprays
-      kite([0, 0], [0.015, 0.3], [0.03, 0.62], 0.013, 0);
-      kite([0.008, 0.2], [-0.07, 0.27], [-0.15, 0.3], 0.02, 0);
-      kite([0.015, 0.33], [0.08, 0.4], [0.15, 0.42], 0.018, 0);
-      kite([0.03, 0.56], [0.07, 0.78], [0.17, 0.99], 0.05, 1);
-      kite([0.025, 0.54], [-0.09, 0.7], [-0.22, 0.76], 0.04, 1);
-      kite([0.035, 0.5], [0.16, 0.62], [0.3, 0.64], 0.036, 1);
-      kite([0.03, 0.6], [-0.02, 0.83], [-0.06, 0.95], 0.033, 1);
-    } else {                       // grass and fern: four blades from one root
-      for (const [a, l] of [[-0.62, 1], [-0.16, 0.9], [0.26, 1], [0.72, 0.8]])
-        kite([0, 0], [Math.sin(a * 0.7) * 0.55 * l, Math.cos(a * 0.7) * 0.55 * l], [Math.sin(a * 1.5) * l, Math.cos(a * 1.5) * l], 0.02, 0);
-    }
-    const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(v), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 3, gl.FLOAT, false, 0, 0);
-    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 24, 0); gl.vertexAttribDivisor(3, 1);
-    gl.enableVertexAttribArray(4); gl.vertexAttribPointer(4, 2, gl.FLOAT, false, 24, 16); gl.vertexAttribDivisor(4, 1);
-    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(ix), gl.STATIC_DRAW);
-    gl.bindVertexArray(null);
-    return { vao, count: ix.length, n: data.length / 6 };
-  }
-  moteMesh(seeds) {
-    const gl = this.gl, vao = gl.createVertexArray(); gl.bindVertexArray(vao);
-    const vb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, vb); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
-    const b = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, b); gl.bufferData(gl.ARRAY_BUFFER, seeds, gl.STATIC_DRAW);
-    gl.enableVertexAttribArray(3); gl.vertexAttribPointer(3, 4, gl.FLOAT, false, 0, 0); gl.vertexAttribDivisor(3, 1);
-    gl.bindVertexArray(null);
-    return { vao, n: seeds.length / 4 };
-  }
-
-  /* ---------- size ---------- */
-  resize(cssW, cssH, scale) {
-    const w = Math.max(2, Math.round(cssW * scale)), h = Math.max(2, Math.round(cssH * scale));
-    this.cssW = cssW; this.cssH = cssH; this.scale = scale;
-    if (w === this.w && h === this.h) return;
-    this.w = w; this.h = h; this.canvas.width = w; this.canvas.height = h;
-    this.targets();
-  }
-  targets() {
-    const gl = this.gl, w = this.w, h = this.h;
-    if (this.fbo) { gl.deleteFramebuffer(this.fbo); gl.deleteTexture(this.tPlate); gl.deleteTexture(this.tAux); gl.deleteTexture(this.tDepth); }
-    const tex = (internal, format, type, filter) => {
-      const t = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, t);
-      gl.texImage2D(gl.TEXTURE_2D, 0, internal, w, h, 0, format, type, null);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, filter); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, filter);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-      return t;
-    };
-    this.tPlate = tex(gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, gl.LINEAR);
-    this.tAux = tex(gl.RGBA8, gl.RGBA, gl.UNSIGNED_BYTE, gl.NEAREST);
-    this.tDepth = tex(gl.DEPTH_COMPONENT24, gl.DEPTH_COMPONENT, gl.UNSIGNED_INT, gl.NEAREST);
-    this.fbo = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.tPlate, 0);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT1, gl.TEXTURE_2D, this.tAux, 0);
-    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.DEPTH_ATTACHMENT, gl.TEXTURE_2D, this.tDepth, 0);
-    gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
-    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error("framebuffer incomplete");
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
   }
 
   /* ---------- the camera ---------- */
@@ -400,87 +207,6 @@ export class World {
     const right = v3.norm(v3.cross(fwd, [0, 1, 0])), up = v3.cross(right, fwd);
     return (this.cam = { ...this.cam, eye, fwd, right, up, tanV: Math.tan(vfov / 2), tanH: Math.tan(vfov / 2) * aspect, shift: [0, 0] });
   }
-
-  /** where a world point lands on the page, in css pixels. null when it is behind you or off the picture. */
-  project(p, margin = 0) {
-    const c = m4.project(this.vp, p);
-    if (c[3] <= 0.05) return null;
-    const x = (c[0] / c[3] * 0.5 + 0.5) * this.cssW, y = (1 - (c[1] / c[3] * 0.5 + 0.5)) * this.cssH;
-    if (x < -margin || y < -margin || x > this.cssW + margin || y > this.cssH + margin) return null;
-    return [x, y, c[3]];
-  }
-
-  /* ---------- one frame ---------- */
-  /** state: { u, time, head: [yaw, pitch], night (0..1: the walk that starts in the dark), gust (0..1.5) } */
-  render(state) {
-    const gl = this.gl;
-    if (gl.isContextLost() || !this.fbo) return;
-    const u = state.u, t = Math.floor(state.time * 12) / 12;          // everything that sways is drawn "on twos", like a flip book
-    const L = (this.light = lightAt(u, state.night || 0, this.lit, this.shade));
-    let cam = this.camera(u, state.head || [0, 0], state.slide === undefined ? 1 : state.slide, state.seen || 1);
-    const P_ = this.prog;
-    const dt = state.still ? 1 : clamp(state.time - (this.lastTime === undefined ? state.time : this.lastTime), 0, 0.1);
-    this.lastTime = state.time;
-
-    this.animate(u, state.time, L, dt, !!state.still);
-    if (state.spy) cam = this.spy(state.spy);
-
-    // --- the shadow block ---
-    const shadowOn = this.shadowRes > 0 && L.shadow > 0.02;
-    if (shadowOn) {
-      const S = 64, ld = L.lightDir;
-      const flat = v3.norm([cam.fwd[0], 0, cam.fwd[2]]);
-      let c = [cam.eye[0] + flat[0] * 36, cam.eye[1] - 1, cam.eye[2] + flat[2] * 36];
-      const up = Math.abs(ld[1]) > 0.98 ? [0, 0, 1] : [0, 1, 0];
-      const rx = v3.norm(v3.cross(up, ld)), ry = v3.cross(ld, rx), texel = (2 * S) / this.shadowRes;
-      const dx = v3.dot(c, rx), dy = v3.dot(c, ry);
-      c = v3.add(c, v3.add(v3.scale(rx, Math.round(dx / texel) * texel - dx), v3.scale(ry, Math.round(dy / texel) * texel - dy)));
-      m4.lookAt(this.tmp, v3.add(c, v3.scale(ld, 300)), c, up);
-      m4.ortho(this.lightVP, -S, S, -S, S, 1, 620);
-      m4.mul(this.lightVP, this.lightVP.slice(), this.tmp);
-      gl.bindFramebuffer(gl.FRAMEBUFFER, this.shadowFbo);
-      gl.viewport(0, 0, this.shadowRes, this.shadowRes);
-      gl.enable(gl.DEPTH_TEST); gl.depthMask(true); gl.clearDepth(1); gl.clear(gl.DEPTH_BUFFER_BIT);
-      gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(1.6, 3);
-      this.drawWorld(this.lightVP, L, t, state, true);
-      gl.disable(gl.POLYGON_OFFSET_FILL);
-    }
-
-    // --- the two blocks ---
-    gl.bindFramebuffer(gl.FRAMEBUFFER, this.fbo);
-    gl.viewport(0, 0, this.w, this.h);
-    gl.enable(gl.DEPTH_TEST); gl.depthFunc(gl.LEQUAL); gl.depthMask(true);
-    gl.clearBufferfv(gl.COLOR, 0, [0, 0, 0, 0]); gl.clearBufferfv(gl.COLOR, 1, [0.5, 0.5, 0, 0]);
-    gl.clearDepth(1); gl.clear(gl.DEPTH_BUFFER_BIT);
-    this.shadowActive = shadowOn;
-    this.drawWorld(this.vp, L, t, state, false);
-
-    // --- the print ---
-    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-    gl.viewport(0, 0, this.w, this.h);
-    gl.disable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
-    const p = P_.print.use();
-    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.tPlate);
-    gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_2D, this.tAux);
-    gl.activeTexture(gl.TEXTURE2); gl.bindTexture(gl.TEXTURE_2D, this.tDepth);
-    p.i("tPlate", 0); p.i("tAux", 1); p.i("tDepth", 2);
-    p.f("uRes", this.w, this.h); p.f("uLine", Math.max(1, 1.15 * this.scale)); p.f("uNF", NEAR, FAR);
-    p.v3("uPaper", L.paper); p.v3("uKey", L.key); p.f("uKeyAmt", L.keyAmt);
-    p.f("uReg", 0.9 * this.scale, -0.55 * this.scale); p.f("uPull", this.pull);
-    p.v3("uCamRight", cam.right); p.v3("uCamUp", cam.up); p.v3("uCamFwd", cam.fwd);
-    p.f("uLens", cam.tanH, cam.tanV, cam.shift[0], cam.shift[1]);
-    p.v3("uSunDir", L.sunDir); p.v3("uMoonDir", MOON_DIR);
-    p.v4("uSunCol", L.sunCol, L.sunSize * DEG);
-    p.v4("uBandCol", L.band); p.v4("uBand2Col", L.band2);
-    const clear = (1 - smooth(0.25, 0.9, u)) * (this.cssW / this.cssH < 0.9 ? 0.6 : 0.3);      // fewer clouds behind the words on the first screen
-    p.f("uCloud", L.cloud * (1 - clear), state.time * 0.004, L.cloudShadeAmt, L.cloudLitAmt);
-    p.v3("uCloudShade", L.cloudShade); p.v3("uCloudLit", L.cloudLit); p.v3("uHaze", L.haze);
-    p.f("uNight", L.stars, L.moon, state.moonPhase === undefined ? 0.5 : state.moonPhase, L.rule);
-    p.f("uTime", t);
-    gl.bindVertexArray(null);
-    gl.drawArrays(gl.TRIANGLES, 0, 3);
-  }
-
   /* The raven. It leaves a little after you do and is waiting before you arrive. In the air it soars: a few slow, deep
      beats to get going, then a long glide on flat wings with the tips spread, and a wings-up landing (the pose in the
      logo). Stop half way and it wheels in a circle until you walk on. Sitting, it turns side on, watches you, and looks about. */
@@ -608,80 +334,28 @@ export class World {
     if (this.geeseOn) rotY(this.geeseModel, lerp(-190, 150, gt), land.WATER_Y + 78 + Math.sin(gt * 9) * 2, lerp(-330, -40, gt), Math.atan2(340, 290), 1);
   }
 
-  surface(p, vp, L, t, state, depthOnly) {
-    const gl = this.gl;
-    p.m("uViewProj", vp); p.m("uView", this.view); p.f("uDepthOnly", depthOnly ? 1 : 0);
-    p.v3("uCamPos", this.cam.eye); p.v3("uLightDir", L.lightDir); p.f("uTime", t);
-    p.f("uWind", 0.8, 0.6, L.wind * 0.42, state.gust || 0);
-    p.a3("uLit", this.lit); p.a3("uShade", this.shade);
-    p.m("uShadowMat", this.lightVP); p.f("uShadowAmt", !depthOnly && this.shadowActive ? L.shadow : 0);
-    p.v3("uFogCol", L.fogCol); p.f("uFog", L.fogD, L.fogLow, land.WATER_Y + 4, L.fogMax);
-    p.f("uHatch", L.hatch);
-    gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, !depthOnly && this.shadowActive ? this.shadowTex : this.noShadowTex);
-    p.i("tShadow", 3);
-    if (!depthOnly) {
-      const fy = land.height(P.fire[0], P.fire[1]), flick = 0.85 + 0.15 * Math.sin(state.time * 13) * Math.sin(state.time * 7.3);
-      const mb = this.mailbox;
-      const la = this.lampAt;
-      p.a4("uGlow", [P.fire[0], fy + 0.6, P.fire[1], 7.5 + this.fire * 3, la[0], la[1], la[2], 6.5, mb.x, mb.y + 0.8, mb.z - 0.3, 3.4]);
-      p.a4("uGlowCol", [0.96, 0.62, 0.2, clamp(this.fire, 0, 1) * flick * 0.9, 0.97, 0.78, 0.38, L.lamp * 0.7, 0.98, 0.8, 0.4, L.lamp * 0.8]);
-    }
+  /* the fire, the lamp under the awning, the lantern on the mailbox */
+  pools(L, state) {
+    const fy = land.height(P.fire[0], P.fire[1]), flick = 0.85 + 0.15 * Math.sin(state.time * 13) * Math.sin(state.time * 7.3);
+    const mb = this.mailbox, la = this.lampAt;
+    return [[P.fire[0], fy + 0.6, P.fire[1], 7.5 + this.fire * 3, la[0], la[1], la[2], 6.5, mb.x, mb.y + 0.8, mb.z - 0.3, 3.4],
+            [0.96, 0.62, 0.2, clamp(this.fire, 0, 1) * flick * 0.9, 0.97, 0.78, 0.38, L.lamp * 0.7, 0.98, 0.8, 0.4, L.lamp * 0.8]];
   }
 
-  drawWorld(vp, L, t, state, depthOnly) {
-    const gl = this.gl, P_ = this.prog;
-    gl.disable(gl.CULL_FACE);
-    // ground
-    const g = P_.ground.use(); this.surface(g, vp, L, t, state, depthOnly);
-    g.v3("uSunDir", L.sunDir); g.v4("uSunCol", L.sunCol, L.glitter);
-    g.i("uKind", 0); gl.enable(gl.CULL_FACE);
-    gl.bindVertexArray(this.ground.vao); gl.drawElements(gl.TRIANGLES, this.ground.count, this.ground.type, 0);
-    gl.disable(gl.CULL_FACE);
-    if (!depthOnly) {
-      gl.vertexAttrib3f(1, 0, 1, 0);
-      gl.enable(gl.POLYGON_OFFSET_FILL); gl.polygonOffset(-2, -4);
-      const rib = (mesh, kind) => { g.i("uKind", kind); gl.bindVertexArray(mesh.vao); gl.drawElements(gl.TRIANGLES, mesh.count, mesh.type, 0); };
-      rib(this.track, 2); rib(this.path, 1); rib(this.road, 3);
-      gl.disable(gl.POLYGON_OFFSET_FILL);
-      rib(this.river, 4);
-    }
-    // things
-    const o = P_.obj.use(); this.surface(o, vp, L, t, state, depthOnly);
-    if (!depthOnly) {
-      const c = (i) => [this.lit[i * 3], this.lit[i * 3 + 1], this.lit[i * 3 + 2]], w = c(INK.WHITE), g = c(INK.GOLD);
-      gl.activeTexture(gl.TEXTURE4); gl.bindTexture(gl.TEXTURE_2D, this.filmTex || this.blankTex);
-      o.i("tFilm", 4); o.f("uFilm", this.filmTex ? 1 : 0);
-      o.a3("uFilmInk", [...w, ...g.map((v, k) => v * 0.55 + w[k] * 0.45), ...c(INK.LEAF), this.shade[INK.RAVEN * 3], this.shade[INK.RAVEN * 3 + 1], this.shade[INK.RAVEN * 3 + 2]]);
-    }
-    gl.vertexAttrib4f(3, 0, 0, 0, 1);
-    for (const p of this.props) {
-      if (p.hidden || (depthOnly && p.noShadow)) continue;
-      o.m("uModel", p.model); gl.vertexAttrib4f(4, 1, 0, 0, p.id);
-      if (p === this.beads) o.f("uWind", 0.8, 0.6, L.wind * 0.42 + this.beadKick * 1.1, 0);
-      gl.bindVertexArray(p.mesh.vao); gl.drawElements(gl.TRIANGLES, p.mesh.count, p.mesh.type, 0);
-      if (p === this.beads) o.f("uWind", 0.8, 0.6, L.wind * 0.42, state.gust || 0);
-    }
+  /* the raven and the geese */
+  extras(o, depthOnly) {
+    const gl = this.gl;
     gl.vertexAttrib4f(4, 1, 0, 0, 232);
     for (const piece of this.raven.draw) { o.m("uModel", piece.m); gl.bindVertexArray(piece.mesh.vao); gl.drawElements(gl.TRIANGLES, piece.mesh.count, piece.mesh.type, 0); }
     if (this.geeseOn && !depthOnly) {
       o.m("uModel", this.geeseModel);
       gl.bindVertexArray(this.geese.vao); gl.drawElementsInstanced(gl.TRIANGLES, this.geese.count, this.geese.type, 0, this.geese.n);
     }
-    o.m("uModel", this.ident);
-    for (const tr of this.trees) {
-      if (depthOnly && tr.lod === 2) continue;
-      if (tr.cull) gl.enable(gl.CULL_FACE); else gl.disable(gl.CULL_FACE);
-      gl.bindVertexArray(tr.mesh.vao); gl.drawElementsInstanced(gl.TRIANGLES, tr.mesh.count, tr.mesh.type, 0, tr.mesh.n);
-    }
-    gl.disable(gl.CULL_FACE);
-    if (depthOnly) return;
-    // the meadow
-    const pl = P_.plant.use(); this.surface(pl, vp, L, t, state, false);
-    for (const m of this.plants) { gl.bindVertexArray(m.vao); gl.drawElementsInstanced(gl.TRIANGLES, m.count, gl.UNSIGNED_SHORT, 0, m.n); }
-    // specks
-    const mo = P_.mote.use();
-    mo.m("uViewProj", vp); mo.v3("uCamRight", this.cam.right); mo.v3("uCamUp", this.cam.up);
-    gl.bindVertexArray(this.motes.vao);
+  }
+
+  /* sparks off the fire, monarchs over the goldenrod */
+  specks(mo, L, state) {
+    const gl = this.gl;
     if (this.fire > 0.03) {
       mo.v3("uOrigin", [P.fire[0], land.height(P.fire[0], P.fire[1]) + 0.3, P.fire[1]]);
       mo.f("uSpec", 0, state.time, clamp(this.fire * 0.8, 0, 1), 0.035); mo.f("uMoteCol", 0.97, 0.72, 0.22);
@@ -701,7 +375,4 @@ export class World {
     return { wind: L.wind, river: 1 - smooth(14, 95, toRiver), fire: clamp(this.fire, 0, 1) * (1 - smooth(4, 38, toFire)),
              night: L.stars, day: clamp(L.w[0] + L.w[1] * 0.8 + L.w[2] * 0.5, 0, 1) };
   }
-
-  /** a PNG of what is on the canvas right now (only when made with capture: true) */
-  capture() { return new Promise((res) => this.canvas.toBlob(res, "image/png")); }
 }

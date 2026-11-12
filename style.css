@@ -91,7 +91,8 @@ p { margin: 0; }
   .top-in { flex-wrap: wrap; gap: 0 12px; padding-top: 8px; }
   .brand span { font-size: 18px; }
   .links { order: 3; width: calc(100% + 12px); margin: -6px -6px 0; gap: 0; }
-  .links a { flex: 1 1 auto; text-align: center; font-size: 13px; padding-inline: 2px; }
+  /* the short words (make, wear, land, road) are held to 44 wide where the row has room for that, and a little less on narrower phones */
+  .links a { flex: 1 1 auto; text-align: center; font-size: 13px; padding-inline: 2px; min-width: min(44px, calc(25vw - 54px)); }
   .links .the { display: none; }
   .sky { margin-left: auto; }
 }
