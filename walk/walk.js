@@ -107,7 +107,9 @@ async function start() {
   function markTrail(k) {
     if (k === shown) return; shown = k;
     links.forEach((a) => { const i = +a.dataset.go; if (i === k) a.setAttribute("aria-current", "step"); else a.removeAttribute("aria-current"); a.classList.toggle("done", i < k); });
-    nowLabel.textContent = links[k].textContent.trim();          // the dots beside it already say how far along you are
+    // the name of where you are (the dots beside it already say how far along). a stop that isn't in the list (follow along) says its own name
+    const link = links.find((a) => +a.dataset.go === k), h = link ? null : stops[k].querySelector("h1, h2");
+    nowLabel.textContent = (link || h || { textContent: "" }).textContent.trim();
     walk.dataset.at = STOP_IDS[k];
   }
 

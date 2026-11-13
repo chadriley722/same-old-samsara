@@ -748,7 +748,7 @@ def walk_stops(base):
     loc = lambda t, u, solid=False: f'<a class="btn{" solid" if solid else ""}" href="{base}{u}">{e(t)}</a>'
     wear = "".join(f"""<a href="{listing(p['id'])}" target="_blank" rel="noopener" title="{e(p['name'])}">{pic(base, p['img'], p['name'], 84)}</a>""" for p in FEATURED)
     return [
-        {"id": "films", "name": "films", "light": "morning", "side": "left",
+        {"id": "films", "name": "films", "light": "morning", "side": "left", "was": "films",
          "alt": "A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow. A camera on a tripod faces the sheet and throws a picture on it, and a raven sits on one of the poles.",
          "body": f"""<p>{e(DOC_LINE)}</p>
       {yt_embed(ep, base, (330, 370))}
@@ -765,15 +765,15 @@ def walk_stops(base):
          "body": f"""<p>We have an Etsy shop with the jewelry we make by hand. Apparel we designed is coming soon. The earrings don't really grow on the apple tree. We checked.</p>
       <div class="wear-row">{wear}</div>""",
          "links": loc("see the jewelry", "wear/", True) + ext("our etsy shop", SHOP) + ext("also on depop", DEPOP)},
-        {"id": "land", "name": "the land", "light": "golden hour", "side": "left",
+        {"id": "land", "name": "the land", "light": "golden hour", "side": "left", "was": "land year",
          "alt": "A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a raven on a rock, and geese flying over.",
          "body": "<p>34 acres in Central New York. Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>",
-         "links": loc("about the land", "land/", True) + '<a class="btn" href="#year">the land, month by month</a>'},
+         "links": loc("about the land", "land/", True) + loc("the land, month by month", "land/#year")},
         {"id": "field-guide", "name": "the field guide", "light": "sunset", "side": "right",
          "alt": "A print of the woods at sunset: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera.",
          "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
          "links": loc("open the field guide", "field-guide/", True)},
-        {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow",
+        {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow", "rail": False,      # a stop on the walk, but not in the list of stops (Chad, Nov 12)
          "alt": "A print of a campfire at nightfall with two camp chairs pulled up to it, a raven on the back of one, and a camper with its windows lit in the distance.",
          "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
          "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN)},
@@ -802,9 +802,9 @@ def walk_block(base, variant="home"):
     ep = EPISODES[0]
     stops = walk_stops(base)
     still = lambda n, sid, alt, lazy=True: pic(base, f"images/walk/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
-    trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1))
-    # the old home page had #make, #wear and #follow. those addresses still land on the right stop.
-    was = lambda st: f'<span class="was" id="{st["was"]}"></span>' if st.get("was") else ""
+    trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1) if st.get("rail", True))
+    # the old home page had #films, #make, #wear, #land, #year and #follow. those addresses still land on the stop that has that thing now.
+    was = lambda st: "".join(f'<span class="was" id="{w}"></span>' for w in st.get("was", "").split())
     cards = "".join(f"""
   <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
     {still(i, st['id'], st['alt'])}
@@ -820,7 +820,6 @@ def walk_block(base, variant="home"):
   <ol id="trail-list">
     <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
     {trail}
-    <li class="plain"><a href="#more">skip to the photos and episodes</a></li>
   </ol>
 </div></nav>
 <div class="walk-view">
@@ -841,14 +840,14 @@ def walk_block(base, variant="home"):
       <p class="def">{e(WHO_LINE)}</p>
       {gate_buttons(base, variant)}
     </div>
-    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#more"><span class="on">skip the walk</span><span class="off">skip to the photos</span></a>
+    <p class="label walk-hint"><span class="on">scroll to walk the land</span><span class="off">the land, stop by stop</span> <a href="#stop-end"><span class="on">skip the walk</span><span class="off">skip to the end</span></a>
       <span class="try">this is the still version, because your device asks for less motion. <a href="?walk">show the moving one</a></span></p>
   </header>{cards}
   <div class="stop end" id="stop-end">
     <div class="end-text">
       <p class="tag">the same old cycle.</p>
       <p class="def">That's the walk. The road goes on from here.</p>
-      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="{base}road/">keep going down the road</a><a class="btn" href="#more">more from the land</a></div>
+      <div class="btns center"><a class="btn solid" href="#walk" data-again>walk it again</a><a class="btn" href="{base}road/">keep going down the road</a><a class="btn" href="{base}land/">more from the land</a></div>
     </div>
   </div>
 </div>
@@ -897,28 +896,11 @@ def make_page():
                 base, "make/", body, here="make/")
 
 def home(variant="home"):
-    """the walk, and under it only what the walk doesn't have: today on the land, the photos, every episode, the wheel of the year.
-    (the make, jewelry and follow sections that used to repeat down here are stops on the walk, and pages in the menu.)"""
+    """the walk, and then the footer. that's the whole page (Chad, Nov 12): the walk ends on its last card, and the footer is the bottom.
+    what used to come after the walk lives on its own page now: every episode on /films, the photos, today on the land and the wheel
+    of the year on /land. (the make, jewelry and follow sections before that are stops on the walk, and pages in the menu.)"""
     base = "" if variant == "home" else "../"
-    first = EPISODES[-1]
-    spot = lambda p: (50, 50) if p == "center" else tuple(int(v.rstrip("%")) for v in p.split())
-    strip = "".join(f'<figure class="snap">{pic(base, src, cap, 260, shape=(4, 5), pos=spot(pos), style=f"object-position:{pos}")}<figcaption class="label">{e(cap)}</figcaption></figure>' for src, cap, pos in PHOTOS)
-    intro = f"""<section class="section after-walk" id="more"><div class="wrap">
-  <p class="label after-label">more from the land</p>
-  {almanac_strip()}
-</div></section>"""
-    s_land = f"""<section class="section" id="land"><div class="wrap">
-  {section_head("photos from the land", "34 acres · central new york · since fall 2026")}
-</div>
-<div class="snaps" tabindex="0" aria-label="photos from the land">{strip}</div>
-<div class="wrap"><div class="btns reveal"><a class="btn solid" href="{base}land/">about the land</a><a class="btn" href="{base}field-guide/">open the field guide</a></div></div></section>"""
-    s_films = f"""<section class="section band" id="films"><div class="wrap">{section_head("every episode", "season 1 · 2026")}
-  <p class="lede reveal">{e(FILMS_NEXT)}</p>
-  {episode_list(base, EPISODES)}
-  <div class="btns reveal"><a class="btn solid" href="{watch(first)}" target="_blank" rel="noopener">start at episode 1</a><a class="btn" href="{base}films/">all the films</a><a class="btn" href="{YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe</a></div>
-</div></section>"""
-    s_wheel = f"""<section class="section" id="year"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>"""
-    body = walk_block(base, variant) + intro + s_land + s_films + s_wheel
+    body = walk_block(base, variant)
     path = "" if variant == "home" else f"{variant}/"
     return page("Same Old Samsara | Films From the Land, Handmade Jewelry, Beading Patterns",
                 "Same Old Samsara: a documentary about building a homestead on 34 acres in Central New York, handmade beaded jewelry, and brick stitch and bead loom patterns.",
@@ -935,7 +917,7 @@ def land_page():
   <p class="def">We bought it in September 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
 </div><div class="wrap">{almanac_strip()}</div></section>
 <section class="section"><div class="wrap">{section_head("the map", "tap a spot")}{map_block(base)}</div></section>
-<section class="section band soft"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>
+<section class="section band soft" id="year"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>
 <section class="section"><div class="wrap">{section_head("photos from the land", "field notes")}<div class="fieldgrid">{strip}</div>
 <div class="btns reveal"><a class="btn solid" href="{base}field-guide/">open the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
     return page("The Land | 34 Acres in Central New York | Same Old Samsara",

@@ -33,7 +33,7 @@
 .walk .us { display: flex; gap: 14px; align-items: center; }
 .walk .us img { flex: none; width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--ink); }
 .walk .inapp { margin-top: 12px; font-size: 12.5px; }
-.walk .was { position: absolute; top: 0; }       /* where the old home page's #make, #wear and #follow links land now */
+.walk .was { position: absolute; top: 0; }       /* where the old home page's #films, #make, #wear, #land, #year and #follow links land now */
 
 /* ---------- plain layout ---------- */
 .walk .stop { max-width: var(--wrap); margin: 0 auto; padding: 26px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: center; }
@@ -58,9 +58,6 @@
 .walk .stop.end [data-again] { display: none; }
 .end-text .def { display: none; margin-top: 10px; }
 .walk-on .end-text .def { display: block; }
-.after-walk { padding: 34px 0 0; }
-.after-walk .almanac { margin-top: 14px; }
-.after-label { color: var(--accent); }
 @media (max-width: 760px) {
   .walk .stop { grid-template-columns: 1fr; gap: 16px; }
   .walk .stop.right .still { order: 0; }
@@ -70,6 +67,7 @@
 /* the world starts at the very top of the window, under the see-through header */
 .walk-on .walk { margin-top: calc(-1 * var(--top-h)); }
 .walk-on .walk-view { display: block; position: sticky; top: 0; height: 100vh; height: 100lvh; overflow: hidden; z-index: 0;
+  margin-top: -130vh; margin-top: -130lvh;                       /* it sits under the trail (see .trail) */
   background: var(--bg) url("../images/walk/0-gate.webp") center / cover no-repeat; }
 :root[data-theme="night"].walk-on .walk-view { background-image: url("../images/walk/0-gate-night.webp"); }
 @media (max-width: 760px) {
@@ -108,7 +106,6 @@
 .walk-on .walk .stop.end [data-again] { display: inline-flex; }
 .walk-on .end-text { pointer-events: auto; text-align: center; padding: 18px 26px 22px; border-radius: 6px; background: color-mix(in srgb, var(--bg) 80%, transparent); }
 .walk-on .end-text .tag { margin-top: 0; }
-.walk-on .after-walk { position: relative; z-index: 3; background: var(--bg) var(--grain); }
 
 @media (min-width: 900px) { .walk-on .walk .stop.right .card { margin-right: 200px; } }
 @media (max-width: 760px) {
@@ -135,8 +132,10 @@
 /* ---------- the trail list ---------- */
 /* a zero height strip that sticks to the top of the window for the whole walk, so the list rides above the cards */
 .trail { display: none; }
-.walk-on .trail { display: block; position: sticky; top: 0; height: 0; z-index: 6; }
-.trail-in { position: absolute; right: 14px; top: 50vh; transform: translateY(-50%); }
+/* the trail is taller than the window, so as the walk ends it goes up and away (a little ahead of the world) instead of
+   staying over the footer, or leaving a piece of itself showing under the header. only the list itself takes clicks */
+.walk-on .trail { display: block; position: sticky; top: 0; height: 130vh; height: 130lvh; z-index: 6; pointer-events: none; }
+.trail-in { position: absolute; right: 14px; top: 50vh; transform: translateY(-50%); pointer-events: auto; }
 .trail ol { list-style: none; margin: 0; padding: 10px 12px; display: flex; flex-direction: column; border-radius: 12px;
   background: color-mix(in srgb, var(--bg) 84%, transparent); border: 1px solid var(--rule); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); }
 .trail a { display: flex; flex-direction: row-reverse; align-items: center; gap: 9px; padding: 5px 2px; font-family: var(--label); font-size: 13px;
@@ -147,8 +146,6 @@
 .trail a.done i { background: currentColor; }
 .trail a[aria-current] { color: var(--ink); font-weight: 700; }
 .trail a[aria-current] i { background: var(--gold); border-color: var(--ink); box-shadow: 0 0 0 3px color-mix(in srgb, var(--gold) 35%, transparent); }
-.trail .plain { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--rule); max-width: 140px; }
-.trail .plain a { flex-direction: row; white-space: normal; text-decoration: underline; text-underline-offset: 3px; font-size: 12px; line-height: 1.3; }
 .trail-now { display: none; }
 @media (max-width: 899px) {
   /* on small screens the trail is a row of dots under the header, with the name of where you are */
@@ -159,7 +156,6 @@
   .trail a { padding: 17px 9px; }        /* each dot is 28 by 44 to tap. nine of them and the name still fit across a phone */
   .trail a span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .trail li + li:not(.plain) a i::before { left: auto; right: calc(100% + 2px); bottom: 50%; height: 0; width: 14px; border-left: 0; border-top: 1.5px dotted currentColor; transform: translateY(50%); }
-  .trail .plain { display: none; }
 }
 @media (max-width: 360px) { .trail a { padding-inline: 6px; } .trail li + li:not(.plain) a i::before { width: 8px; } }
 
