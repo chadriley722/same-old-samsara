@@ -33,7 +33,7 @@
 .walk .us { display: flex; gap: 14px; align-items: center; }
 .walk .us img { flex: none; width: 84px; height: 84px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--ink); }
 .walk .inapp { margin-top: 12px; font-size: 12.5px; }
-.walk .was { position: absolute; top: 0; }       /* where the old home page's #films, #make, #wear, #land, #year and #follow links land now */
+.walk .was { position: absolute; top: 0; }       /* where the old home page's #films, #make, #patterns, #recipes, #wear, #land, #year and #follow links land now */
 
 /* ---------- plain layout ---------- */
 .walk .stop { max-width: var(--wrap); margin: 0 auto; padding: 26px 18px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 30px; align-items: center; }

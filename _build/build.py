@@ -755,7 +755,7 @@ def walk_stops(base):
       <p class="label ep-line">newest · {e(ep_no(ep))} · {month_of(ep['date'])} · {e(ep['title'])}</p>""",
          "links": ext("start at episode 1", watch(first), True) + loc("all the films", "films/") + ext("subscribe", f"{YT}?sub_confirmation=1"),
          "after": inapp_tip()},
-        {"id": "make", "name": "make", "light": "late morning", "side": "right", "was": "make",
+        {"id": "make", "name": "make", "light": "late morning", "side": "right", "was": "make patterns recipes",
          "alt": "A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a raven on the roof.",
          "body": f"<p>{e(MAKE_INTRO)}</p>",
          "links": loc("see what we make", "make/", True) + loc(f"free pattern: {free['name']}", f"patterns/{slug(free)}/") + loc("design your own", "bead-lab/")
@@ -803,7 +803,7 @@ def walk_block(base, variant="home"):
     stops = walk_stops(base)
     still = lambda n, sid, alt, lazy=True: pic(base, f"images/walk/{n}-{sid}.webp", alt, (330, 620), cls="still", lazy=lazy)
     trail = "".join(f'<li><a href="#stop-{st["id"]}" data-go="{i}"><i aria-hidden="true"></i><span>{e(st["name"])}</span></a></li>' for i, st in enumerate(stops, 1) if st.get("rail", True))
-    # the old home page had #films, #make, #wear, #land, #year and #follow. those addresses still land on the stop that has that thing now.
+    # the old home page had #films, #make, #patterns, #recipes, #wear, #land, #year and #follow. those addresses still land on the stop that has that thing now.
     was = lambda st: "".join(f'<span class="was" id="{w}"></span>' for w in st.get("was", "").split())
     cards = "".join(f"""
   <article class="stop {st['side']}" id="stop-{st['id']}" data-stop="{i}">
