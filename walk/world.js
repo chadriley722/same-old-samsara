@@ -94,11 +94,10 @@ export class World extends Printer {
     this.mailbox = put(shapes.mailbox(), P.mailbox[0], P.mailbox[1], 0);
     this.flagProp = put(shapes.mailboxFlag(), P.mailbox[0], P.mailbox[1], 0);
     const scr = put(shapes.screen(), P.screen[0], P.screen[1], Math.atan2(standAt(1)[0] - P.screen[0], standAt(1)[2] - P.screen[1]));
-    // the camera faces the sheet and throws the film on it: four fine lines run from the lens to the corners of the picture
-    const tri = put(shapes.tripod(), P.tripod[0], P.tripod[1], Math.atan2(P.screen[0] - P.tripod[0], P.screen[1] - P.tripod[1]));
-    const lens = local(tri, shapes.LENS), beam = new shapes.Geo();
-    for (const [x, y] of shapes.FILM_CORNERS) beam.add(shapes.tube(lens, local(scr, [x, y, 0.02]), 0.006, 0.004, 3, [INK.PEPPER, 0, 9, 0], 1, false));
-    this.props.push({ mesh: this.mesh(beam.build()), model: m4.create(), id: 240, noShadow: true });
+    // the camera faces the sheet and throws the film on it. nothing is drawn between them (Chad, Nov 13: the four fine lines
+    // from the lens to the corners of the picture are gone). the camera stands right between you and the sheet, so anything
+    // in the beam, lines, a cone of light or dust, lands on top of the picture, and the picture is the thing to look at.
+    put(shapes.tripod(), P.tripod[0], P.tripod[1], Math.atan2(P.screen[0] - P.tripod[0], P.screen[1] - P.tripod[1]));
     const camperYaw = 0.965;       // the door and the awning face the morning sun, and the trail
     this.camper = put(shapes.camper(), P.camper[0], P.camper[1], camperYaw);
     put(shapes.table(), P.table[0], P.table[1], camperYaw);

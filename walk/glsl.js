@@ -62,6 +62,7 @@ uniform vec4 uFog;                      // density per metre, extra in the low g
 uniform vec4 uGlow[3];                  // little pools of warm light: xyz, reach
 uniform vec4 uGlowCol[3];               // rgb, how lit
 uniform float uHatch;                   // how much carving shows (fades out at dusk)
+uniform float uDark;                    // 0 by day, 1 at night, when the key ink is pale and carving reads much louder
 
 float shadowVis(vec3 wp, float ndl){
   if (uShadowAmt <= 0.) return 1.;
@@ -185,9 +186,11 @@ void main(){
   if (style == 1){                                    // bark: lines running up the trunk
     float a = atan(vObj.z, vObj.x);
     key = lines(a * 2.6 + vnoise(vObj.xy * vec2(1.5, .6)) * 1.5, mix(.5, .16, lit)) * .85;
-  } else if (style == 2){                             // leaves: rings in the shade, a few dabs in the light
+  } else if (style == 2){                             // leaves: a few rings where the light leaves off, a few dabs in the light
+    // the side turned right away from the light is left plain. a whole tree top in shade, close up, used to fill with rings
+    // that read as scribbles (the big tree by the road at the end of the walk, with the sun behind it)
     float c = vObj.y * 2.1 + vnoise3(vObj * .9) * 2.2;
-    key = lines(c, .2) * (1. - lit) * .7;
+    key = lines(c, .16) * (1. - lit) * smoothstep(-.42, .02, ndl + rag) * mix(.6, .22, uDark);
     key = max(key, dabs(vObj.xy * 2.3 + vObj.z * 1.7, .2, vec2(1., 1.9)) * lit * .5);
   } else if (style == 3){                             // boards
     key = lines(vObj.x * 3.1 + vObj.z * 3.1, .1) * .7 + dabs(vObj.xy * vec2(3., 1.2) + vObj.z, .15, vec2(2.4, .6)) * .5;
@@ -278,7 +281,7 @@ void main(){
     float comb = lines(dot(P, vec2(-ld.y, ld.x)) * 3.1 + vnoise(P * .6) * 1.4, .2) * (1. - lit);
     float marks = dabs(P * mix(2.1, 3.2, wood) + wob, mix(.2, .36, wood) * (1. - trod * .7), vec2(1., 2.2)) * mix(.45, .6, wood);
     marks = max(marks, dabs(P * 6., .3, vec2(1.)) * grav * .5);
-    key = max(comb * .55, marks * lit) * near;
+    key = max(comb * .55 * mix(1., .45, uDark), marks * lit) * near;      // at night the combed shade is pale ink on dark: keep it quiet
   } else if (uKind == 1 || uKind == 2){
     float wood = vMask.z, s = abs(vMask.x);
     vec3 a = mix(uLit[2], uLit[3], wood), b = mix(uShade[2], uShade[3], wood);

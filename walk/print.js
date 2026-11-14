@@ -306,7 +306,7 @@ export class Printer {
     p.a3("uLit", this.lit); p.a3("uShade", this.shade);
     p.m("uShadowMat", this.lightVP); p.f("uShadowAmt", !depthOnly && this.shadowActive ? L.shadow : 0);
     p.v3("uFogCol", L.fogCol); p.f("uFog", L.fogD, L.fogLow, this.lowGround, L.fogMax);
-    p.f("uHatch", L.hatch);
+    p.f("uHatch", L.hatch); p.f("uDark", L.stars || 0);
     gl.activeTexture(gl.TEXTURE3); gl.bindTexture(gl.TEXTURE_2D, !depthOnly && this.shadowActive ? this.shadowTex : this.noShadowTex);
     p.i("tShadow", 3);
     if (!depthOnly) {

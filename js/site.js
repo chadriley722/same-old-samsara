@@ -93,6 +93,18 @@
     })(t0);
   }
 
+  /* a line of links to field guide cards: "look for: goldenrod · asters" under a month, "found here: ..." under a spot on the map */
+  function cardLinks(el, lead, list) {
+    if (!el) return;
+    el.textContent = ""; el.hidden = !(list && list.length);
+    if (el.hidden) return;
+    el.appendChild(document.createTextNode(lead + " "));
+    list.forEach(function (l, k) {
+      if (k) el.appendChild(document.createTextNode(" · "));
+      var a = document.createElement("a"); a.href = "#" + l[0]; a.textContent = l[1]; el.appendChild(a);
+    });
+  }
+
   /* ---------- wheel of the year ---------- */
   document.querySelectorAll(".wheel").forEach(function (w) {
     var months = JSON.parse(w.dataset.months), cur = now.getMonth();
@@ -119,6 +131,7 @@
         slices.forEach(function (s) { s.classList.remove("sel"); }); path.classList.add("sel");
         label.textContent = (i === cur ? "this month · " : "") + m.m;
         text.textContent = m.note;
+        cardLinks(wrap.querySelector("#wheel-look"), "look for:", m.look);
       };
       path.addEventListener("click", pick);
       path.addEventListener("keydown", function (ev) { if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); pick(); } });
@@ -142,7 +155,7 @@
     var small = card.querySelector("source");            // the phone sized copies. the <img> keeps the original for old browsers
     var pins = document.querySelectorAll(".pin");
     pins.forEach(function (b, i) {
-      if (i === 0) b.setAttribute("aria-pressed", "true");
+      if (i === 0) { b.setAttribute("aria-pressed", "true"); cardLinks(document.getElementById("map-found"), "found here:", spots[b.dataset.spot].found); }
       b.addEventListener("click", function () {
         var s = spots[b.dataset.spot];
         pins.forEach(function (x) { x.setAttribute("aria-pressed", x === b ? "true" : "false"); });
@@ -150,6 +163,7 @@
         setTimeout(function () { if (small) small.srcset = s.set; img.src = s.img; img.style.opacity = 1; }, 180);
         document.getElementById("map-name").textContent = s.name;
         document.getElementById("map-note").textContent = s.note;
+        cardLinks(document.getElementById("map-found"), "found here:", s.found);
         if (window.innerWidth < 860) card.scrollIntoView({ behavior: reduce ? "auto" : "smooth", block: "nearest" });
       });
     });

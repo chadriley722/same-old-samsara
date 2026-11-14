@@ -40,7 +40,7 @@ PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy](ht
 - [witch hat + wizard hat](https://sameoldsamsara.xyz/patterns/witch-and-wizard-hats/): brick stitch pattern, $2.99. Two pointy hats, one listing. A witch hat and a starry wizard hat. Buy: https://www.etsy.com/listing/1781552260
 
 ## Tools
-- [The field guide](https://sameoldsamsara.xyz/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.
+- [The field guide](https://sameoldsamsara.xyz/land/#field-guide): the animals, plants and fungi found on the land so far, as a small guessing game.
 - [The bead lab](https://sameoldsamsara.xyz/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.
 
 ## Recipes

@@ -384,6 +384,21 @@ h3.mini { font-size: 22px; margin: 22px 0 10px; }
 .newhere { margin-top: 16px; }
 .newhere a { color: var(--accent); white-space: nowrap; }
 /* the hello strip: js/fieldguide.js sets it under the card someone arrived on from a pin */
+/* the land page: links to its parts, the field guide's row of buttons, and links from the map and the wheel into the cards */
+.jump { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 22px; }
+.jump a { font: 13.5px var(--label); padding: 7px 13px; border: 1px solid var(--rule); border-radius: 999px; color: var(--ink); text-decoration: none; }
+.jump a:hover, .jump a:focus-visible { border-color: var(--accent); color: var(--accent); }
+.fg-chips { margin-bottom: 30px; }
+.fg-group + .fg-group { margin-top: 48px; }
+.fg-group[hidden], .find[hidden], .critter[hidden] { display: none; }
+.fg-h { font-size: clamp(24px, 3vw, 32px); margin-bottom: 16px; display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.fg-h .label { font-weight: 400; }
+.critter.hit, .find.hit .face { animation: fghit 2.6s ease-out 1; }
+@keyframes fghit { 0%, 45% { box-shadow: 0 0 0 4px var(--gold), var(--shadow); } 100% { box-shadow: 0 0 0 0 transparent, var(--shadow); } }
+.look, .found { margin-top: 12px; line-height: 1.9; }
+.wheel-note .look { font-family: var(--label); font-size: 13.5px; min-height: 0; }
+.look a, .found a { color: var(--accent); }
+.look[hidden], .found[hidden] { display: none; }
 .fg-hello { grid-column: 1 / -1; display: flex; gap: 14px; align-items: flex-start; padding: 14px 16px 16px; border: 1.5px solid var(--ink); border-radius: 6px; background: var(--card); color: var(--ink); }
 .fg-hello[hidden] { display: none; }
 .fg-hello img { flex: none; width: 64px; height: 64px; border-radius: 50%; object-fit: cover; }

@@ -279,6 +279,35 @@ FINDS = [
      "note": "Chewed wood, built in layers. Only the new queens make it through winter, and never in the old nest."},
 ]
 
+# field guide tags (Nov 13, when the guide moved onto the land page). every find has one kind, for the row of buttons.
+FG_KIND = {
+    "plants": ["goldenrod", "moss", "asters", "milkweed", "sumac", "highbush-cranberry", "blackberry", "fern", "dames-rocket"],
+    "trees": ["canopy", "sycamore", "red-maple", "wild-apple", "aspen", "hemlock"],
+    "mushrooms": ["mycelium", "white-mushroom", "turkey-tail", "honey-mushroom", "red-belted-conk", "puffballs", "lichen", "gilled-shelf"],
+    "signs": ["gully", "river", "bear-sign", "antler-shed", "frost", "hornet-nest"],
+}
+FG_CHIPS = [("all", "everything"), ("critters", "critters"), ("plants", "plants"), ("trees", "trees"), ("mushrooms", "mushrooms"), ("signs", "signs + places")]
+# which cards a spot on the map points to, and which a month on the wheel points to. ONLY what a card's own words say
+# ("in the meadow", "in October"). nothing here is a guess: a card with no place or month in its words is simply not listed.
+FG_AT = {
+    "meadow": ["goldenrod", "asters", "monarch", "frost"],
+    "woods": ["canopy", "gully", "hemlock", "moss", "bear-sign", "gilled-shelf"],
+    "river": ["river", "sycamore"],
+    "beds": ["goldenrod"],
+    "mycelium": ["mycelium"],
+    "forest-floor": ["white-mushroom"],
+}
+FG_MONTHS = {
+    "jan": ["antler-shed"], "feb": ["sumac"], "may": ["dames-rocket"], "aug": ["blackberry"],
+    "sep": ["goldenrod", "asters", "monarch", "geese", "sumac"],
+    "oct": ["red-maple", "honey-mushroom", "fern", "woolly-bear", "caterpillar", "river"],
+    "nov": ["frost"], "dec": ["highbush-cranberry"],
+}
+def fg_names(ids):
+    """[id, name] pairs for links to cards, checked against the cards that exist"""
+    names = {c["id"]: c["name"] for c in CRITTERS + FINDS}
+    return [[i, names[i]] for i in ids]
+
 TOHO = [  # bead lab palette: Toho 11/0 frosted colors from the published patterns
     ("jet", "#262422"), ("white", "#f8f7f2"), ("light beige", "#e6d9bd"), ("egg shell", "#f1e6cf"), ("gray", "#b9b9b6"),
     ("dark gray", "#8f8f8d"), ("pepper red", "#b8342c"), ("oxblood", "#5b2a27"), ("terra cotta", "#b04a2c"),
@@ -513,7 +542,9 @@ def head(title, desc, base, path, noindex=False, jsonld=None, image=None, extra_
 
 # the menu is the walk's stops, in the walk's order. follow along is left out (it's in every footer).
 # the road goes last: it leads out to the pneuma nomads page, the way the walk's last stop does.
-NAV = [("films", "films/"), ("make", "make/"), ("wear", "wear/"), ("the land", "land/"), ("field guide", "field-guide/"), ("say hi", "say-hi/"), ("the road", "road/")]
+NAV = [("films", "films/"), ("make", "make/"), ("wear", "wear/"), ("the land", "land/"), ("say hi", "say-hi/"), ("the road", "road/")]
+# the field guide lives on the land page since Nov 13, so the menu has one link for both. the walk still has both stops:
+# the river goes to the top of the land page, the log with the raccoon goes to the field guide part of it.
 
 def nav(base, here=""):
     def link(t, h):
@@ -583,22 +614,24 @@ def film_main(base, lazy=True):
   </div>"""
 
 def wheel_block():
-    data = json.dumps([{"m": m, "note": n} for m, n in MONTHS])
+    data = json.dumps([{"m": m, "note": n, "look": fg_names(FG_MONTHS.get(m, []))} for m, n in MONTHS])
     return f"""<div class="wheel-wrap reveal">
   <div class="wheel" id="wheel" data-months='{e(data)}' role="group" aria-label="the wheel of the year"></div>
   <div class="wheel-note"><span class="label" id="wheel-m">this month</span><p id="wheel-text"></p>
+  <p class="label look" id="wheel-look" hidden></p>
   <p class="label hint">tap a month to see what the land is doing. this is year one, so we're still learning.</p></div>
 </div>"""
 
 def map_block(base):
     pins = "".join(f"""<button class="pin" type="button" style="left:{s['x']/10}%;top:{s['y']/9}%" data-spot="{s['id']}" aria-label="{e(s['name'])}"><span></span></button>""" for s in SPOTS)
     small = lambda rel: ", ".join(f"{base}{variant(rel, w, (4, 3))} {w}w" for w in widths(rel, 330, (4, 3)))
-    panels = json.dumps({s["id"]: {"name": s["name"], "note": s["note"], "img": base + s["img"], "set": small(s["img"])} for s in SPOTS})
+    panels = json.dumps({s["id"]: {"name": s["name"], "note": s["note"], "img": base + s["img"], "set": small(s["img"]), "found": fg_names(FG_AT.get(s["id"], []))} for s in SPOTS})
     return f"""<div class="map reveal">
   <div class="map-art">{land_svg()}{pins}</div>
   <aside class="map-card" id="map-card" data-spots='{e(panels)}' aria-live="polite">
     {pic(base, SPOTS[0]['img'], "", 330, shape=(4, 3), extra=' id="map-img"')}
     <span class="label">a spot on the land</span><h3 id="map-name">{e(SPOTS[0]['name'])}</h3><p id="map-note">{e(SPOTS[0]['note'])}</p>
+    <p class="label found" id="map-found" hidden></p>
   </aside>
   <p class="label map-foot">a cartoon, not to scale.</p>
 </div>"""
@@ -686,7 +719,7 @@ def footer(base):
     follow = "".join(f'<a href="{u}" target="_blank" rel="noopener">{n}</a>' for n, u, _ in FOLLOW)
     links = [("films", "films/"), ("make", "make/"), ("patterns", "patterns/"), ("design your own", "bead-lab/")]
     if len(RECIPES) >= 3: links.append(("recipes", "recipes/"))          # one recipe isn't a section yet. it's still on the make page
-    links += [("wear", "wear/"), ("the land", "land/"), ("field guide", "field-guide/"), ("the road", "road/"), ("about", "about/"), ("say hi", "say-hi/")]
+    links += [("wear", "wear/"), ("the land", "land/"), ("the road", "road/"), ("about", "about/"), ("say hi", "say-hi/")]
     site = "".join(f'<a href="{base}{h}">{t}</a>' for t, h in links)
     return f"""<footer class="foot"><div class="wrap">
   <div class="foot-ring" aria-hidden="true"></div>
@@ -772,7 +805,7 @@ def walk_stops(base):
         {"id": "field-guide", "name": "the field guide", "light": "sunset", "side": "right",
          "alt": "A print of the woods at sunset: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera.",
          "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
-         "links": loc("open the field guide", "field-guide/", True)},
+         "links": loc("open the field guide", "land/#critters", True)},
         {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow", "rail": False,      # a stop on the walk, but not in the list of stops (Chad, Nov 12)
          "alt": "A print of a campfire at nightfall with two camp chairs pulled up to it, a raven on the back of one, and a camper with its windows lit in the distance.",
          "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
@@ -909,20 +942,58 @@ def home(variant="home"):
                 extra_head=WALK_HEAD.format(base=base, v=ver("walk/walk.css")), body_class="has-walk",
                 extra_js=f'<script type="module" src="{base}walk/walk.js?v={ver("walk/walk.js")}"></script>')
 
+def fieldguide_block(base):
+    """the field guide, as a part of the land page. every card keeps the id it always had: the pins link to them."""
+    kind = {i: k for k, ids in FG_KIND.items() for i in ids}
+    assert set(kind) == {f["id"] for f in FINDS} and sum(len(v) for v in FG_KIND.values()) == len(FINDS), "every find needs one kind in FG_KIND"
+    def critter(c):
+        clip = f' data-clip="{base}{c["clip"]}"' if c.get("clip") else ""
+        return f"""<button class="critter reveal" type="button" id="{c['id']}" data-id="{c['id']}"{clip} aria-label="who's this? tap to see">
+  <span class="cframe">{pic(base, c['img'], c['name'], (260, 390), shape=(1, 1), style=f"transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}")}</span>
+  <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>"""
+    crit = "".join(critter(c) for c in CRITTERS)
+    finds = "".join(f"""<button class="find reveal" type="button" id="{f['id']}" data-id="{f['id']}" data-kind="{kind[f['id']]}" aria-label="turn over: {e(f['hint'])}">
+  <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
+  <span class="face front">{pic(base, f['img'], f['name'], (170, 260), shape=(4, 3), hold=True)}<strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
+    chips = "".join(f'<button type="button" data-kind="{k}" aria-pressed="{"true" if k == "all" else "false"}">{e(t)}</button>' for k, t in FG_CHIPS)
+    # someone who taps a pin lands on one card, half way down this page, knowing nothing about us. js/fieldguide.js puts this under that card.
+    hello = f"""<aside class="fg-hello" id="fg-hello" hidden>
+  {pic(base, US_PHOTO, US_ALT, 64)}
+  <div><p>This is from our 34 acres in Central New York. We're Chad and Daniel, and we're filming all of it.</p>
+  <div class="btns"><a class="btn solid" href="{base}films/">watch the films</a><a class="btn" href="{base}wear/">see the jewelry</a><a class="btn" href="{base}about/">who we are</a></div></div>
+</aside>"""
+    return f"""<section class="section" id="field-guide"><div class="wrap">{section_head("the field guide", "who lives here, and what we've found")}
+  <p class="lede reveal">Everything here was found on our land. We're not experts. We're learning it one walk at a time, and this guide grows as we do.</p>
+  <div class="chips fg-chips reveal" id="fg-chips" role="group" aria-label="what to show">{chips}</div>
+  <div class="fg-group" data-group="critters"><h3 class="fg-h reveal">who lives here <span class="label">they start zoomed way in. guess, then tap</span></h3>
+  <div class="critters" id="critters">{crit}</div>
+  <p class="label tally" id="met"></p></div>
+  <div class="fg-group" data-group="finds"><h3 class="fg-h reveal">things to find <span class="label">read the hint, then turn it over</span></h3>
+  <div class="finds" id="finds">{finds}</div>
+  <p class="label tally" id="found"></p></div>
+  <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}films/">watch the films</a></div>
+</div></section>
+{hello}"""
+
 def land_page():
+    """the land and the field guide, one page (Nov 13). the map is how you browse by place, the wheel is how you browse by
+    season, and both point into the same cards. every old field-guide/#id address still lands on its card: fieldguide_moved()."""
     base = "../"
     strip = "".join(f'<figure class="field reveal">{pic(base, src, cap, 330)}<figcaption><span class="label">field note</span> {e(cap)}</figcaption></figure>' for src, cap, _ in PHOTOS)
     body = f"""<section class="hero small"><div class="wrap hero-text">
   <h1>the land</h1><p class="tag">34 acres. central new york.</p>
   <p class="def">We bought it in September 2026: meadow, woods and a river, with one rough track in. No house yet, no barn, no tractor. Slowly we're building it into a homestead, with a food forest, fruit trees and a garden, and the films are the record of figuring it out.</p>
+  <nav class="jump" aria-label="on this page"><a href="#map">the map</a><a href="#year">the year</a><a href="#field-guide">the field guide</a><a href="#photos">photos</a></nav>
 </div><div class="wrap">{almanac_strip()}</div></section>
-<section class="section"><div class="wrap">{section_head("the map", "tap a spot")}{map_block(base)}</div></section>
+<section class="section" id="map"><div class="wrap">{section_head("the map", "tap a spot")}{map_block(base)}</div></section>
 <section class="section band soft" id="year"><div class="wrap">{section_head("the wheel of the year", "what the land is doing, month by month")}{wheel_block()}</div></section>
-<section class="section"><div class="wrap">{section_head("photos from the land", "field notes")}<div class="fieldgrid">{strip}</div>
-<div class="btns reveal"><a class="btn solid" href="{base}field-guide/">open the field guide</a><a class="btn" href="{base}films/">watch the films</a></div></div></section>"""
-    return page("The Land | 34 Acres in Central New York | Same Old Samsara",
-                "34 acres of meadow, woods and river in Central New York that we're slowly building into a homestead. A map, the wheel of the year, and field notes.",
-                base, "land/", body, here="land/", image=f"{SITE}/images/land/mist-sunrise.jpg")
+{fieldguide_block(base)}
+<section class="section band soft" id="photos"><div class="wrap">{section_head("photos from the land", "field notes")}<div class="fieldgrid">{strip}</div>
+<div class="btns reveal"><a class="btn solid" href="{base}films/">watch the films</a><a class="btn" href="{base}about/">who we are</a></div></div></section>"""
+    return page("The Land + Field Guide | 34 Acres in Central New York | Same Old Samsara",
+                "34 acres of meadow, woods and river in Central New York that we're slowly building into a homestead. A map, the wheel of the year, and a field guide to the animals, plants and mushrooms we've found.",
+                base, "land/", body, here="land/", image=f"{SITE}/images/land/mist-sunrise.jpg",
+                extra_js=f'<script src="{base}js/fieldguide.js?v={ver("js/fieldguide.js")}" defer></script>')
 
 def films_page():
     base = "../"
@@ -1065,43 +1136,19 @@ def beadlab_page():
                 "A free brick stitch pattern maker. Color beads on a real offset brick grid with Toho colors, mirror for symmetry, and get a word chart to stitch from.",
                 base, "bead-lab/", body, here="bead-lab/", extra_js=f'<script src="{base}js/beadlab.js" defer></script>')
 
-def fieldguide_page():
-    base = "../"
-    def critter(c):
-        clip = f' data-clip="{base}{c["clip"]}"' if c.get("clip") else ""
-        return f"""<button class="critter reveal" type="button" id="{c['id']}" data-id="{c['id']}"{clip} aria-label="who's this? tap to see">
-  <span class="cframe">{pic(base, c['img'], c['name'], (260, 390), shape=(1, 1), style=f"transform-origin:{c['focus']};--zoom:{c.get('zoom', 4.5)}")}</span>
-  <span class="label q">who's this?</span><span class="ans"><strong>{e(c['name'])}</strong><span>{e(c['note'])}</span></span></button>"""
-    crit = "".join(critter(c) for c in CRITTERS)
-    finds = "".join(f"""<button class="find reveal" type="button" id="{f['id']}" data-id="{f['id']}" aria-label="turn over: {e(f['hint'])}">
-  <span class="face back"><span class="label">find no. {i:02d}</span><span class="hint">{e(f['hint'])}</span><span class="label tap">tap to turn over</span></span>
-  <span class="face front">{pic(base, f['img'], f['name'], (170, 260), shape=(4, 3), hold=True)}<strong>{e(f['name'])}</strong><span>{e(f['note'])}</span></span></button>""" for i, f in enumerate(FINDS, 1))
-    # someone who taps a pin lands on one card, half way down this page, knowing nothing about us. js/fieldguide.js puts this under that card.
-    hello = f"""<aside class="fg-hello" id="fg-hello" hidden>
-  {pic(base, US_PHOTO, US_ALT, 64)}
-  <div><p>This is from our 34 acres in Central New York. We're Chad and Daniel, and we're filming all of it.</p>
-  <div class="btns"><a class="btn solid" href="{base}films/">watch the films</a><a class="btn" href="{base}wear/">see the jewelry</a><a class="btn" href="{base}about/">who we are</a></div></div>
-</aside>"""
-    body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker"><a href="{base}land/">the land</a> · the field guide</p><h1>the field guide</h1><p class="tag">who lives here, and what we've found.</p>
-  <p class="def">Everything here was found on our land in Central New York. We're not experts. We're learning it one walk at a time, and this guide grows as we do.</p>
-  <p class="label newhere">new here? we're chad and daniel, and we film all of this. <a href="{base}films/">watch the films</a> · <a href="{base}wear/">see the jewelry</a></p>
-</div></section>
-<section class="section"><div class="wrap">{section_head("who lives here", "guess first, then tap")}
-  <p class="lede reveal">Each one starts zoomed way in. Take a guess, then tap to see the whole thing.</p>
-  <div class="critters" id="critters">{crit}</div>
-  <p class="label tally" id="met"></p>
-</div></section>
-<section class="section band soft"><div class="wrap">{section_head("things to find", "read the hint, then turn it over")}
-  <div class="finds" id="finds">{finds}</div>
-  <p class="label tally" id="found"></p>
-  <div class="btns reveal"><button type="button" class="btn" id="resetfg">start over</button><a class="btn solid" href="{base}land/">see the map of the land</a><a class="btn" href="{base}films/">watch the films</a></div>
-</div></section>
-{hello}"""
-    return page("The Field Guide: Who Lives on the Land | Same Old Samsara",
-                "A little interactive field guide to our 34 acres in Central New York: guess the animals from a close-up, and turn over the mushrooms, moss and plants we've found.",
-                base, "field-guide/", body, here="field-guide/", image=f"{SITE}/images/land/grasshopper.jpg",
-                extra_js=f'<script src="{base}js/fieldguide.js?v={ver("js/fieldguide.js")}" defer></script>')
+def fieldguide_moved():
+    """the field guide moved onto the land page (Nov 13). every nature pin on Pinterest links to field-guide/#<id>, so this page
+    sends people to land/ with the same #id, and js/fieldguide.js opens that card there. no #id: the top of the guide.
+    with scripts off the #id can't be passed on, so it goes to the top of the guide."""
+    title, desc = "The Field Guide: Who Lives on the Land | Same Old Samsara", "A little field guide to our 34 acres in Central New York: the animals, plants and mushrooms we've found so far."
+    return f"""<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>{e(title)}</title>
+<script>location.replace("../land/" + (location.hash.length > 1 ? location.hash : "#field-guide"));</script>
+<noscript><meta http-equiv="refresh" content="0; url=../land/#field-guide"></noscript>
+<link rel="canonical" href="{SITE}/land/"><meta name="robots" content="noindex, follow"><meta name="description" content="{e(desc)}">
+<meta property="og:title" content="{e(title)}"><meta property="og:description" content="{e(desc)}"><meta property="og:image" content="{SITE}/images/land/grasshopper.jpg"><meta property="og:url" content="{SITE}/land/"><meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="../favicon/favicon.svg"></head>
+<body><p>the field guide is on the land page now: <a href="../land/#field-guide">sameoldsamsara.xyz/land</a></p></body></html>
+"""
 
 def wear_page():
     """the wear stop's page: the jewelry. each piece opens its own Etsy listing.
@@ -1167,7 +1214,7 @@ def about_page():
     <li><a href="{base}wear/">Wear</a>: beaded earrings and bracelets made by hand, sold through our Etsy shop. Apparel we designed is coming soon.</li>
     <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs. A few are free, the rest are in Samsara Digitals, our pattern shop on Etsy.</li>
     <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch pattern.</li>
-    <li><a href="{base}field-guide/">The field guide</a>: the animals, plants and mushrooms we've found on the land so far.</li>
+    <li><a href="{base}land/#field-guide">The field guide</a>: the animals, plants and mushrooms we've found on the land so far.</li>
   </ul>
   <h2 id="say-hi">say hi</h2>
   <p>Write to us, we read everything. A message on <a href="{IG}" target="_blank" rel="noopener">Instagram</a> or <a href="{SHOP}" target="_blank" rel="noopener">Etsy</a> works too.</p>
@@ -1435,7 +1482,7 @@ def llms_txt():
             lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): free {p['type']} pattern. {p['blurb']} PDF: {SITE}/assets/{p['file']}.pdf")
         elif p.get("live"):
             lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): {p['type']} pattern, ${p['price']}. {p['blurb']} Buy: {listing(p['etsy'])}")
-    lines += ["", "## Tools", f"- [The field guide]({SITE}/field-guide/): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
+    lines += ["", "## Tools", f"- [The field guide]({SITE}/land/#field-guide): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Wear", f"- [Wear]({SITE}/wear/): a dozen pieces of handmade jewelry with photos, each linking to its Etsy listing.",
               f"- [Same Old Samsara on Etsy]({SHOP}): handmade beaded earrings, bracelets and necklaces. Many are made to order.", f"- [Depop]({DEPOP})", "",
@@ -1500,7 +1547,7 @@ if __name__ == "__main__":
     paged = [p for p in PATTERNS if has_page(p)]
     for p in paged: write(f"patterns/{slug(p)}/index.html", pattern_detail(p))
     write("bead-lab/index.html", beadlab_page())
-    write("field-guide/index.html", fieldguide_page())
+    write("field-guide/index.html", fieldguide_moved())
     write("about/index.html", about_page())
     write("recipes/index.html", recipes_page())
     for r in RECIPES: write(f"recipes/{r['slug']}/index.html", recipe_detail(r))
@@ -1509,7 +1556,7 @@ if __name__ == "__main__":
     write("beadingpatterns.html", old_patterns_redirect())
     write("llms.txt", llms_txt())
     write("robots.txt", robots_txt())
-    write("sitemap.xml", sitemap(["", "films/", "make/", "wear/", "land/", "field-guide/", "road/", "say-hi/", "patterns/", "bead-lab/", "about/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paged] + [f"recipes/{r['slug']}/" for r in RECIPES]))
+    write("sitemap.xml", sitemap(["", "films/", "make/", "wear/", "land/", "road/", "say-hi/", "patterns/", "bead-lab/", "about/", "recipes/"] + [f"patterns/{slug(p)}/" for p in paged] + [f"recipes/{r['slug']}/" for r in RECIPES]))
     for night in ("", "-night"): variant(f"images/walk/0-gate{night}.webp", 720)      # walk.css paints these behind the walk on a phone
     variant("images/road/0-leave.webp", 720)                                         # and road.css paints this one behind the road
     check_jewelry()

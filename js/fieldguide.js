@@ -1,5 +1,6 @@
-/* the field guide: who lives here (zoomed-in guess, tap to reveal) + things to find (hint cards you turn over).
-   progress stays in this browser only. */
+/* the field guide, on the land page: who lives here (zoomed-in guess, tap to reveal) + things to find (hint cards you turn over).
+   a row of buttons shows one kind at a time. a link to a card (#goldenrod, from a pin, the map or the wheel) opens it,
+   scrolls to it and marks it for a moment. progress stays in this browser only. */
 (function () {
   var KEY = "sos_fieldguide";
   var reduce = window.matchMedia && matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -70,28 +71,48 @@
     });
   });
 
+  /* ---------- show everything, or one kind ---------- */
+  var chips = document.querySelectorAll("#fg-chips button"), groups = document.querySelectorAll(".fg-group"), kinds = {};
+  var guide = document.getElementById("field-guide"), hello = document.getElementById("fg-hello");
+  function show(kind) {
+    chips.forEach(function (b) { b.setAttribute("aria-pressed", b.dataset.kind === kind ? "true" : "false"); });
+    finds.forEach(function (c) { c.hidden = !(kind === "all" || c.dataset.kind === kind); });
+    groups.forEach(function (g) { g.hidden = !(kind === "all" || (g.dataset.group === "critters") === (kind === "critters")); });
+    if (hello && !hello.hidden && hello.previousElementSibling && hello.previousElementSibling.hidden) hello.hidden = true;   // its card went away
+  }
+  chips.forEach(function (b) { kinds[b.dataset.kind] = 1; b.addEventListener("click", function () { show(b.dataset.kind); }); });
+
   var reset = document.getElementById("resetfg");
   if (reset) reset.addEventListener("click", function () {
     state = { met: {}, found: {} }; save();
     critters.forEach(function (c) { setCritter(c, false); });
     finds.forEach(function (c) { setFind(c, false); });
-    tally();
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    show("all"); tally();
+    if (guide) guide.scrollIntoView({ block: "start" });
   });
-  // a link like field-guide/#goldenrod (from a pin) opens that card and scrolls to it
-  var h = decodeURIComponent(location.hash.slice(1));
-  var hit = h && document.querySelector('[data-id="' + h.replace(/"/g, "") + '"]');
-  if (hit) {
+
+  /* ---------- a link to a card, or to a kind ----------
+     #goldenrod (every pin on Pinterest, by way of the old field-guide/ address) opens that card and scrolls to it.
+     #critters, #plants, #trees, #mushrooms, #signs show that kind (the walk's raccoon log links to #critters). */
+  function go(h, arrived) {
+    if (!h) return;
+    if (kinds[h] && h !== "all") { show(h); if (guide) setTimeout(function () { guide.scrollIntoView({ block: "start" }); }, 50); return; }
+    var hit = document.querySelector('.critter[data-id="' + h.replace(/"/g, "") + '"], .find[data-id="' + h.replace(/"/g, "") + '"]');
+    if (!hit) return;
+    if (hit.hidden || hit.closest("[hidden]")) show("all");
     if (hit.classList.contains("find")) setFind(hit, true); else setCritter(hit, true);
     // they came for this one card and know nothing else about us: say who we are right under it, with somewhere to go next
-    var hello = document.getElementById("fg-hello");
-    if (hello) {
+    if (arrived && hello) {
       var last = hit;                                    // the last card in the same row, so the strip doesn't leave a hole beside it
       while (last.nextElementSibling && last.nextElementSibling.offsetTop === hit.offsetTop) last = last.nextElementSibling;
       last.after(hello); hello.hidden = false;
     }
-    // the card goes to the top of the window (under the header), so the strip below it is in view too
-    setTimeout(function () { hit.scrollIntoView({ block: hello ? "start" : "center" }); }, 50);
+    hit.classList.remove("hit"); void hit.offsetWidth; hit.classList.add("hit");         // a gold ring that fades: this is the one
+    // the card goes to the top of the window (under the header) when the strip is below it, so both are in view
+    setTimeout(function () { hit.scrollIntoView({ block: arrived && hello ? "start" : "center" }); }, 50);
   }
+  var hash = function () { try { return decodeURIComponent(location.hash.slice(1)); } catch (e) { return ""; } };
+  go(hash(), true);
+  window.addEventListener("hashchange", function () { go(hash(), false); });
   tally();
 })();
