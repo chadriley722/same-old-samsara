@@ -180,11 +180,17 @@ export const FORK = (() => {
 })();
 /** where the walk steps off the track onto the road, in samples */
 export const ROAD_START = (() => { let i = trail.stops["say-hi"]; while (i < trail.n - 1 && trail.z[i] < 127.7) i++; return i; })();
-/** true where the trail is the two rut track in from the gate (the rest is a mown footpath) */
-export function onTrack(x, z) {
-  const i = trailNearest(x, z);
-  return i >= 0 && (i < trail.stops.make + 14 || i > FORK - 16);
+/** how much of a two rut track the trail is at sample i. 1 on the track in from the gate, 0 on the footpath round the loop.
+    Between them it changes slowly, over about 20 m each time: past the camper the ruts close up into the path, and coming back
+    from the fire the path opens out into the track before the fork. */
+export const TRACK_ENDS = [trail.stops.make + 4, trail.stops.make + 46], TRACK_STARTS = [FORK - 44, FORK - 4];
+export function trackAmt(i) {
+  return i < (TRACK_ENDS[1] + TRACK_STARTS[0]) / 2 ? 1 - smooth(TRACK_ENDS[0], TRACK_ENDS[1], i) : smooth(TRACK_STARTS[0], TRACK_STARTS[1], i);
 }
+/** half the width of the trail at sample i, in metres: the track is 2.9 m across, the footpath 1.64 m */
+export const trailHalfWidth = (i) => lerp(0.82, 1.45, trackAmt(i));
+/** the same, for any spot near the trail (0 away from it) */
+export function trackNear(x, z) { const i = trailNearest(x, z); return i < 0 ? 0 : trackAmt(i); }
 function trailNearest(x, z) {
   const ix = Math.round((x - GRID.x0) / GRID.cell), iz = Math.round((z - GRID.z0) / GRID.cell);
   if (ix < 0 || iz < 0 || ix >= GRID.w || iz >= GRID.h) return -1;
@@ -379,7 +385,7 @@ export function plantMeadow(quality = 1) {
     const x = gx + jx * cell, z = gz + jz * cell;
     const td = trailDist(x, z);
     if (td > 20) continue;
-    const edge = onTrack(x, z) ? 1.8 : 1.15;                               // the mown strip
+    const edge = lerp(1.15, 1.8, trackNear(x, z));                         // the mown strip: wider along the track
     if (td < edge) continue;
     if (Math.abs(z - roadZ(x)) < 7.6) continue;                            // the shoulder of the road is kept cut
     const w = woodsAmt(x, z), d = z - riverZ(x);

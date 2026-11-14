@@ -46,15 +46,20 @@ export class World extends Printer {
     // the ground and the ribbons on it
     const G = land.buildGround(tier === 2 ? 220 : tier === 1 ? 180 : 150);
     this.ground = this.groundMesh(G.pos, G.nor, G.mask, G.idx);
-    const ribbon = (pts, hw, lift, flat) => {
+    const ribbon = (pts, hw, lift, flat, track = null) => {
       const r = land.buildRibbon(pts, hw, lift, flat), n = r.pos.length / 3, mask = new Float32Array(n * 4);
-      for (let k = 0; k < n; k++) { mask[k * 4] = r.uv[k * 2]; mask[k * 4 + 1] = r.uv[k * 2 + 1]; mask[k * 4 + 2] = flat == null ? land.woodsAmt(r.pos[k * 3], r.pos[k * 3 + 2]) : 0; }
+      for (let k = 0; k < n; k++) {
+        mask[k * 4] = r.uv[k * 2]; mask[k * 4 + 1] = r.uv[k * 2 + 1]; mask[k * 4 + 2] = flat == null ? land.woodsAmt(r.pos[k * 3], r.pos[k * 3 + 2]) : 0;
+        if (track) mask[k * 4 + 3] = track(k >> 1);
+      }
       return this.groundMesh(r.pos, null, mask, r.idx);
     };
-    // the two rut track runs from the road, through the gate, to the camper. the footpath goes round the loop and comes back
-    // into the track at the fork, so from there to the road there is one track and nothing else is drawn.
-    const tp = land.trailRibbonPoints(), cut = Math.round((land.trail.stops.make + 14) / 2), fork = Math.round(land.FORK / 2);
-    this.ribbons.push({ mesh: ribbon(tp.slice(0, cut + 1), 1.45, 0.06), kind: 2 }, { mesh: ribbon(tp.slice(cut, fork + 2), 0.82, 0.06), kind: 1 },
+    // the two rut track runs from the road, through the gate, to the camper. past the camper its ruts close up into the footpath,
+    // which goes round the loop. coming back, the path opens out into a track again and runs into the first one at the fork.
+    // it is one ribbon in two pieces: the way back lies a hair lower, so where the two meet the track you came in on stays whole.
+    const tp = land.trailRibbonPoints(), fork = Math.round(land.FORK / 2), half = Math.round(land.trail.stops.land / 2);
+    const leg = (a, b, lift) => ribbon(tp.slice(a, b + 1), (i) => land.trailHalfWidth((a + i) * 2), lift, null, (i) => land.trackAmt((a + i) * 2));
+    this.ribbons.push({ mesh: leg(half, fork + 2, 0.045), kind: 1 }, { mesh: leg(0, half, 0.06), kind: 1 },
                       { mesh: ribbon(land.roadPoints(), 3.1, 0.07), kind: 3 }, { mesh: ribbon(land.riverPoints(), 8.2, 0, land.WATER_Y), kind: 4, flat: true });
 
     // trees: one mesh per kind and distance, drawn many times

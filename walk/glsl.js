@@ -221,7 +221,7 @@ export const GROUND_VS = /* glsl */`#version 300 es
 precision highp float;
 layout(location=0) in vec3 aPos;
 layout(location=1) in vec3 aNor;
-layout(location=2) in vec4 aMask;       // ground: meadow, woods, trodden, gravel.  ribbons: side (-1..1), metres along, woods, 0
+layout(location=2) in vec4 aMask;       // ground: meadow, woods, trodden, gravel.  ribbons: side (-1..1), metres along, woods, how much of a track (the trail)
 uniform mat4 uViewProj;
 out vec3 vWorld, vNor;
 out vec4 vMask;
@@ -282,10 +282,13 @@ void main(){
   } else if (uKind == 1 || uKind == 2){
     float wood = vMask.z, s = abs(vMask.x);
     vec3 a = mix(uLit[2], uLit[3], wood), b = mix(uShade[2], uShade[3], wood);
-    if (uKind == 2){                                   // two ruts worn to dirt, grass up the middle
-      float n = (vnoise(P * .9) - .5) * .16;
-      float rut = smoothstep(.3, .38, s + n) * (1. - smoothstep(.66, .76, s + n));
-      a = mix(mix(uLit[2], uLit[1], .35), uLit[3], rut); b = mix(mix(uShade[2], uShade[1], .35), uShade[3], rut);
+    float track = uKind == 2 ? 1. : vMask.w;           // 1: two ruts worn to dirt, grass up the middle. 0: a footpath. between: one turning into the other
+    if (track > .01){
+      // the ruts are placed in metres, so they hold their gauge while the ribbon narrows, then close up and fade into the path
+      float hw = mix(.82, 1.45, track), m = s * hw + (vnoise(P * .9) - .5) * .23;
+      float gauge = .76 * smoothstep(.12, .78, track), wide = mix(.34, .27, track);
+      float rut = (1. - smoothstep(wide - .06, wide + .06, abs(m - gauge))) * smoothstep(.04, .5, track);
+      a = mix(mix(a, mix(uLit[2], uLit[1], .35), track), uLit[3], rut); b = mix(mix(b, mix(uShade[2], uShade[1], .35), track), uShade[3], rut);
       key = dabs(P * 5.5, .2, vec2(1.)) * rut * .45;
     }
     cl = a; cs = b;
