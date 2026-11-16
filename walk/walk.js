@@ -126,6 +126,7 @@ async function start() {
   const HOT = scene.hot ? scene.hot({ world, say, flash, u: () => uS }) : [
     { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(); } },
     { id: "fire", label: "poke the fire", range: 30, when: () => world.fire > 0.3, act: () => { world.fireKick = 0.9; say("sparks.", "fire"); } },
+    { id: "coffee", label: "the coffee pot", range: 24, when: () => Math.abs(uS - 6) < 0.6, act: () => say("same old cycle. water, fire, coffee.", "coffee") },
     { id: "apple", label: "shake the apple tree", range: 26, when: () => Math.abs(uS - 3) < 0.7, act: () => { world.beadKick = 1; say("they don't fall off. we tried.", "apple"); } },
     { id: "cam", label: "the trail cam", range: 22, when: () => Math.abs(uS - 5) < 0.6, act: () => { flash(); say("the trail cam got you. now you're in the field guide.", "cam"); } },
     { id: "mailbox", label: "the mailbox", range: 16, when: () => Math.abs(uS - 7) < 0.7, act: () => say("flag's up. that means there's mail going out.", "mailbox") },

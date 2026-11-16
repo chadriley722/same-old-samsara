@@ -354,6 +354,39 @@ export function flames() {
   return g;
 }
 
+/** the coffee by the fire: a stump with an enamel pot and two mugs on it. a little bigger than life, like a thing in a print.
+    the spout points along +x. (it is how the home page says "buy us a coffee": see the follow stop in build.py) */
+export const POT_TOP = [0, 0.86, 0];                // the knob on the lid, where the steam starts
+export function coffee() {
+  const g = new Geo(), dark = P(INK.PEPPER, STYLE.PLAIN), enamel = P(INK.CREAM, STYLE.PLAIN, 0, 0.22), rim = P(INK.RUST, STYLE.PLAIN, 0, 0.15);          // a little glow: enamel catches the firelight
+  g.add(cyl(0.31, 0.27, 0.4, 9, P(INK.BARK, STYLE.BARK), 1, false));                                    // the stump
+  g.add(cyl(0.27, 0.27, 0.02, 9, P(INK.WOOD, STYLE.STONE), 2), { pos: [0, 0.4, 0] });                    // its cut top
+  // the pot: wide at the bottom, a band of rust round the top, a domed lid with a knob
+  g.add(cyl(0.135, 0.1, 0.3, 10, enamel, 3, false), { pos: [0, 0.42, 0] });
+  g.add(cyl(0.103, 0.1, 0.035, 10, rim, 4, false), { pos: [0, 0.705, 0] });
+  g.add(cyl(0.1, 0.04, 0.07, 10, enamel, 5), { pos: [0, 0.74, 0] });
+  g.add(cyl(0.022, 0.026, 0.045, 6, dark, 6), { pos: [0, 0.81, 0] });
+  g.add(tube([0.09, 0.56, 0], [0.25, 0.7, 0], 0.036, 0.022, 6, enamel, 7));                              // the spout
+  for (const [a, b] of [[[-0.1, 0.68, 0], [-0.23, 0.66, 0]], [[-0.23, 0.66, 0], [-0.24, 0.52, 0]], [[-0.24, 0.52, 0], [-0.125, 0.47, 0]]]) g.add(tube(a, b, 0.017, 0.017, 5, dark, 8, false));   // the handle
+  // two mugs, one each
+  for (const [x, z, ink, turn] of [[0.07, 0.185, INK.RUST, 0.9], [-0.07, -0.19, INK.GOLD, -2.2]]) {
+    const m = new Geo(), paint = P(ink, STYLE.PLAIN, 0, 0.18);
+    m.add(cyl(0.05, 0.057, 0.105, 8, paint, 9, false));
+    m.add(cyl(0.05, 0.05, 0.006, 8, P(INK.BARK, STYLE.PLAIN), 10), { pos: [0, 0.092, 0] });               // coffee, to the brim
+    for (const [a, b] of [[[0.052, 0.085, 0], [0.1, 0.08, 0]], [[0.1, 0.08, 0], [0.1, 0.035, 0]], [[0.1, 0.035, 0], [0.05, 0.025, 0]]]) m.add(tube(a, b, 0.009, 0.009, 4, paint, 9, false));
+    g.add(m, { pos: [x, 0.42, z], yaw: turn });
+  }
+  return g;
+}
+/** steam off the pot: it goes up, and curls round into a ring before it lets go. pivots at its own origin. */
+export function steam() {
+  const g = new Geo(), pale = P(INK.CREAM, STYLE.PLAIN, 0, 0.55), pts = [];
+  for (let k = 0; k <= 9; k++) { const t = k / 9; pts.push([Math.sin(t * 5.2) * 0.05 * (0.4 + t), t * 0.34, 0]); }          // the rise, with a wobble
+  for (let k = 1; k <= 13; k++) { const a = -Math.PI / 2 + (k / 13) * TAU * 0.93; pts.push([pts[9][0] + Math.cos(a) * 0.115, 0.34 + 0.115 + Math.sin(a) * 0.115, 0]); }   // the ring
+  for (let k = 0; k < pts.length - 1; k++) { const w = 0.011 + 0.009 * Math.sin((k / (pts.length - 1)) * Math.PI); g.add(tube(pts[k], pts[k + 1], w, w, 4, pale, 1, false)); }
+  return g;
+}
+
 /** the old apple tree. low, wide, nobody prunes it. */
 export function appleTree() {
   const g = new Geo(), bark = P(INK.BARK, STYLE.BARK), leaf = P(INK.LEAF, STYLE.CANOPY), r = rng(31);

@@ -110,6 +110,11 @@ export class World extends Printer {
     this.chairA = seat(INK.LEAF_DARK, 0.47);
     seat(INK.RUST, -0.47);
     this.flames = put(shapes.flames(), P.fire[0], P.fire[1]);
+    // the coffee: a pot and two mugs on a stump on your side of the fire, just right of the flames so it hides neither them
+    // nor the chairs. the spout points at the fire. the steam is its own piece, so it can turn.
+    const [cx, cz] = [P.fire[0] + 2.75, P.fire[1] - 0.42];
+    this.pot = put(shapes.coffee(), cx, cz, Math.atan2(cz - P.fire[1], P.fire[0] - cx));
+    this.steam = put(shapes.steam(), cx, cz, 0, shapes.POT_TOP[1] + 0.02, { noShadow: true });
     this.apple = put(shapes.appleTree(), P.apple[0], P.apple[1], 0.4, -0.1);
     this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true, kick: () => this.beadKick * 1.1 });
     put(shapes.shed(), P.shed[0], P.shed[1], -1.3);
@@ -321,6 +326,9 @@ export class World extends Printer {
     const fl = this.flames, fs = 0.5 + this.fire * 0.7;
     rotY(fl.model, fl.x, fl.y, fl.z, time * 0.3, 1); fl.model[5] = fs; fl.hidden = this.fire < 0.03;
     this.hot.fire = [fl.x, fl.y + 0.7, fl.z];
+    // steam off the coffee: its ring faces the trail and sways a little either way, and it breathes
+    const st = this.steam; rotY(st.model, st.x, st.y, st.z, Math.PI / 2 + Math.sin(time * 0.5) * 0.7, 1); st.model[5] = 0.92 + 0.08 * Math.sin(time * 1.3);
+    this.hot.coffee = [this.pot.x, this.pot.y + 0.95, this.pot.z];
     // the mailbox flag goes up when you get there
     this.flag += (smooth(6.55, 6.95, u) - this.flag) * (1 - Math.exp(-dt * 7));
     const m = this.flagProp.model, ang = (1 - this.flag) * -1.5708, c = Math.cos(ang), s = Math.sin(ang);

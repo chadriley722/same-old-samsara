@@ -775,6 +775,14 @@ def hi_button(base, text="email us", solid=True):
     """the say hi button. with scripts off it goes to the say hi page, which says how else to reach us."""
     return f'<a class="btn{" solid" if solid else ""}" href="{base}say-hi/" data-hi="{HI}">{e(text)}</a>'
 
+def coffee_line():
+    """buy us a coffee, the Same Old Samsara way (Chad, Nov 16: like the gas pump stop on /road, in this site's own look).
+    in the walk there is a pot and two mugs on a stump by the fire (walk/mesh.js coffee()), and this line sits under that
+    stop's buttons. one small line, no button, no ask beyond it. it is a tip jar: never say donation, charity or cause."""
+    mug = ('<svg class="cup-i" viewBox="0 0 40 50" aria-hidden="true"><path class="st" d="M19.5 22c-3.4-3.6 3-6.2-.2-10.4a4.3 4.3 0 1 1-3.9 2.6"/>'
+           '<path class="mug" d="M8 26h21v13a6 6 0 0 1-6 6h-9a6 6 0 0 1-6-6z"/><path d="M29 30h2.5a4 4 0 0 1 0 8H29"/><path d="M11.5 31.5v8"/></svg>')
+    return f"""<p class="cup">{mug}<span>The fire runs on dead wood. We run on coffee. If the films are worth a cup to you, you can <a href="{COFFEE}" target="_blank" rel="noopener">buy us a coffee</a>.</span></p>"""
+
 def walk_stops(base):
     """the stops, in the order you meet them. the ids are the 3D world's stop ids (walk/world.js STOP_IDS), so keep the two in step."""
     ep, first = EPISODES[0], EPISODES[-1]
@@ -809,13 +817,14 @@ def walk_stops(base):
          "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
          "links": loc("open the field guide", "land/#critters", True)},
         {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow", "rail": False,      # a stop on the walk, but not in the list of stops (Chad, Nov 12)
-         "alt": "A print of a campfire at nightfall with two camp chairs pulled up to it, a raven on the back of one, and a camper with its windows lit in the distance.",
+         "alt": "A print of a campfire at nightfall with two camp chairs pulled up to it, a raven on the back of one, a coffee pot and two mugs on a stump by the fire, and a camper with its windows lit in the distance.",
          "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
-         "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN)},
+         "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN),
+         "after": coffee_line()},
         {"id": "say-hi", "name": "say hi", "light": "night", "side": "left",
          "alt": "A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees.",
          "body": f"""<div class="us">{pic(base, US_PHOTO, US_ALT, 96)}<p>That's us. Write to us, we read everything. Or sign up for the newsletter and we'll write when there's something worth saying.</p></div>""",
-         "links": hi_button(base) + ext("message us on instagram", IG) + ext("the newsletter", NEWSLETTER) + ext("buy us a coffee", COFFEE) + loc("who we are", "about/")},
+         "links": hi_button(base) + ext("message us on instagram", IG) + ext("the newsletter", NEWSLETTER) + loc("who we are", "about/")},
         {"id": "road", "name": "the road", "light": "first light", "side": "left",
          "alt": "A print of a country road at first light, seen from the middle of it. It runs east past a goldenrod meadow toward the sunrise, and a raven flies off ahead.",
          "body": "<p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads, and the road has a page of its own.</p>",

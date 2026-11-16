@@ -26,6 +26,15 @@
 @media (pointer: coarse) { .walk .card .btn { min-height: 44px; padding-block: 0; } }
 .walk .card .yt { margin-top: 14px; box-shadow: none; border: 1px solid var(--rule); }
 .walk .ep-line { margin-top: 8px; }
+/* buy us a coffee: one small line under the fire stop's buttons, with a mug whose steam curls round into a ring */
+.walk .card .cup { display: flex; gap: 12px; align-items: center; margin-top: 16px; padding-top: 13px; border-top: 1px dashed var(--rule); font-size: 14.5px; line-height: 1.5; color: var(--ink-soft); }
+.cup a { color: var(--accent); white-space: nowrap; }
+.cup-i { flex: none; width: 42px; height: 52px; margin: -4px 0 0 -2px; overflow: visible; }
+.cup-i path { fill: none; stroke: var(--ink); stroke-width: 1.7; stroke-linecap: round; stroke-linejoin: round; }
+.cup-i .mug { fill: var(--gold); }
+.cup-i .st { stroke: var(--accent); stroke-width: 1.5; transform-origin: 50% 100%; transform-box: fill-box; animation: steam 4.5s ease-in-out infinite; }
+@keyframes steam { 0%, 100% { transform: translateY(0) scaleY(1); opacity: .95; } 50% { transform: translateY(-1.5px) scaleY(1.07); opacity: .6; } }
+@media (prefers-reduced-motion: reduce) { .cup-i .st { animation: none; } }
 .wear-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 14px; }
 .wear-row a { display: block; border-radius: 4px; overflow: hidden; border: 1px solid var(--rule); }
 .wear-row img { width: 100%; aspect-ratio: 1; object-fit: cover; transition: transform .4s; }
