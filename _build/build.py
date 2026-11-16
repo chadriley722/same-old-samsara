@@ -1281,9 +1281,9 @@ def road_page():
          "alt": "A print of the truck and camper pulled in at an old red gas pump with a lit globe, under a giant coffee cup on a pole, with the afternoon sun behind them.",
          "body": "<p>The truck runs on gas. We run on coffee. If the videos are worth a cup to you, here's the jar.</p>",
          "links": ext("buy us a coffee", PN_COFFEE, True)},
-        {"id": "winter", "name": "winter", "where": "the water · sunset", "side": "left",
+        {"id": "winter", "name": "winter", "where": "somewhere warm · sunset", "side": "left",
          "alt": "A print of the truck and camper parked by the water at sunset, with two camp chairs facing the sun, palm trees, and a small road sign with a house on it.",
-         "body": "<p>This is the warm air we were following. We park by the water, film all winter and post as we go.</p>",
+         "body": "<p>This is the warm air we were following. New roads, new towns, a new view out the window every few weeks. We film all winter and post as we go.</p>",      # Chad, Nov 16: nothing about parking by the water. most weeks we aren't
          # the main button is the newest vlog (the same ROAD_LATEST link as the vlog stop), with a smaller subscribe button under it
          "stack": True,
          "links": ext("watch the latest vlog", vlog_url, True)
