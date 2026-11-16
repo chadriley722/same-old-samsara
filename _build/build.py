@@ -47,6 +47,8 @@ ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Sale
 
 # newest first. a new episode = one dict here + its thumbnail at images/epN-name.jpg (1280x720). date = the day it went live.
 EPISODES = [
+    {"id": "ieGJnPSMPlM", "title": "we put 5 trail cams on our 34 acres.", "label": "season 1 · episode 5", "len": "23:42", "date": "2026-11-14",
+     "img": "images/ep5-trail-cams.jpg", "blurb": "The trail cams finally go up, one that sends photos to a phone and four that save to SD cards. The first check catches exactly two animals, us. Before that the RV scrapes on our own driveway, and after it come an air pruning bed, bear scratches in the woods and a mushroom hunt that finds almost nothing."},
     {"id": "UhMJZrZttDI", "title": "hunting for a lost well.", "label": "season 1 · episode 4", "len": "26:41", "date": "2026-11-07",
      "img": "images/ep4-lost-well.jpg", "blurb": "A neighbor says there's an old well somewhere on the land, so Chad builds a contraption out of a pipe and some wire and goes looking. We move the house site, find a giant sycamore leaf on an island in the river, and the trail cam catches its first raccoon."},
     {"id": "SDIN5Jiadio", "title": "peak fall. then the cold came.", "label": "season 1 · episode 3", "len": "25:51", "date": "2026-10-31",
