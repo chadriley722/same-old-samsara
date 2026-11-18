@@ -17,9 +17,9 @@ const P = land.PLACES, RZ = land.RIG_Z, LAST = STOP_IDS.length - 1;
 const SCREEN = 4, POST = 1.8, PUMP = 1.5, CUP = 1.25;       // how much bigger than life the roadside things are
 const HITCH = -1.7, NOSE = 3.65, AXLE = 5.4;                // the truck's bed (where the fifth wheel sits), the camper's nose, nose to axles
 /* the last leg, 4 to 5, in three parts: turning round at the camp (until TURN), the drive north (until INBOUND), the turn in at the gate */
-const TURN = 0.13, INBOUND = 0.92, R_TURN = 6.5, R_GATE = 8, GATE_RUN = 3.6;
+const TURN = 0.13, INBOUND = 0.92, R_TURN = 6.5, R_GATE = 6, GATE_RUN = 2.2;
 /* how the rig sits at each stop: [the truck's turn off the road's own heading, the camper's turn off the truck's]. + is to its left */
-const POSE = [[0.3, 0.72], [-0.2, -0.07], [-0.1, -0.04], [-0.12, -0.05], [-0.62, -0.12]];
+const POSE = [[-0.3, -0.72], [-0.2, -0.07], [-0.1, -0.04], [-0.12, -0.05], [-0.62, -0.12]];
 /* at the pump it does not cut across to its spot and back out (the fifth wheel would swing through the pump). it comes over onto the
    gravel well back, rolls along it to the pump, and after, rolls on along it before it swings back out to its lane:
    [metres it rolls along the gravel coming in, metres going out, metres it takes to come over from its lane or go back to it] */
@@ -38,12 +38,12 @@ const arc = (from, yaw0, yaw, R) => [from[0] + R * (Math.sin(yaw) - Math.sin(yaw
 /* at a stop it stands where road/land.js CAM says and looks at `look`: [metres north of the truck, metres right of the centre line, height].
    shift: how far the picture is slid over to leave room for the words (N: on a narrow screen, where the words are underneath). */
 const VIEWS = [
-  { look: [3, 6.4, 2.1], shift: [0.12, -0.2], shiftN: [0, -0.4] },                          // leaving: the rig swinging out of the gate
+  { look: [3, -6.4, 2.1], shift: [-0.24, -0.2], shiftN: [0, -0.4] },                        // leaving: the rig swinging out of the gate, on the left
   { look: [3, 9.5, 6.4], lookN: [3, 10.5, 7.2], shift: [0.22, 0.04], shiftN: [0, 0.36] },   // the latest vlog: the rig under the big screen
   { look: [3, 5.6, 3.0], shift: [0.24, 0], shiftN: [0, 0.38] },                             // follow along: pulled up at the signpost
   { look: [4.5, 7.6, 3.2], shift: [0.22, 0], shiftN: [0, 0.38] },                           // gas: at the pump, under the cup
   { look: [5.5, 10.75, 2.6], shift: [0.25, -0.04], shiftN: [0, 0.36] },                     // winter: camped by the water
-  { look: [-1.5, 6.5, 2.2], shift: [0.22, -0.04], shiftN: [0, 0.34] },                      // home: turning back in at the gate
+  { look: [-1.5, -6.5, 2.2], shift: [-0.22, -0.04], shiftN: [0, 0.34] },                    // home: turning back in at the gate
 ].map((v, k) => ({ ...v, cam: land.CAM[k] }));
 /* out on the road it rides off the rig's rear quarter, so you see the truck and the fifth wheel both: the left quarter going
    south, the right one coming home. it keeps to the east verge both ways (road/land.js plants nothing there). */
@@ -101,11 +101,12 @@ export function rigAt(u) {
     const g = (f - TURN) / (INBOUND - TURN), off = (dEnd + land.LANE) * (1 - smooth(0, 0.05, g));
     return lane(lerp(zEnd, zIn, ease(g)), -1, off);
   }
-  // turning in: a quarter turn to the left across the road, then straight at the gate. it stops with the truck's nose in the gateway
+  // turning in: the gate is on its right now, so a quarter turn to the right off its own lane, then straight at the gate.
+  // it stops with the truck's nose in the gateway
   const g = ease((f - INBOUND) / (1 - INBOUND)), from = lane(zIn, -1), run = R_GATE * Math.PI / 2, s = g * (run + GATE_RUN);
-  const yaw = from.yaw + Math.min(s, run) / R_GATE, on = arc([from.x, from.z], from.yaw, yaw, R_GATE), past = Math.max(s - run, 0);
+  const yaw = from.yaw - Math.min(s, run) / R_GATE, on = arc([from.x, from.z], from.yaw, yaw, -R_GATE), past = Math.max(s - run, 0);
   const x = on[0] + Math.cos(yaw) * past, z = on[1] - Math.sin(yaw) * past;
-  return { x, y: land.height(x, z) + 0.05, z, yaw, cyaw: yaw - 0.8 * smooth(0, 0.45, g) * (1 - 0.22 * smooth(0.7, 1, g)), park: smooth(0.7, 1, g) };
+  return { x, y: land.height(x, z) + 0.05, z, yaw, cyaw: yaw + 0.8 * smooth(0, 0.45, g) * (1 - 0.22 * smooth(0.7, 1, g)), park: smooth(0.7, 1, g) };
 }
 
 /* ---------- setting the rig down on the road ---------- */
@@ -137,8 +138,8 @@ export function layout() {
   const things = [], put = (name, geo, pos, yaw = 0, s = 1) => { things.push({ name, geo, pos, yaw, s }); return pos; };
   const eyes = STOP_IDS.map((_, k) => onRoad(RZ[k] + land.CAM[k][0], land.CAM[k][1], land.CAM[k][2]));       // where the camera stands at each stop
   // the land's gate and mailbox: where the trip starts, and where it ends
-  const gate = put("the gate", walkShapes.gate(), spot("gate"), yawOf(land.heading(P.gate[1])) + Math.PI);    // its leaf swung open, away from the road
-  put("the mailbox", walkShapes.mailbox(), spot("mailbox"), yawOf(land.heading(P.mailbox[1])) + Math.PI);
+  const gate = put("the gate", walkShapes.gate(), spot("gate"), yawOf(land.heading(P.gate[1])));              // its leaf swung open, away from the road
+  put("the mailbox", walkShapes.mailbox(), spot("mailbox"), yawOf(land.heading(P.mailbox[1])));
   // the screen: the engine's film goes on its sheet. it is as big as a drive-in's, with its feet well into the ground
   const scr = spot("screen", 3.1); put("the screen", shapes.roadScreen(), scr, facing(scr, eyes[1]), SCREEN);
   const post = spot("signpost"); put("the signpost", shapes.signpost(), post, facing(post, eyes[2]) + 0.25, POST);
@@ -175,6 +176,8 @@ export class RoadWorld extends Printer {
     super(canvas, opts);
     this.moonDir = MOON_DIR; this.lowGround = land.WATER_Y + 3;
     this.roadLine = 1; this.stripe = new Float32Array(18);
+    this.paintFrom = [62, 108];        // the road has no paint by the gate (it is the home page's road there). the lines start a little way down
+    this.arrive = 1;                   // 0 to 1 while someone arrives from the home page's walk (walk/walk.js runs it). 1: nothing to do
     this.honk = 0; this.at = 0;
     this.build();
   }
@@ -246,10 +249,19 @@ export class RoadWorld extends Printer {
     const mix = (a, b) => [lerp(a[0], b[0], w), lerp(a[1], b[1], w), lerp(a[2], b[2], w)];
     const cm = mix(C.cam, V.cam), lk = mix(C.look, V.lookN && narrow > 0 ? v3.lerp(V.look, V.lookN, narrow) : V.look);
     const eye = onRoad(rig.z + cm[0], cm[1], cm[2]), to = v3.sub(onRoad(rig.z + lk[0], lk[1], lk[2]), eye);
-    const yaw = Math.atan2(to[0], -to[2]) + head[0], pitch = clamp(Math.atan2(to[1], Math.hypot(to[0], to[2])) + head[1], -1.2, 1.2);
-    const fwd = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
+    let yaw = Math.atan2(to[0], -to[2]) + head[0], pitch = clamp(Math.atan2(to[1], Math.hypot(to[0], to[2])) + head[1], -1.2, 1.2);
     const sh = (v) => [lerp(v.shift[0], v.shiftN[0], narrow), lerp(v.shift[1], v.shiftN[1], narrow)];
     const sc = sh(C), sv = sh(V), shift = [lerp(sc[0], sv[0], w) * slide, lerp(sc[1], sv[1], w) * slide * seen + (1 - seen)];
+    // arriving from the home page: its walk ends with you standing in the road, looking down it, at a walker's height.
+    // this page starts from that same view and rises to its own over a couple of seconds, so the drive carries on.
+    const come = 1 - (1 - ease(clamp(this.arrive, 0, 1))) * (1 - smooth(0, 0.3, u));
+    if (come < 1) {
+      const z0 = rig.z + cm[0] + 16, from = onRoad(z0, 0, 1.7), h = land.heading(z0);
+      for (let i = 0; i < 3; i++) eye[i] = lerp(from[i], eye[i], come);
+      yaw = angLerp(Math.atan2(h[0], -h[1]) + head[0], yaw, come); pitch = lerp(head[1] - 0.02, pitch, come);
+      shift[0] *= come; shift[1] = lerp(1 - seen, shift[1], come);
+    }
+    const fwd = [Math.sin(yaw) * Math.cos(pitch), Math.sin(pitch), -Math.cos(yaw) * Math.cos(pitch)];
     const hfov = lerp(46, 80, smooth(0.5, 1.8, aspect)) * DEG;
     const vfov = clamp(2 * Math.atan(Math.tan(hfov / 2) / aspect), 42 * DEG, 82 * DEG);
     m4.lookAt(this.view, eye, v3.add(eye, fwd), [0, 1, 0]);

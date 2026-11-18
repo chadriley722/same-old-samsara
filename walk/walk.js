@@ -57,10 +57,26 @@ async function start() {
     world.resize(w, h, scale);
   };
 
-  const world = new World(canvas, { tier, capture: q.has("keep") });       // throws when there is no WebGL2, and we fall back
+  const BIRD = walk.dataset.bird === "raven" ? "raven" : "crow";           // which bird the site shows: BIRD in _build/build.py
+  const world = new World(canvas, { tier, capture: q.has("keep"), bird: BIRD });       // throws when there is no WebGL2, and we fall back
   const dbg = world.gl.getExtension("WEBGL_debug_renderer_info");
   if (dbg && /swiftshader|llvmpipe|software/i.test(String(world.gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL))) && !q.has("walk")) throw new Error("software renderer");
   let lost = false;
+  /* ---------- the home page hands over to /road, so the two feel like one drive ----------
+     the walk ends on the road. "keep going down the road" fades the picture out to first light and opens /road, which starts
+     from the same view (standing in the road, looking down it), lifts the veil and rises to its own. reduce motion: a plain link. */
+  if (walk.dataset.scene) {
+    if (root.classList.contains("arrive") && !reduce) { world.arrive = 0; try { sessionStorage.removeItem("sos_handoff"); } catch (_) {} }
+    else root.classList.add("arrived");
+  } else if (!reduce) walk.querySelectorAll('a[href$="road/"]').forEach((a) => a.addEventListener("click", (e) => {
+    if (e.defaultPrevented || e.button || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey || a.target === "_blank" || !root.classList.contains("walk-on")) return;
+    e.preventDefault();
+    try { sessionStorage.setItem("sos_handoff", String(Date.now())); } catch (_) {}
+    const veil = document.createElement("div"); veil.className = "handoff"; document.body.appendChild(veil);
+    requestAnimationFrame(() => requestAnimationFrame(() => veil.classList.add("on")));
+    setTimeout(() => { location.href = a.href; }, 480);
+    addEventListener("pageshow", (ev) => { if (ev.persisted) veil.remove(); }, { once: true });      // back from /road: no veil left over
+  }));
   if (walk.dataset.film) { const im = new Image(); im.onload = () => { world.setFilm(im); wake(); }; im.src = walk.dataset.film; }
   canvas.addEventListener("webglcontextlost", (e) => { e.preventDefault(); lost = true; });
   canvas.addEventListener("webglcontextrestored", () => { try { world.build(); lost = false; wake(); } catch (err) { goPlain(err); } });
@@ -124,7 +140,7 @@ async function start() {
     wake();
   }
   const HOT = scene.hot ? scene.hot({ world, say, flash, u: () => uS }) : [
-    { id: "raven", label: "the raven", range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(); } },
+    { id: "raven", label: "the " + BIRD, range: 60, when: () => true, act: () => { world.ravenHop = 1; say(RAVEN[clamp(Math.round(uS), 0, RAVEN.length - 1)], "raven"); if (sound && soundOn) sound.caw(BIRD); } },
     { id: "fire", label: "poke the fire", range: 30, when: () => world.fire > 0.3, act: () => { world.fireKick = 0.9; say("sparks.", "fire"); } },
     { id: "coffee", label: "the coffee pot", range: 24, when: () => Math.abs(uS - 6) < 0.6, act: () => say("same old cycle. water, fire, coffee.", "coffee") },
     { id: "apple", label: "shake the apple tree", range: 26, when: () => Math.abs(uS - 3) < 0.7, act: () => { world.beadKick = 1; say("they don't fall off. we tried.", "apple"); } },
@@ -194,7 +210,7 @@ async function start() {
   const SYN = 29.530588853, moonPhase = ((((Date.now() - Date.UTC(2000, 0, 6, 18, 14)) / 864e5) % SYN) + SYN) % SYN / SYN;
 
   /* ---------- the loop ---------- */
-  let uS = 0, gust = 0, last = 0, lastTick = -1, raf = 0, onScreen = true, awakeUntil = 0, slow = 0, first = true, dirty = true;
+  let uS = 0, gust = 0, last = 0, lastTick = -1, raf = 0, onScreen = true, awakeUntil = 0, slow = 0, first = true, dirty = true, arriveAt = 0;
   function wake() { awakeUntil = performance.now() + 45000; dirty = true; if (!raf && onScreen && !document.hidden) { last = 0; raf = requestAnimationFrame(frame); } }
   function frame(now) {
     raf = 0;
@@ -208,7 +224,9 @@ async function start() {
     const pn = nS; nS += (nT - nS) * (1 - Math.exp(-dt * 2.4)); if (Math.abs(nT - nS) < 0.002) nS = nT;
     const ph0 = head[0], ph1 = head[1];
     head[0] += (headTo[0] - head[0]) * (1 - Math.exp(-dt * 6)); head[1] += (headTo[1] - head[1]) * (1 - Math.exp(-dt * 6));
-    const moving = uS !== prev || nS !== pn || Math.abs(head[0] - ph0) + Math.abs(head[1] - ph1) > 1e-5 || world.fireKick > 0.02 || world.beadKick > 0.02 || world.ravenHop > 0.02 || world.honk > 0.02 || gust > 0.02;
+    // arriving on /road from the home page's walk: the veil lifts on the first frame, and the camera takes a moment to rise
+    if (world.arrive < 1) { if (!arriveAt) { arriveAt = now; root.classList.add("arrived"); } world.arrive = clamp((now - arriveAt) / 2400, 0, 1); dirty = true; }
+    const moving = world.arrive < 1 || uS !== prev || nS !== pn || Math.abs(head[0] - ph0) + Math.abs(head[1] - ph1) > 1e-5 || world.fireKick > 0.02 || world.beadKick > 0.02 || world.ravenHop > 0.02 || world.honk > 0.02 || gust > 0.02;
     const tick = Math.floor(now / 1000 * 12);                     // things that sway are redrawn 12 times a second
     if (moving || dirty || tick !== lastTick) {
       world.render({ u: uS, time: now / 1000, head, night: nS, gust, moonPhase, seen: clamp(window.innerHeight / (view.clientHeight || 1), 0.6, 1) });

@@ -28,7 +28,9 @@ const VIEWS = [
 ];
 const STOP_S = STOP_IDS.map((id) => land.trail.stops[id]);
 
-const RAVEN_SIZE = 1.5;        // a good deal bigger than life, so it reads from across the meadow
+// the bird is a crow or a raven (shapes.BIRDS). both are drawn a good deal bigger than life, so they read from across the
+// meadow. which one: the page says so (data-bird on the walk, written by BIRD in _build/build.py). everything about how it
+// flies, lands and waits is the same for both, and the code below still calls it "the raven".
 
 export class World extends Printer {
   /** tier: 2 desktop, 1 phone, 0 weak. throws if WebGL2 is not there. */
@@ -136,10 +138,11 @@ export class World extends Printer {
     this.props.push({ mesh: this.mesh(fence.build()), model: m4.create(), id: 248 });
     // the raven, and the geese
     const piece = (g) => ({ mesh: this.mesh(g.build()), m: m4.create() });
+    const B = (this.bird = shapes.BIRDS[this.opts.bird] || shapes.BIRDS.crow);
     this.raven = {
-      torso: piece(shapes.ravenTorso()), folded: piece(shapes.ravenFolded()), legs: piece(shapes.ravenLegs()), head: piece(shapes.ravenHead()),
-      jaw: piece(shapes.ravenJaw()), tail: piece(shapes.ravenTail()),
-      arm: [piece(shapes.ravenArm(1)), piece(shapes.ravenArm(-1))], hand: [piece(shapes.ravenHand(1)), piece(shapes.ravenHand(-1))],
+      torso: piece(B.torso()), folded: piece(B.folded()), legs: piece(B.legs()), head: piece(B.head()),
+      jaw: piece(B.jaw()), tail: piece(B.tail()),
+      arm: [piece(B.arm(1)), piece(B.arm(-1))], hand: [piece(B.hand(1)), piece(B.hand(-1))],
       root: m4.create(), draw: [], pos: [0, 0, 0], yaw: 0, bank: 0, climb: 0, u: 0, dir: 1, wait: 0, turn: 0, beat: 0,
       air: false, settle: 2.6, fresh: true,          // settle: it lands (and first appears) with its wings up, like the logo, then folds them
     };
@@ -296,12 +299,12 @@ export class World extends Printer {
 
     // pose the pieces
     const set = (piece, m) => { piece.m.set(m); return piece.m; };
-    const root = mTurnZ(rotY(R.root, p[0], p[1] + (air ? 0 : 0.2) + hop, p[2], R.yaw, RAVEN_SIZE), R.bank);
+    const root = mTurnZ(rotY(R.root, p[0], p[1] + (air ? 0 : 0.272 * this.bird.size - 0.208) + hop, p[2], R.yaw, this.bird.size), R.bank);
     const body = mTurnX(set(R.torso, root), -pitch);
     set(R.folded, body);
     mTurnX(set(R.legs, root), -0.4 * (1 - legs));
     const head = mTurnY(mTurnX(mMove(set(R.head, body), J.head[0], J.head[1], J.head[2]), pitch * 0.9 + nod), headTurn);
-    for (let i = 0; i < 12; i++) head[i] *= 1.12;                                 // a raven's head and bill are big for its body
+    for (let i = 0; i < 12; i++) head[i] *= this.bird.headSize;                   // a raven's head and bill are big for its body. a crow's are not
     mTurnX(mMove(set(R.jaw, head), J.jaw[0], J.jaw[1], J.jaw[2]), gape);
     const tail = mTurnZ(mTurnX(mMove(set(R.tail, body), J.tail[0], J.tail[1], J.tail[2]), -tailDown), air ? -R.bank * 0.5 : 0.3);
     for (let i = 0; i < 3; i++) tail[i] *= fan;

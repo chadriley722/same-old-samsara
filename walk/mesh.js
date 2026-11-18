@@ -624,6 +624,83 @@ export function ravenHand(side) {
   return g;
 }
 
+/* ---------- the crow ----------
+   Nov 18: the bird on the site is a crow (Chad: there are crows all over the land, and no ravens). It flies the raven's
+   paths and uses the raven's rig, legs and inner wings. What differs is below: a crow is smaller and sleeker, with a round
+   head, a shorter, slimmer, straighter bill, no shaggy throat, shorter blunter wings and a square tail like a fan.
+   THE RAVEN IS KEPT, above. One setting switches back: BIRD in _build/build.py. */
+
+/** the body, in flight trim. a crow is sleeker than a raven: a slimmer neck and a smooth belly */
+export function crowTorso() {
+  const g = new Geo(), r = rng(11);
+  g.add(blob(0.125, 0.13, 0.28, 2, RV, 1, { seed: 3, bump: 0.05, freq: 3 })
+    .warp((x, y, z) => { const t = z < 0 ? -z / 0.28 : 0, k = 1 - 0.5 * Math.pow(t, 1.6); return [x * k, y * k + 0.02 * t, z]; }));      // narrower toward the tail
+  g.add(blob(0.082, 0.086, 0.125, 1, RV, 1), { pos: [0, 0.035, 0.195] });
+  for (let k = 0; k < 2; k++) {
+    const z = 0.13 - k * 0.055, x = (r() - 0.5) * 0.1, y = -0.105 + Math.abs(z) * 0.12;
+    g.add(tube([x, y, z - 0.12], [x * 1.3, y - 0.03, z - 0.2], 0.03, 0.003, 4, RV, 1, false));
+  }
+  return g;
+}
+
+/** what is added when it sits: the wings folded along the flanks, their long tips lying over the tail, and the thigh feathers */
+export function crowFolded() {
+  const g = new Geo();
+  for (const s of [1, -1]) {
+    g.add(blob(0.04, 0.105, 0.245, 1, RV, 3, { seed: 5 }), { pos: [s * 0.108, 0.035, -0.07], roll: s * 0.25, pitch: 0.08 });
+    g.add(blob(0.02, 0.036, 0.13, 1, RV, 5), { pos: [s * 0.055, 0.03, -0.33], yaw: s * 0.16, pitch: 0.05 });
+    g.add(blob(0.062, 0.085, 0.075, 1, RV, 1, { seed: 9, bump: 0.12 }), { pos: [s * 0.058, -0.11, -0.035] });
+  }
+  return g;
+}
+
+/** the head. a round, neat crown, a shorter, slimmer, straighter bill than a raven's, a small tuft
+    over its base, a pale eye (paper showing through, as in the logo), and a smooth throat: no hackles. the middle of the
+    skull is the origin. */
+export function crowHead() {
+  const g = new Geo();
+  g.add(blob(0.072, 0.073, 0.09, 2, RV, 1), { pos: [0, 0.004, 0.008] });
+  g.add(blob(0.06, 0.056, 0.085, 1, RV, 1), { pos: [0, -0.04, -0.012] });
+  g.add(loft([[0.06, 0.002, 0.03, 0.026, 0.01], [0.115, 0.001, 0.025, 0.022, 0.008], [0.165, -0.003, 0.017, 0.016, 0.006], [0.2, -0.008, 0.009, 0.009, 0.004], [0.218, -0.013, 0.002, 0.003, 0.002]], 8, RV, 2));
+  g.add(blob(0.022, 0.014, 0.04, 1, RV, 1), { pos: [0, 0.028, 0.098], pitch: 0.1 });
+  for (const s of [1, -1]) g.add(blob(0.012, 0.013, 0.013, 1, P(INK.CREAM, STYLE.PLAIN, 0, -1), 8), { pos: [s * 0.064, 0.016, 0.05] });
+  return g;
+}
+
+/** the lower bill. its hinge, at the corner of the mouth, is the origin. */
+export function crowJaw() {
+  return loft([[0, -0.011, 0.024, 0.008, 0.012], [0.065, -0.012, 0.019, 0.006, 0.01], [0.115, -0.014, 0.01, 0.005, 0.007], [0.14, -0.017, 0.002, 0.002, 0.003]], 8, RV, 2);
+}
+
+/** the tail. a raven's is a long wedge, a crow's is shorter and ends square, like a fan.
+    root at the origin, pointing back. the world closes or fans it by squeezing it sideways. */
+export function crowTail() {
+  const g = new Geo(), N = 9;
+  for (let k = 0; k < N; k++) {
+    const t = (k - (N - 1) / 2) / ((N - 1) / 2);                           // -1 .. 1 across the fan
+    blade(g, t * 0.035, 0.02, Math.PI / 2 - t * 0.6, 0.37 - 0.035 * t * t, 0.05, 4, -0.03 * t * t);      // a shallow roof, so it has some body from the side
+  }
+  return g;
+}
+
+/** the outer half: the hand, from the wrist (the origin) out. the long primaries spread like fingers. */
+export function crowHand(side) {
+  const g = new Geo(), s = side;
+  const F = [[-0.12, 0.43], [0, 0.49], [0.13, 0.515], [0.27, 0.51], [0.42, 0.48], [0.58, 0.44], [0.76, 0.4], [0.96, 0.37], [1.17, 0.34]];      // angle, length.
+  F.forEach(([a, len], k) => {
+    const t = k / (F.length - 1);
+    blade(g, s * 0.13 * (1 - t), -0.012 - 0.03 * t, s > 0 ? a : Math.PI - a, len, lerp(0.04, 0.054, t), 5, -0.002 * k, k < 4);
+  });
+  fanXZ(g, [s * 0.1, -0.03], [[0, 0.055], [s * 0.13, 0.06], [s * 0.235, 0.03], [s * 0.22, -0.05], [s * 0.12, -0.13], [0, -0.16]], RV, 3, 0.004);
+  return g;
+}
+
+/** the two birds the site can show. size: how much bigger than life it is drawn. head: how big its head is for its body. */
+export const BIRDS = {
+  raven: { torso: ravenTorso, folded: ravenFolded, legs: ravenLegs, head: ravenHead, jaw: ravenJaw, tail: ravenTail, arm: ravenArm, hand: ravenHand, size: 1.5, headSize: 1.12 },
+  crow: { torso: crowTorso, folded: crowFolded, legs: ravenLegs, head: crowHead, jaw: crowJaw, tail: crowTail, arm: ravenArm, hand: crowHand, size: 1.2, headSize: 1 },
+};
+
 /** a raccoon, mostly tail, looking round a trunk */
 export function raccoon() {
   const g = new Geo(), fur = P(INK.STONE, STYLE.NONE), dark = P(INK.PEPPER, STYLE.PLAIN);

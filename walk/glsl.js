@@ -246,6 +246,7 @@ uniform float uTime, uDepthOnly;
 uniform vec3 uSunDir;
 uniform vec4 uSunCol;                   // rgb, how much glitter on the water
 uniform float uRoadLine;                // 0: a country road with no paint (the walk). 1: a dashed centre line (the road trip)
+uniform vec2 uPaint;                    // the paint starts this many metres down the road, and is all there by this many
 uniform vec3 uStripe[6];                // the colours the dashes run through, one after the other
 layout(location=0) out vec4 oPlate;
 layout(location=1) out vec4 oAux;
@@ -309,10 +310,13 @@ void main(){
       // a dashed centre line: 3 m of paint, 6 m of road. each dash takes the next colour in the stripe.
       float along = vMask.y / 9., dash = step(fract(along), .34) * (1. - smoothstep(.028, .04, abs(vMask.x)));
       vec3 paint = uStripe[int(mod(floor(along), 6.))];
-      cl = mix(cl, paint, dash * uRoadLine); cs = mix(cs, paint * .82, dash * uRoadLine);
+      // by the land's gate the road has no paint, like the road on the home page. it starts a little way down
+      float laid = uRoadLine * smoothstep(uPaint.x, uPaint.y, -vWorld.z);
+      dash *= laid;
+      cl = mix(cl, paint, dash); cs = mix(cs, paint * .82, dash);
       key *= 1. - dash;
       // and a thin pale line along each edge
-      float edge = (1. - smoothstep(.012, .02, abs(abs(vMask.x) - .93))) * uRoadLine * .7;
+      float edge = (1. - smoothstep(.012, .02, abs(abs(vMask.x) - .93))) * laid * .7;
       cl = mix(cl, uLit[23], edge); cs = mix(cs, uShade[23], edge);
     }
   } else {

@@ -193,3 +193,7 @@
   .hot::after, .walk-on .walk-hint > .on::after { animation: none; }
   .walk-gl { transition: none; }
 }
+
+/* the veil between the home page and /road: the walk's last view fades to first light, and /road comes up out of it */
+.handoff { position: fixed; inset: 0; z-index: 90; background: #f6eedd; opacity: 0; pointer-events: none; transition: opacity .45s ease-in; }
+.handoff.on { opacity: 1; }

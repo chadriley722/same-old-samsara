@@ -66,7 +66,7 @@ export const mTurnZ = (m, a) => { const c = Math.cos(a), s = Math.sin(a); for (l
 export class Printer {
   /** tier: 2 desktop, 1 phone, 0 weak. throws if WebGL2 is not there. */
   constructor(canvas, { tier = 2, capture = false } = {}) {
-    this.canvas = canvas; this.tier = tier;
+    this.canvas = canvas; this.tier = tier; this.opts = arguments[1] || {};       // a scene reads its own options from here (the walk: which bird)
     const gl = (this.gl = canvas.getContext("webgl2", { antialias: false, alpha: false, depth: false, stencil: false,
       powerPreference: "high-performance", preserveDrawingBuffer: capture }));
     if (!gl) throw new Error("no webgl2");
@@ -321,6 +321,7 @@ export class Printer {
     const g = P_.ground.use(); this.surface(g, vp, L, t, state, depthOnly);
     g.v3("uSunDir", L.sunDir); g.v4("uSunCol", L.sunCol, L.glitter);
     g.f("uRoadLine", this.roadLine || 0); if (this.stripe) g.a3("uStripe", this.stripe);
+    g.f("uPaint", ...(this.paintFrom || [-1e6, -1e6 + 1]));
     g.i("uKind", 0); gl.enable(gl.CULL_FACE);
     gl.bindVertexArray(this.ground.vao); gl.drawElements(gl.TRIANGLES, this.ground.count, this.ground.type, 0);
     gl.disable(gl.CULL_FACE);

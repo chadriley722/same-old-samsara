@@ -149,11 +149,14 @@ export function buildSound(ctx) {
 
   /* ---------- the raven: a rough, falling croak ---------- */
   const ravenOut = gain(0.45); ravenOut.connect(gain(0.3, air));
-  function caw(t = now() + 0.02) {
-    for (let k = 0; k < 2; k++) {
+  /* the bird's call. a raven: two low rough croaks. a crow: three caws, higher and clearer. */
+  const CALLS = { raven: { n: 2, from: 415, to: 285, f1: 1100, f2: 1900 }, crow: { n: 3, from: 560, to: 455, f1: 1450, f2: 2400 } };
+  function caw(kind = "crow", t = now() + 0.02) {
+    const c = CALLS[kind] || CALLS.crow;
+    for (let k = 0; k < c.n; k++) {
       const s = t + k * 0.36, o = ctx.createOscillator(), g = ctx.createGain(), mouth = gain(1, null), rough = ctx.createGain();
-      o.type = "sawtooth"; o.frequency.setValueAtTime(415 * (1 - k * 0.04), s); o.frequency.exponentialRampToValueAtTime(285, s + 0.27);
-      const f1 = filter("bandpass", 1100, 3), f2 = filter("bandpass", 1900, 5), breath = ctx.createBufferSource(); breath.buffer = white;
+      o.type = "sawtooth"; o.frequency.setValueAtTime(c.from * (1 - k * 0.04), s); o.frequency.exponentialRampToValueAtTime(c.to, s + 0.27);
+      const f1 = filter("bandpass", c.f1, 3), f2 = filter("bandpass", c.f2, 5), breath = ctx.createBufferSource(); breath.buffer = white;
       o.connect(f1); o.connect(f2); f1.connect(mouth); chain(f2, gain(0.4, mouth)); chain(breath, filter("bandpass", 1400, 1.5), gain(0.12, mouth)); breath.start(s, k, 0.32);
       rough.gain.value = 0.6; lfoAt(56, 0.4, rough.gain, s, s + 0.33);
       g.gain.setValueAtTime(0, s); g.gain.linearRampToValueAtTime(0.9, s + 0.035); g.gain.setTargetAtTime(0, s + 0.17, 0.045);

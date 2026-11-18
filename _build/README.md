@@ -76,3 +76,17 @@ The top of the home page is a loop trail you scroll along, drawn like a woodcut.
 - **A new vlog needs nothing extra** past `ROAD_LATEST` and the thumbnail: the screen in the 3D reads them. The still print of that stop shows a plain Pneuma Nomads card on the screen on purpose, so it never shows an old vlog.
 - **Preview:** http://127.0.0.1:8811/road/ . `?plain` and `?u=2` work here too. The 3D on its own: `_build/walk-dev.html?scene=road`.
 - **If the look changes, redo its six still prints:** same as the walk's, with `_build/walk-dev.html?scene=road&shoot=1`. The PNGs come out as `road-<n>-<name>.png` and go to `images/road/<n>-<name>.webp`.
+
+## The bird: crow or raven (one setting)
+
+Since Nov 18, 2026 the bird on the site is a crow. The raven is kept, and one word switches back.
+
+- **The setting:** `BIRD = "crow"` near the top of `_build/build.py`. Set it to `"raven"`, run `python3 _build/build.py`, commit, push.
+- **What it changes:** the 3D bird in the walk (`walk/mesh.js` has both: the raven's pieces, and the crow's under "the crow"), its call
+  (`walk/sound.js`), every place the copy names it, the tap label, and the walk's still prints.
+- **The still prints** have the bird in them, so there are two sets: `images/birds/crow/` and `images/birds/raven/`. The build copies
+  the chosen set over `images/walk/`. If the walk ever changes, shoot both sets again (`_build/walk-dev.html?shoot=1` for the crow,
+  add `&bird=raven` for the raven) and put them in those two folders.
+- **What it does not change:** the emblem, the mark and the favicon. They are the same drawing either way.
+- It flies the same paths at the same pace either way. Only the model, the size and the call differ.
+

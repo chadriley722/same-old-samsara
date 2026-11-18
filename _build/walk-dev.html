@@ -8,6 +8,7 @@
      Open it through the preview server: http://127.0.0.1:8811/_build/walk-dev.html
      ?u=3.5 where on the walk · ?night=1 the walk that starts in the dark · ?tier=0..2 · ?t=12 freeze the clock
      arrow keys walk, n flips night, drag looks around.
+     ?bird=raven draws the raven (the default is the crow).
      ?shoot=1 saves the still prints the plain page uses (needs _build/serve.py --shots <folder>).
      ?shoot=og&w=2400&h=1260 saves the scene for the share picture.
      ?scene=road shows the road trip (road/roadworld.js) instead of the walk. ?film=<picture url> puts a picture on the screen. -->
@@ -18,7 +19,7 @@ const { World, STOP_IDS } = await import(ROAD ? "../road/roadworld.js" : "../wal
 const LAST = STOP_IDS.length - 1;
 const hud = document.getElementById("hud"), canvas = document.getElementById("c");
 let world;
-try { world = new World(canvas, { tier: num("tier", 2), capture: true }); } catch (e) { hud.textContent = "ERROR " + e.message; throw e; }
+try { world = new World(canvas, { tier: num("tier", 2), capture: true, bird: q.get("bird") || "crow" }); } catch (e) { hud.textContent = "ERROR " + e.message; throw e; }
 window.world = world;
 const S = { u: num("u", 0), night: num("night", 0), head: [num("yaw", 0), num("pitch", 0)], gust: 0, time: num("t", 3), moonPhase: num("moon", 0.62) };
 window.S = S;

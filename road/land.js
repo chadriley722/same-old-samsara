@@ -41,15 +41,18 @@ export function beside(z, d) { const h = heading(z); return [roadX(z) - h[1] * d
 export const RIG_Z = [-51, -575, -915, -1250, -1617, -43.5];
 /* where the camera is at each stop: [metres north of the truck, metres right of the centre line, height above the road].
    out on the road it rides off the rig's rear quarter, well left of the centre line (see road/roadworld.js). */
-export const CAM = [[28, -3.4, 3.15], [17, -9.5, 3.6], [19, -8.5, 3.4], [17, -8.5, 3.5], [27, -3.4, 3.15], [-26, 9.5, 3.2]];
+export const CAM = [[28, 3.4, 3.15], [17, -9.5, 3.6], [19, -8.5, 3.4], [17, -8.5, 3.5], [27, -3.4, 3.15], [-26, -9.5, 3.2]];
 
 /* ---------- places (all invented): [metres to the right of the centre line, z] ---------- */
 const by = (k, ahead, right) => [right, RIG_Z[k] - ahead];                // a spot by where the truck stops: metres on past it, metres right of the centre line
 export const PLACES = {
-  gate: [13.6, -43.5],         // the land's gate
-  mailbox: [6.6, -36.5],
-  park0: [2.6, -51],           // the rig, half way out of the gate and turning down the road
-  park5: [8, -46],             // and half way back in, at the end
+  // the land's gate is on the LEFT of the road as you set off (Nov 18). the home page's walk ends by coming out of the gate
+  // and turning left onto the road, so the rig does the same here: out of the gate on the left, a left turn, and away south.
+  // (it used to be on the right, and the rig turned right. going from one page to the other, the drive changed direction.)
+  gate: [-13.6, -43.5],        // the land's gate
+  mailbox: [-6.6, -36.5],
+  park0: [-2.6, -51],          // the rig, half way out of the gate, across the road and turning down it
+  park5: [-8, -46],            // and half way back in, at the end
   park1: by(1, 0, 5.6),        // pulled over at the foot of the screen
   screen: by(1, 4, 16.5),      // the big roadside screen with the latest road video on it, up where the road tops the hills
   park2: by(2, 0, 5.4),
@@ -66,7 +69,7 @@ const ROOM = { screen: 12 };                                               // ho
 const PADS = Object.entries(PLACES).map(([name, [d, z]]) => [...beside(z, d), d, z, ROOM[name] || 7.5, 4.5, 9]);
 /* and a wide one under the whole rig wherever it stops, centred on its middle, so every wheel is on level ground while it pulls in and out */
 /* (the one at the camp is wider still: the rig swings right round on the sand there) */
-for (const [d, z, r = 9.5] of [[6, -48], by(1, -4, 5.6), by(2, -4, 5.4), by(3, -4, 7.6), [8.5, RIG_Z[4] - 1, 12.5], [5.5, -46]]) PADS.push([...beside(z, d), d, z, 0, r, r + 5]);
+for (const [d, z, r = 9.5] of [[-5, -54, 14], by(1, -4, 5.6), by(2, -4, 5.4), by(3, -4, 7.6), [8.5, RIG_Z[4] - 1, 12.5], [-5.5, -46]]) PADS.push([...beside(z, d), d, z, 0, r, r + 5]);
 const segDist = (x, z, ax, az, bx, bz) => { const dx = bx - ax, dz = bz - az, t = clamp(((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz), 0, 1); return Math.hypot(x - ax - dx * t, z - az - dz * t); };
 /* nothing is planted between where you stand at a stop and what you look at there: [stop, place, how wide a lane to keep clear] */
 const SIGHT = [[0, "park0", 7], [0, "gate", 6], [1, "screen", 10], [1, "park1", 6], [2, "signpost", 6], [2, "park2", 6], [3, "cup", 7], [3, "pump", 5], [3, "park3", 6],
@@ -74,7 +77,7 @@ const SIGHT = [[0, "park0", 7], [0, "gate", 6], [1, "screen", 10], [1, "park1", 
   .map(([k, name, r]) => [...beside(RIG_Z[k] + CAM[k][0], CAM[k][1]), ...beside(PLACES[name][1], PLACES[name][0]), r]);
 const inSight = (x, z) => SIGHT.some((s) => segDist(x, z, s[0], s[1], s[2], s[3]) < s[4]);
 /* gravel: where the land's drive meets the road, and the pull-in at the pump. [from x, z, to x, z, all gravel within, none past] */
-const GRAVEL = [[...beside(PLACES.gate[1], PLACES.gate[0] + 7), ...beside(PLACES.gate[1] - 3.5, HALF - 0.5), 2.3, 4.6],
+const GRAVEL = [[...beside(PLACES.gate[1], PLACES.gate[0] - 7), ...beside(PLACES.gate[1] - 3.5, -(HALF - 0.5)), 2.3, 4.6],
                 [...beside(RIG_Z[3] + 12, 7.4), ...beside(RIG_Z[3] - 7, 7.4), 3.4, 5.4]];
 const gravel = (x, z) => Math.max(...GRAVEL.map((g) => 1 - smooth(g[4], g[5], segDist(x, z, g[0], g[1], g[2], g[3]))));
 

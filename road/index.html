@@ -19,8 +19,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=VT323&family=Work+Sans:wght@400;500;600&display=swap">
-<link rel="stylesheet" href="../road/road.css?v=adfc7046">
-<script>(function(){var d=document.documentElement,q=location.search,gl=false,calm=false;try{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}var on=gl&&!/[?&]plain\b/.test(q)&&(!calm||/[?&]walk\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){if(!window.SOS_WALK){d.classList.remove("walk-on");d.classList.add("walk-plain");}},8000);})();</script>
+<link rel="stylesheet" href="../road/road.css?v=64cc7089">
+<script>(function(){var d=document.documentElement,q=location.search,gl=false,calm=false;try{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}catch(_){}var on=gl&&!/[?&]plain\b/.test(q)&&(!calm||/[?&]walk\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){if(!window.SOS_WALK){d.classList.remove("walk-on");d.classList.add("walk-plain");}},8000);try{var h=+sessionStorage.getItem("sos_handoff");if(on&&!calm&&h&&Date.now()-h<12000&&/\/road\//.test(location.pathname)){d.classList.add("arrive");setTimeout(function(){d.classList.add("arrived");},4500);}}catch(_){}})();</script>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebPage", "name": "Pneuma Nomads", "url": "https://sameoldsamsara.xyz/road/", "description": "Chad and Daniel's winter travel videos. Summers on our land in Central New York, winters in the fifth wheel following the warm air south.", "isPartOf": {"@type": "WebSite", "name": "Same Old Samsara", "url": "https://sameoldsamsara.xyz/"}, "sameAs": ["https://youtube.com/@pneumanomads", "https://instagram.com/pneumanomads", "https://tiktok.com/@pneumanomads"]}</script>
 </head>
 <body>
@@ -43,7 +43,7 @@
   <p class="walk-say" role="status"></p>
 </div>
 <div class="walk-stops">
-  <header class="stop gate" id="stop-leave" data-stop="0">
+  <header class="stop gate right" id="stop-leave" data-stop="0">
     <picture><source type="image/webp" media="(max-width: 760px)" srcset="../images/r/road/0-leave-480.webp 480w, ../images/r/road/0-leave-600.webp 600w" sizes="330px"><source type="image/webp" srcset="../images/r/road/0-leave-720.webp 720w, ../images/road/0-leave.webp 1280w" sizes="620px"><img class="still" src="../images/road/0-leave.webp" alt="A print of a pickup truck pulling a fifth wheel camper out of a gate and onto a country road at first light. Bare trees, frost on the grass, and hills far off." width="1280" height="800" fetchpriority="high" decoding="async"></picture>
     <div class="gate-text">
       <div class="bar" aria-hidden="true"><span>travel log</span><span>heading: south</span></div>
@@ -108,7 +108,7 @@
       </div>
     </div>
   </article>
-  <article class="stop left" id="stop-home" data-stop="5">
+  <article class="stop right" id="stop-home" data-stop="5">
     <picture><source type="image/webp" media="(max-width: 760px)" srcset="../images/r/road/5-home-480.webp 480w, ../images/r/road/5-home-600.webp 600w" sizes="330px"><source type="image/webp" srcset="../images/r/road/5-home-720.webp 720w, ../images/road/5-home.webp 1280w" sizes="620px"><img class="still" src="../images/road/5-home.webp" alt="A print of the truck and camper turning in at an open wooden gate at first light in spring, with a mailbox by the road and a map pin floating over the gate." width="1280" height="800" loading="lazy" decoding="async"></picture>
     <div class="card">
       <div class="bar"><span>log 5 of 5</span><span>the gate · first light</span></div>
@@ -141,6 +141,6 @@
   (function step(){ if (i >= t.length) return; el.textContent += t[i++]; setTimeout(step, (1000/14) * (0.7 + Math.random()*0.6)); })();
 })();
 </script>
-<script type="module" src="../walk/walk.js?v=174125a2"></script>
+<script type="module" src="../walk/walk.js?v=b6d2d9e8"></script>
 </body>
 </html>

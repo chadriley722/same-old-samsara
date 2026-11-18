@@ -31,6 +31,10 @@ PIN = "https://pinterest.com/sameoldsamsara"
 PN = SITE + "/road/"
 NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header"
 COFFEE = "https://buymeacoffee.com/sameoldsamsara"
+# the bird on the site: "crow" (since Nov 18) or "raven" (how it was). THIS ONE WORD SWITCHES IT: the 3D bird in the walk,
+# its call, every place the copy names it, and the still prints (images/birds/<bird>/ is copied over images/walk/ on build).
+# the emblem and the logo are the same drawing either way. to switch back: set "raven", run this file, commit, push.
+BIRD = "crow"
 LAND_DAY_ONE = "2026-09"  # month only in public, never the exact day
 
 # /road = pneuma nomads (winter travel), in the PN look, not the almanac. pneumanomads.xyz points here.
@@ -753,7 +757,7 @@ ORG = {
 # Every stop is real html, so the links work with scripts off, in a screen reader, and when a browser can't draw the world.
 
 # decides, before anything is painted, whether this device gets the moving world or the plain page (the road page uses it too)
-WALK_SWITCH = """<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);}})();</script>
+WALK_SWITCH = """<script>(function(){{var d=document.documentElement,q=location.search,gl=false,calm=false;try{{gl=!!document.createElement("canvas").getContext("webgl2");calm=matchMedia("(prefers-reduced-motion: reduce)").matches;}}catch(_){{}}var on=gl&&!/[?&]plain\\b/.test(q)&&(!calm||/[?&]walk\\b/.test(q));d.classList.add(on?"walk-on":"walk-plain");if(gl&&!on)d.classList.add("walk-can");if(on)setTimeout(function(){{if(!window.SOS_WALK){{d.classList.remove("walk-on");d.classList.add("walk-plain");}}}},8000);try{{var h=+sessionStorage.getItem("sos_handoff");if(on&&!calm&&h&&Date.now()-h<12000&&/\\/road\\//.test(location.pathname)){{d.classList.add("arrive");setTimeout(function(){{d.classList.add("arrived");}},4500);}}}}catch(_){{}}}})();</script>
 """
 WALK_HEAD = """<link rel="stylesheet" href="{base}walk/walk.css?v={v}">
 """ + WALK_SWITCH
@@ -792,41 +796,41 @@ def walk_stops(base):
     wear = "".join(f"""<a href="{listing(p['id'])}" target="_blank" rel="noopener" title="{e(p['name'])}">{pic(base, p['img'], p['name'], 84)}</a>""" for p in FEATURED)
     return [
         {"id": "films", "name": "films", "light": "morning", "side": "left", "was": "films",
-         "alt": "A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow. A camera on a tripod faces the sheet and throws a picture on it, and a raven sits on one of the poles.",
+         "alt": f"A print of a bedsheet strung between two poles as a movie screen in a goldenrod meadow. A camera on a tripod faces the sheet and throws a picture on it, and a {BIRD} sits on one of the poles.",
          "body": f"""<p>{e(DOC_LINE)}</p>
       {yt_embed(ep, base, (330, 370))}
       <p class="label ep-line">newest · {e(ep_no(ep))} · {month_of(ep['date'])} · {e(ep['title'])}</p>""",
          "links": ext("start at episode 1", watch(first), True) + loc("all the films", "films/") + ext("subscribe", f"{YT}?sub_confirmation=1"),
          "after": inapp_tip()},
         {"id": "make", "name": "make", "light": "late morning", "side": "right", "was": "make patterns recipes",
-         "alt": "A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a raven on the roof.",
+         "alt": f"A print of a white camper in a meadow with its awning out, a table and two chairs under the awning, and a {BIRD} on the roof.",
          "body": f"<p>{e(MAKE_INTRO)}</p>",
          "links": loc("see what we make", "make/", True) + loc(f"free pattern: {free['name']}", f"patterns/{slug(free)}/") + loc("design your own", "bead-lab/")
                   + (loc("recipes", "recipes/") if len(RECIPES) >= 3 else "")},
         {"id": "wear", "name": "wear", "light": "noon", "side": "left", "was": "wear",
-         "alt": "A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a raven on top.",
+         "alt": f"A print of an old apple tree in a meadow with strands of bright beads hanging from its branches, and a {BIRD} on top.",
          "body": f"""<p>We have an Etsy shop with the jewelry we make by hand. Apparel we designed is coming soon. The earrings don't really grow on the apple tree. We checked.</p>
       <div class="wear-row">{wear}</div>""",
          "links": loc("see the jewelry", "wear/", True) + ext("our etsy shop", SHOP) + ext("also on depop", DEPOP)},
         {"id": "land", "name": "the land", "light": "golden hour", "side": "left", "was": "land year",
-         "alt": "A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a raven on a rock, and geese flying over.",
+         "alt": f"A print of a river at golden hour with tall hemlocks on both banks, rocks in the water, a {BIRD} on a rock, and geese flying over.",
          "body": "<p>34 acres in Central New York. Meadow, woods and a river, and a lot of figuring out. The plan is a homestead: a food forest, fruit trees, a garden and a lot of plants.</p>",
          "links": loc("about the land", "land/", True) + loc("the land, month by month", "land/#year")},
         {"id": "field-guide", "name": "the field guide", "light": "sunset", "side": "right",
-         "alt": "A print of the woods at sunset: a mossy log with mushrooms on it, a raven on the log, and a raccoon looking around a tree trunk at a trail camera.",
+         "alt": f"A print of the woods at sunset: a mossy log with mushrooms on it, a {BIRD} on the log, and a raccoon looking around a tree trunk at a trail camera.",
          "body": "<p>Who lives here, and what we've found so far. We're not experts, so it's part guessing game. The trail cam got a raccoon on its first night.</p>",
          "links": loc("open the field guide", "land/#critters", True)},
         {"id": "follow", "name": "follow along", "light": "dusk", "side": "right", "was": "follow", "rail": False,      # a stop on the walk, but not in the list of stops (Chad, Nov 12)
-         "alt": "A print of a campfire at nightfall with two camp chairs pulled up to it, a raven on the back of one, a coffee pot and two mugs on a stump by the fire, and a camper with its windows lit in the distance.",
+         "alt": f"A print of a campfire at nightfall with two camp chairs pulled up to it, a {BIRD} on the back of one, a coffee pot and two mugs on a stump by the fire, and a camper with its windows lit in the distance.",
          "body": "<p>Pull up a chair. New films go up on YouTube first. The small stuff in between goes everywhere else.</p>",
          "links": ext("youtube", YT, True) + ext("instagram", IG) + ext("tiktok", TT) + ext("pinterest", PIN),
          "after": coffee_line()},
         {"id": "say-hi", "name": "say hi", "light": "night", "side": "left",
-         "alt": "A print of a mailbox at night with a little lantern hanging on its post, a raven sitting on the mailbox, and the moon over the trees.",
+         "alt": f"A print of a mailbox at night with a little lantern hanging on its post, a {BIRD} sitting on the mailbox, and the moon over the trees.",
          "body": f"""<div class="us">{pic(base, US_PHOTO, US_ALT, 96)}<p>That's us. Write to us, we read everything. Or sign up for the newsletter and we'll write when there's something worth saying.</p></div>""",
          "links": hi_button(base) + ext("message us on instagram", IG) + ext("the newsletter", NEWSLETTER) + loc("who we are", "about/")},
         {"id": "road", "name": "the road", "light": "first light", "side": "left",
-         "alt": "A print of a country road at first light, seen from the middle of it. It runs east past a goldenrod meadow toward the sunrise, and a raven flies off ahead.",
+         "alt": f"A print of a country road at first light, seen from the middle of it. It runs east past a goldenrod meadow toward the sunrise, and a {BIRD} flies off ahead.",
          "body": "<p>When the cold comes we hitch up and head south. Winters we travel as Pneuma Nomads, and the road has a page of its own.</p>",
          "links": loc("keep going down the road", "road/", True) + ext("pneuma nomads on youtube", PN_YT) + ext("instagram", PN_IG) + ext("tiktok", PN_TT) + ext(PN_SPOTIFY_TEXT, PN_SPOTIFY)},
     ]
@@ -859,7 +863,7 @@ def walk_block(base, variant="home"):
       <div class="btns">{st['links']}</div>{st.get('after', '')}
     </div>
   </article>""" for i, st in enumerate(stops, 1))
-    return f"""<section class="walk" id="walk" aria-label="a walk around the land" data-film="{base}{variant_for_film(ep['img'])}">
+    return f"""<section class="walk" id="walk" aria-label="a walk around the land" data-bird="{BIRD}" data-film="{base}{variant_for_film(ep['img'])}">
 <nav class="trail" aria-label="stops on the walk"><div class="trail-in">
   <ol id="trail-list">
     <li><a href="#walk" data-go="0"><i aria-hidden="true"></i><span>the gate</span></a></li>
@@ -874,7 +878,7 @@ def walk_block(base, variant="home"):
 </div>
 <div class="walk-stops">
   <header class="stop gate" id="stop-gate" data-stop="0">
-    {still(0, "gate", "A print of an open gate at sunrise. A raven sits on the gate post, goldenrod grows on both sides of the track, and a camper is parked far off in the meadow.", lazy=False)}
+    {still(0, "gate", f"A print of an open gate at sunrise. A {BIRD} sits on the gate post, goldenrod grows on both sides of the track, and a camper is parked far off in the meadow.", lazy=False)}
     <div class="gate-text">
       {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
       <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
@@ -1218,7 +1222,7 @@ def about_page():
 <section class="section"><div class="wrap prose reveal">
   <p>We're Chad and Daniel, a couple who'd never homesteaded a day in our lives. In September 2026 we bought 34 acres in Central New York: meadow, woods and a river. We're building a homestead there, one tree at a time, with a food forest, a garden and more plants than we can name. We joke that it's our compound. And we're filming all of it. Summers on the land, winters on the road in our RV as <a href="{PN}">Pneuma Nomads</a>.</p>
   <p><strong>Same Old Samsara</strong> is Chad's creative outlet. It started with memes, then beads and patterns, and now it's mostly film. Later maybe screen prints, or things made from what grows on the land.</p>
-  <p>Samsara is the wheel: birth, death, coming back around. The raven sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
+  <p>Samsara is the wheel: birth, death, coming back around. The {BIRD} sits on the ouroboros, the snake eating its tail. Seasons come back. Projects get set down and picked back up. The same old cycle.</p>
   <h2>what's here</h2>
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
@@ -1288,7 +1292,7 @@ def road_page():
          "stack": True,
          "links": ext("watch the latest vlog", vlog_url, True)
                   + f'<a class="btn small" href="{PN_YT}?sub_confirmation=1" target="_blank" rel="noopener">subscribe on youtube</a>'},
-        {"id": "home", "name": "home again", "where": "the gate · first light", "side": "left",
+        {"id": "home", "name": "home again", "where": "the gate · first light", "side": "right",      # the gate is on the left of the road: the words go right
          "alt": "A print of the truck and camper turning in at an open wooden gate at first light in spring, with a mailbox by the road and a map pin floating over the gate.",
          "body": "<p>Come spring we drive it all back. Summers we're home on 34 acres in Central New York, building a homestead and filming it. That half is called Same Old Samsara, and it starts right here at the gate.</p>",
          "links": loc("walk the land", "", True) + loc("watch the land", "films/") + loc("jewelry", "wear/") + loc("patterns", "patterns/")},
@@ -1356,7 +1360,7 @@ def road_page():
   <p class="walk-say" role="status"></p>
 </div>
 <div class="walk-stops">
-  <header class="stop gate" id="stop-leave" data-stop="0">
+  <header class="stop gate right" id="stop-leave" data-stop="0">
     {still(0, "leave", "A print of a pickup truck pulling a fifth wheel camper out of a gate and onto a country road at first light. Bare trees, frost on the grass, and hills far off.", lazy=False)}
     <div class="gate-text">
       <div class="bar" aria-hidden="true"><span>travel log</span><span>heading: south</span></div>
@@ -1533,6 +1537,13 @@ def sitemap(paths):
     urls = "".join(f"<url><loc>{SITE}/{p}</loc><lastmod>{TODAY}</lastmod></url>" for p in paths)
     return f'<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">{urls}</urlset>\n'
 
+def use_bird_stills():
+    """the walk's still prints have the bird in them, so there is a set for each bird. put the chosen set in images/walk/."""
+    assert BIRD in ("crow", "raven"), BIRD
+    for src in sorted((ROOT / "images/birds" / BIRD).glob("*.webp")):
+        dst = ROOT / "images/walk" / src.name
+        if not dst.exists() or dst.read_bytes() != src.read_bytes(): shutil.copyfile(src, dst)
+
 def write(rel, text):
     f = ROOT / rel; f.parent.mkdir(parents=True, exist_ok=True); f.write_text(text)
 
@@ -1544,6 +1555,7 @@ def check_jewelry():
 
 if __name__ == "__main__":
     copy_pattern_images()
+    use_bird_stills()
     write("index.html", home())
     for v in ("ig", "yt", "pin"): write(f"{v}/index.html", home(v))
     write("land/index.html", land_page())
