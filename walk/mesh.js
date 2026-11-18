@@ -309,6 +309,7 @@ export function table() {
   return g;
 }
 
+export const CHAIR_RAIL = [0, 0.957, -0.294];        // the middle of the rail along the top of a chair's back (its top is 1.7 cm above this)
 export function chair(ink = INK.LEAF_DARK) {
   const g = new Geo(), dark = P(INK.PEPPER, STYLE.PLAIN), cloth = P(ink, STYLE.CLOTH);
   for (const x of [-0.27, 0.27]) {
@@ -317,6 +318,7 @@ export function chair(ink = INK.LEAF_DARK) {
   }
   g.add(plane(0.54, 0.5, cloth, 2, 2, 2), { pos: [0, 0.44, 0.02], pitch: -Math.PI / 2 + 0.16 });
   g.add(plane(0.54, 0.5, cloth, 3, 2, 2), { pos: [0, 0.72, -0.22], pitch: -0.3 });
+  g.add(tube([-0.285, CHAIR_RAIL[1], CHAIR_RAIL[2]], [0.285, CHAIR_RAIL[1], CHAIR_RAIL[2]], 0.017, 0.017, 5, dark, 1));      // the top rail of the back. the crow grips it
   return g;
 }
 
@@ -356,7 +358,6 @@ export function flames() {
 
 /** the coffee by the fire: a stump with an enamel pot and two mugs on it. a little bigger than life, like a thing in a print.
     the spout points along +x. (it is how the home page says "buy us a coffee": see the follow stop in build.py) */
-export const POT_TOP = [0, 0.86, 0];                // the knob on the lid, where the steam starts
 export function coffee() {
   const g = new Geo(), dark = P(INK.PEPPER, STYLE.PLAIN), enamel = P(INK.CREAM, STYLE.PLAIN, 0, 0.22), rim = P(INK.RUST, STYLE.PLAIN, 0, 0.15);          // a little glow: enamel catches the firelight
   g.add(cyl(0.31, 0.27, 0.4, 9, P(INK.BARK, STYLE.BARK), 1, false));                                    // the stump
@@ -378,15 +379,6 @@ export function coffee() {
   }
   return g;
 }
-/** steam off the pot: it goes up, and curls round into a ring before it lets go. pivots at its own origin. */
-export function steam() {
-  const g = new Geo(), pale = P(INK.CREAM, STYLE.PLAIN, 0, 0.55), pts = [];
-  for (let k = 0; k <= 9; k++) { const t = k / 9; pts.push([Math.sin(t * 5.2) * 0.05 * (0.4 + t), t * 0.34, 0]); }          // the rise, with a wobble
-  for (let k = 1; k <= 13; k++) { const a = -Math.PI / 2 + (k / 13) * TAU * 0.93; pts.push([pts[9][0] + Math.cos(a) * 0.115, 0.34 + 0.115 + Math.sin(a) * 0.115, 0]); }   // the ring
-  for (let k = 0; k < pts.length - 1; k++) { const w = 0.011 + 0.009 * Math.sin((k / (pts.length - 1)) * Math.PI); g.add(tube(pts[k], pts[k + 1], w, w, 4, pale, 1, false)); }
-  return g;
-}
-
 /** the old apple tree. low, wide, nobody prunes it. */
 export function appleTree() {
   const g = new Geo(), bark = P(INK.BARK, STYLE.BARK), leaf = P(INK.LEAF, STYLE.CANOPY), r = rng(31);
@@ -703,7 +695,11 @@ export const BIRDS = {
   // most of the others a few cm inside the thing. the crow is small enough to show it, so its feet are set on the surface
   // itself (measured with tools/perchgap.js in the notes folder). the raven has no perchDrop: it sits exactly where it always did.
   crow: { torso: crowTorso, folded: crowFolded, legs: ravenLegs, head: crowHead, jaw: crowJaw, tail: crowTail, arm: ravenArm, hand: crowHand, size: 1.2, headSize: 1,
-          perchDrop: [-0.057, 0.032, 0.004, -0.069, 0.222, -0.126, -0.054, -0.056, 0] },
+          perchDrop: [-0.057, 0, 0.004, -0.069, 0.23, -0.126, 0, 0, 0],
+          // the crow's feet go where its perch point is (the raven's body does, 4 cm behind its feet). footBack is that 4 cm, in the
+          // bird's own units. on the screen's pole, the chair's rail and the mailbox the crow has its own spot, facing and stance:
+          // see "the crow's own perches" in walk/world.js
+          footBack: 0.035 },
 };
 
 /** a raccoon, mostly tail, looking round a trunk */

@@ -441,6 +441,47 @@ void main(){
   oAux = vec4(.5, .5, 1. / 255., uSpec.x < .5 ? 0. : step(.72, d) * .9 + step(abs(vUv.x), .12) * .9);
 }`;
 
+/* ---------------- steam ----------------
+   Soft wisps, drawn over the finished print: the one thing in the picture that is see-through. A flat card stands at the
+   thing that steams, turned to face you. On it, three thin threads rise slowly, drift and curl more the higher they get,
+   widen, break up and fade out. Anything nearer than the card hides it (the print's own depth is read for that). */
+export const STEAM_VS = /* glsl */`#version 300 es
+precision highp float;
+uniform mat4 uViewProj;
+uniform vec3 uAt, uCamRight;
+uniform vec2 uSize;                     // half as wide, as tall, in metres
+out vec2 vUv;
+void main(){
+  vec2 c = vec2(float(gl_VertexID & 1) * 2. - 1., float(gl_VertexID >> 1));
+  vUv = c;
+  vec3 side = normalize(vec3(uCamRight.x, 0., uCamRight.z));
+  gl_Position = uViewProj * vec4(uAt + side * c.x * uSize.x + vec3(0., c.y * uSize.y, 0.), 1.);
+}`;
+export const STEAM_FS = /* glsl */`#version 300 es
+precision highp float;
+${COMMON}
+in vec2 vUv;
+out vec4 o;
+uniform highp sampler2D tDepth;
+uniform vec2 uRes;
+uniform float uTime;
+uniform vec4 uCol;                      // its colour, and how much of it there is
+void main(){
+  if (texture(tDepth, gl_FragCoord.xy / uRes).r < gl_FragCoord.z - 2e-6) discard;      // something is in front of it
+  float x = vUv.x, y = vUv.y, a = 0.;
+  for (int i = 0; i < 3; i++){
+    float f = float(i), rise = y * 2.1 - uTime * (.13 + .035 * f);                      // each thread climbs at its own pace
+    float mid = (vnoise(vec2(rise * 1.25 + f * 7.1, f * 3.7 + uTime * .04)) - .5) * 1.5 * y      // it wanders more the higher it gets
+              + sin(uTime * .31 + f * 2.1) * .12 * y + (f - 1.) * .06;
+    float wide = .06 + .3 * y;                                                           // and spreads
+    float thread = exp(-pow((x - mid) / wide, 2.));
+    float gaps = smoothstep(.22, .72, vnoise(vec2(x * 2.4 + f * 5., rise * 1.7)));     // patchy: never a solid rope
+    a += thread * gaps * (.55 - .13 * f);
+  }
+  a *= smoothstep(0., .06, y) * pow(1. - y, 1.6) * (1. - smoothstep(.75, 1., abs(x)));  // thin at the spout, gone by the top, no hard sides
+  o = vec4(uCol.rgb, clamp(a, 0., 1.) * uCol.a);
+}`;
+
 /* ---------------- the print ---------------- */
 export const PRINT_VS = /* glsl */`#version 300 es
 precision highp float;

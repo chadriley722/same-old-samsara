@@ -16,7 +16,7 @@
 
 import { m4, v3, clamp, smooth, DEG, TAU } from "./m.js";
 import { STRIDE } from "./mesh.js";
-import { INK, OBJ_VS, OBJ_FS, GROUND_VS, GROUND_FS, PLANT_VS, PLANT_FS, MOTE_VS, MOTE_FS, PRINT_VS, PRINT_FS } from "./glsl.js";
+import { INK, OBJ_VS, OBJ_FS, GROUND_VS, GROUND_FS, PLANT_VS, PLANT_FS, MOTE_VS, MOTE_FS, PRINT_VS, PRINT_FS, STEAM_VS, STEAM_FS } from "./glsl.js";
 
 export const NEAR = 0.2, FAR = 900;
 
@@ -83,7 +83,7 @@ export class Printer {
     const gl = this.gl, tier = this.tier;
     this.prog = {
       obj: new Prog(gl, OBJ_VS, OBJ_FS, "obj"), ground: new Prog(gl, GROUND_VS, GROUND_FS, "ground"),
-      plant: new Prog(gl, PLANT_VS, PLANT_FS, "plant"), mote: new Prog(gl, MOTE_VS, MOTE_FS, "mote"), print: new Prog(gl, PRINT_VS, PRINT_FS, "print"),
+      plant: new Prog(gl, PLANT_VS, PLANT_FS, "plant"), mote: new Prog(gl, MOTE_VS, MOTE_FS, "mote"), print: new Prog(gl, PRINT_VS, PRINT_FS, "print"), steam: new Prog(gl, STEAM_VS, STEAM_FS, "steam"),
     };
     const q = tier === 2 ? 1 : tier === 1 ? 0.55 : 0.35;      // how much is planted: phones get about half
     this.ribbons = []; this.props = []; this.trees = []; this.plants = [];
@@ -297,6 +297,19 @@ export class Printer {
     p.f("uTime", t);
     gl.bindVertexArray(null);
     gl.drawArrays(gl.TRIANGLES, 0, 3);
+
+    // --- steam, over the print: soft and see-through (a scene lists it in this.wisps: { at, size: [half width, height], col, amt }) ---
+    if (this.wisps && this.wisps.length) {
+      const s = P_.steam.use();
+      gl.enable(gl.BLEND); gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+      s.m("uViewProj", this.vp); s.v3("uCamRight", cam.right); s.i("tDepth", 2); s.f("uRes", this.w, this.h); s.f("uTime", state.still ? 7.3 : state.time);
+      for (const wp of this.wisps) {
+        if (!(wp.amt > 0.01)) continue;
+        s.v3("uAt", wp.at); s.f("uSize", wp.size[0], wp.size[1]); s.v4("uCol", wp.col, wp.amt);
+        gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      }
+      gl.disable(gl.BLEND);
+    }
   }
   surface(p, vp, L, t, state, depthOnly) {
     const gl = this.gl;

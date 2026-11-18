@@ -115,10 +115,11 @@ export class World extends Printer {
     seat(INK.RUST, -0.47);
     this.flames = put(shapes.flames(), P.fire[0], P.fire[1]);
     // the coffee: a pot and two mugs on a stump on your side of the fire, just right of the flames so it hides neither them
-    // nor the chairs. the spout points at the fire. the steam is its own piece, so it can turn.
+    // nor the chairs. the spout points at the fire.
     const [cx, cz] = [P.fire[0] + 2.75, P.fire[1] - 0.42];
     this.pot = put(shapes.coffee(), cx, cz, Math.atan2(cz - P.fire[1], P.fire[0] - cx));
-    this.steam = put(shapes.steam(), cx, cz, 0, shapes.POT_TOP[1] + 0.02, { noShadow: true });
+    // its steam is not a shape: it is drawn over the print, soft and see-through (walk/print.js, this.wisps)
+    this.wisps = [{ at: local(this.pot, [0.25, 0.71, 0]), size: [0.34, 1.15], col: [0.99, 0.95, 0.84], amt: 0 }];      // it leaves from the spout
     this.apple = put(shapes.appleTree(), P.apple[0], P.apple[1], 0.4, -0.1);
     this.beads = put(shapes.beadStrands(), P.apple[0], P.apple[1], 0.4, -0.1, { noShadow: true, kick: () => this.beadKick * 1.1 });
     put(shapes.shed(), P.shed[0], P.shed[1], -1.3);
@@ -167,6 +168,20 @@ export class World extends Printer {
       [P.mailbox[0], this.mailbox.y + 1.5, P.mailbox[1] - 0.12],
       at(62, land.roadZ(62) - 1.5, 8),                       // off down the road, ahead of you
     ];
+    // the crow's own perches (Nov 18). the raven's spots were set by eye, and its body hid its feet. on three of them the feet
+    // were beside the thing, not on it, and the crow is small enough to show it. so the crow gets its own spot there, a way to
+    // face (face: a turn, or null for "side on to you"), and how wide it stands (stance: 1 is its own width).
+    //   the screen: the very top of the pole (the pole leans, the old spot was 11 cm to one side). feet together, the top is 9 cm across.
+    //   the chair: on the rail along the top of the back, facing out from the fire, so both feet are on the rail.
+    //   the mailbox: in the middle of the box, along it, so its feet are either side of the ridge.
+    // the raven keeps every spot it had: none of this runs for it.
+    this.perchFace = this.perches.map(() => null); this.perchStance = this.perches.map(() => 1);
+    if (B.footBack) {
+      const FEET = 0.2 - 0.008;                               // a perch point is this far above the feet. 8 mm of the foot goes into the thing, so it touches
+      this.perches[1] = local(scr, [-1.85 - 2.75 * Math.sin(0.04), 2.75 * Math.cos(0.04) + FEET, 0]); this.perchStance[1] = 0.42;
+      this.perches[6] = local(this.chairA, [0.03, shapes.CHAIR_RAIL[1] + 0.017 + FEET, shapes.CHAIR_RAIL[2]]); this.perchFace[6] = this.chairA.yaw + Math.PI;
+      this.perches[7] = [P.mailbox[0], this.mailbox.y + 1.265 + Math.sqrt(0.01 - (0.052 * B.size) ** 2) + FEET, P.mailbox[1] + 0.1]; this.perchFace[7] = Math.PI;
+    }
     if (B.perchDrop) this.perches.forEach((p, k) => { p[1] -= B.perchDrop[k] || 0; });       // each bird stands at its own height (shapes.BIRDS)
     this.lampAt = local(this.camper, [-1.1, 1.7, 2.7]);
 
@@ -257,7 +272,7 @@ export class World extends Printer {
     R.fresh = false;
     const vx = jump ? 0 : (p[0] - from[0]) / h, vy = jump ? 0 : (p[1] - from[1]) / h, vz = jump ? 0 : (p[2] - from[2]) / h, sp = Math.hypot(vx, vz);
 
-    let pitch, armUp, handUp, armBack, handBack, twist, fan, tailDown, legs, wings, headTurn, nod, gape, hop = 0, vee = 0;
+    let pitch, armUp, handUp, armBack, handBack, twist, fan, tailDown, legs, wings, headTurn, nod, gape, hop = 0, vee = 0, stance = 1, back = 0;
     if (air) {
       let to = R.yaw;
       if (jump) { const next = spot(u + 0.004 * R.dir); to = end ? -R.turn : Math.atan2(next[0] - here[0], next[2] - here[2]); }
@@ -282,7 +297,8 @@ export class World extends Printer {
       headTurn = clamp(-R.bank * 0.6, -0.4, 0.4); nod = 0.1 + flare * 0.25; gape = 0.04 + this.ravenHop * 0.45;
       R.settle = 1;                                                              // when it lands it holds its wings up a moment
     } else {
-      const toYou = Math.atan2(c.eye[0] - p[0], c.eye[2] - p[2]), face = toYou - 1.15;      // side on, bill to the left, as in the logo
+      const toYou = Math.atan2(c.eye[0] - p[0], c.eye[2] - p[2]), side = toYou - 1.15;      // side on, bill to the left, as in the logo
+      const fixed = this.perchFace[Math.round(u)], face = fixed == null ? side : fixed;     // or the way this perch has it stand (the crow, on a rail)
       R.yaw = jump ? face : angLerp(R.yaw, face, 1 - Math.exp(-dt * 5));
       R.bank = 0; R.climb = 0;
       if (this.ravenHop > 0.6) R.settle = Math.max(R.settle, 0.95);               // poked: the wings go up
@@ -293,6 +309,8 @@ export class World extends Printer {
       vee = up * 0.4;                                                             // one wing a little forward, one back: the V in the logo
       legs = 1; wings = up > 0.02 ? 1 : 0;
       headTurn = clamp(angDiff(R.yaw, toYou), -1.3, 1.3) * 0.3 + (still ? 0 : Math.sin(Math.floor(time / 2.9) * 7.31) * 0.35 * (1 - this.ravenHop));      // mostly in profile, so the bill shows
+      if (fixed != null) headTurn = clamp(angDiff(R.yaw, side), -1.15, 1.15) * 0.85 + (still ? 0 : Math.sin(Math.floor(time / 2.9) * 7.31) * 0.18 * (1 - this.ravenHop));      // its body faces the perch's way: the head turns to show the bill
+      stance = this.perchStance[Math.round(u)]; back = (this.bird.footBack || 0) * this.bird.size;
       nod = 0.06 + (still ? 0 : Math.sin(Math.floor(time / 4.3) * 3.7) * 0.1) - this.ravenHop * 0.35;
       gape = 0.04 + this.ravenHop * 0.5;
       hop = Math.abs(Math.sin(time * 14)) * this.ravenHop * 0.12;
@@ -302,10 +320,12 @@ export class World extends Printer {
 
     // pose the pieces
     const set = (piece, m) => { piece.m.set(m); return piece.m; };
-    const root = mTurnZ(rotY(R.root, p[0], p[1] + (air ? 0 : 0.272 * this.bird.size - 0.208) + hop, p[2], R.yaw, this.bird.size), R.bank);
+    // standing, the crow's feet (not its body) are over the perch point: the body sits `back` behind them
+    const root = mTurnZ(rotY(R.root, p[0] - Math.sin(R.yaw) * back, p[1] + (air ? 0 : 0.272 * this.bird.size - 0.208) + hop, p[2] - Math.cos(R.yaw) * back, R.yaw, this.bird.size), R.bank);
     const body = mTurnX(set(R.torso, root), -pitch);
     set(R.folded, body);
-    mTurnX(set(R.legs, root), -0.4 * (1 - legs));
+    const lm = mTurnX(set(R.legs, root), -0.4 * (1 - legs));
+    if (stance !== 1) for (let i = 0; i < 3; i++) lm[i] *= stance;                  // feet together on a narrow perch
     const head = mTurnY(mTurnX(mMove(set(R.head, body), J.head[0], J.head[1], J.head[2]), pitch * 0.9 + nod), headTurn);
     for (let i = 0; i < 12; i++) head[i] *= this.bird.headSize;                   // a raven's head and bill are big for its body. a crow's are not
     mTurnX(mMove(set(R.jaw, head), J.jaw[0], J.jaw[1], J.jaw[2]), gape);
@@ -332,8 +352,8 @@ export class World extends Printer {
     const fl = this.flames, fs = 0.5 + this.fire * 0.7;
     rotY(fl.model, fl.x, fl.y, fl.z, time * 0.3, 1); fl.model[5] = fs; fl.hidden = this.fire < 0.03;
     this.hot.fire = [fl.x, fl.y + 0.7, fl.z];
-    // steam off the coffee: its ring faces the trail and sways a little either way, and it breathes
-    const st = this.steam; rotY(st.model, st.x, st.y, st.z, Math.PI / 2 + Math.sin(time * 0.5) * 0.7, 1); st.model[5] = 0.92 + 0.08 * Math.sin(time * 1.3);
+    // steam off the coffee
+    this.wisps[0].amt = 0.62 * smooth(4.6, 5.4, u) * (1 - smooth(6.7, 7.3, u));     // only around the fire: nothing is worked out for it anywhere else
     this.hot.coffee = [this.pot.x, this.pot.y + 0.95, this.pot.z];
     // the mailbox flag goes up when you get there
     this.flag += (smooth(6.55, 6.95, u) - this.flag) * (1 - Math.exp(-dt * 7));
