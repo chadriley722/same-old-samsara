@@ -19,7 +19,7 @@ const { World, STOP_IDS } = await import(ROAD ? "../road/roadworld.js" : "../wal
 const LAST = STOP_IDS.length - 1;
 const hud = document.getElementById("hud"), canvas = document.getElementById("c");
 let world;
-try { world = new World(canvas, { tier: num("tier", 2), capture: true, bird: q.get("bird") || "crow" }); } catch (e) { hud.textContent = "ERROR " + e.message; throw e; }
+try { world = new World(canvas, { tier: num("tier", 2), capture: true, bird: q.get("bird") || "crow", keepGeo: q.has("geo") }); } catch (e) { hud.textContent = "ERROR " + e.message; throw e; }
 window.world = world;
 const S = { u: num("u", 0), night: num("night", 0), head: [num("yaw", 0), num("pitch", 0)], gust: 0, time: num("t", 3), moonPhase: num("moon", 0.62) };
 window.S = S;

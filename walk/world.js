@@ -88,7 +88,9 @@ export class World extends Printer {
     let nextId = 16;
     const standAt = (i) => land.trailAt(STOP_S[i]);          // where you stand at stop i: things are turned to face it
     const put = (geo, x, z, yaw = 0, dy = 0, extra = {}) => {
-      const p = { mesh: this.mesh(geo.build()), model: rotY(m4.create(), x, land.height(x, z) + dy, z, yaw), id: nextId, x, z, yaw, y: land.height(x, z) + dy, ...extra };
+      const built = geo.build();
+      const p = { mesh: this.mesh(built), model: rotY(m4.create(), x, land.height(x, z) + dy, z, yaw), id: nextId, x, z, yaw, y: land.height(x, z) + dy, ...extra };
+      if (this.opts.keepGeo) p.geo = built;                  // the workbench keeps the shape, to measure what the bird stands on (walk-dev.html?geo)
       nextId = nextId >= 240 ? 16 : nextId + 8;
       this.props.push(p); return p;
     };
@@ -165,6 +167,7 @@ export class World extends Printer {
       [P.mailbox[0], this.mailbox.y + 1.5, P.mailbox[1] - 0.12],
       at(62, land.roadZ(62) - 1.5, 8),                       // off down the road, ahead of you
     ];
+    if (B.perchDrop) this.perches.forEach((p, k) => { p[1] -= B.perchDrop[k] || 0; });       // each bird stands at its own height (shapes.BIRDS)
     this.lampAt = local(this.camper, [-1.1, 1.7, 2.7]);
 
     // specks: sparks off the fire, monarchs over the goldenrod

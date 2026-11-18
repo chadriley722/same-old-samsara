@@ -698,7 +698,12 @@ export function crowHand(side) {
 /** the two birds the site can show. size: how much bigger than life it is drawn. head: how big its head is for its body. */
 export const BIRDS = {
   raven: { torso: ravenTorso, folded: ravenFolded, legs: ravenLegs, head: ravenHead, jaw: ravenJaw, tail: ravenTail, arm: ravenArm, hand: ravenHand, size: 1.5, headSize: 1.12 },
-  crow: { torso: crowTorso, folded: crowFolded, legs: ravenLegs, head: crowHead, jaw: crowJaw, tail: crowTail, arm: ravenArm, hand: crowHand, size: 1.2, headSize: 1 },
+  // perchDrop: how much lower the crow stands at each stop's perch than the raven did, in metres (minus: higher). the raven's
+  // perches were set by eye for a big bird whose body hid its feet: over the river rock its feet were 21 cm in the air, and on
+  // most of the others a few cm inside the thing. the crow is small enough to show it, so its feet are set on the surface
+  // itself (measured with tools/perchgap.js in the notes folder). the raven has no perchDrop: it sits exactly where it always did.
+  crow: { torso: crowTorso, folded: crowFolded, legs: ravenLegs, head: crowHead, jaw: crowJaw, tail: crowTail, arm: ravenArm, hand: crowHand, size: 1.2, headSize: 1,
+          perchDrop: [-0.057, 0.032, 0.004, -0.069, 0.222, -0.126, -0.054, -0.056, 0] },
 };
 
 /** a raccoon, mostly tail, looking round a trunk */
