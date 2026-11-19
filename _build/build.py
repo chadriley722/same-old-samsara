@@ -562,7 +562,7 @@ def nav(base, here=""):
         return f'<a href="{href}"{cur}{tgt}>{t}</a>'
     items = "".join(link(t, h) for t, h in NAV)
     return f"""<header class="top"><div class="wrap top-in">
-  <a class="brand" href="{base}index.html" aria-label="same old samsara, home"><i class="mark" aria-hidden="true"></i><span>same old samsara</span></a>
+  <a class="brand" href="{base}index.html" aria-label="same old samsara, home"><i class="mark" aria-hidden="true"></i><span>same old samsara.</span></a>
   <nav class="links" aria-label="sections">{items}</nav>
   <button class="sky" type="button" aria-label="switch day or night" title="day or night"><span class="sun" aria-hidden="true"></span></button>
 </div></header>
@@ -732,7 +732,7 @@ def footer(base):
   <p class="tagline">the same old cycle.</p>
   <nav class="foot-follow" aria-label="follow along"><span class="label">follow along</span>{follow}</nav>
   <nav class="foot-links" aria-label="every page">{site}<a href="{NEWSLETTER}" target="_blank" rel="noopener">newsletter</a></nav>
-  <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="foot-year">2026</span> same old samsara</p>
+  <p class="label">winters we travel as <a href="{PN}">pneuma nomads</a>. &copy; <span id="foot-year">2026</span> same old samsara.</p>
 </div></footer>
 <script src="{base}js/site.js?v={ver('js/site.js')}" defer></script>
 </body>
@@ -882,7 +882,7 @@ def walk_block(base, variant="home"):
     <div class="gate-text">
       {f'<p class="label kicker">{e(kicker)}</p>' if kicker else ''}
       <p class="label now" data-now="{base}road/" hidden><i aria-hidden="true"></i><span data-now-text></span></p>
-      <h1>same old samsara</h1>
+      <h1>same old samsara.</h1>
       <p class="tag">the same old cycle.</p>
       <p class="what">{e(WHAT_LINE)}</p>
       <p class="def">{e(WHO_LINE)}</p>
