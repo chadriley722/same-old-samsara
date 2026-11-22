@@ -209,6 +209,15 @@ html:not(.js) .almanac { display: none; }   /* the strip is filled in by js/site
 .dl-help { margin-top: 10px; }
 .dl-help + .dl-help { margin-top: 4px; }
 .dl-help a { color: var(--accent); }
+.pgate { margin: 18px 0 4px; padding: 18px; background: var(--card); border-radius: 8px; box-shadow: var(--shadow); }
+.pgate-row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+.pgate-row input { flex: 1 1 200px; min-width: 0; font: 17px var(--body); padding: 11px 13px; border: 1px solid var(--rule); border-radius: 6px; background: var(--bg); color: var(--ink); }
+.pgate-row input:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+.pgate-err { color: var(--accent); margin-top: 8px; }
+.pgate-thanks { font: 600 22px var(--display); margin: 0 0 10px; }
+.pgate-files .btns { flex-wrap: wrap; }
+.pgate-tip { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 16px; }
+.pgate-tip a { color: var(--accent); }
 
 .pdetail { padding-top: 40px; }
 .crumbs { margin-bottom: 20px; }

@@ -10,7 +10,7 @@ Makes the phone sized copies of every picture in images/r/ (see pic() below). Co
 
 To update: change EPISODES / JEWELRY / PATTERNS / SPOTS below and rerun.
   - a new episode → one dict at the top of EPISODES. While you're there, check the JEWELRY pieces are still for sale and bump JEWELRY_CHECKED
-  - a pattern gets relisted on Etsy → set its "live" to True
+  - Kit account made → paste the form id into KIT_FORM (signups move from the Google Form to Kit)
   - rotate the free pattern → move "featured": True to another free pattern (every free one has its own page, pdf at assets/<file>.pdf)
 """
 import datetime, html, json, pathlib, shutil, struct, subprocess
@@ -31,6 +31,11 @@ PIN = "https://pinterest.com/sameoldsamsara"
 PN = SITE + "/road/"
 NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/viewform?usp=header"
 COFFEE = "https://buymeacoffee.com/sameoldsamsara"
+# the free pattern signup (js/patterns.js). KIT_FORM = the number in the Kit form's embed code (app.kit.com/forms/<id>/subscriptions).
+# empty = signups go to the old newsletter Google Form instead (same list Chad already has), so nothing waits on the Kit account.
+KIT_FORM = ""
+GFORM_POST = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/formResponse"
+GFORM_FIELDS = {"email": "entry.1728941795", "name": "entry.2006408268", "ok": "entry.1744470812", "about": "entry.2070174567"}
 # the bird on the site: "crow" (since Nov 18) or "raven" (how it was). THIS ONE WORD SWITCHES IT: the 3D bird in the walk,
 # its call, every place the copy names it, and the still prints (images/birds/<bird>/ is copied over images/walk/ on build).
 # the emblem and the logo are the same drawing either way. to switch back: set "raven", run this file, commit, push.
@@ -98,7 +103,8 @@ JEWELRY = [
 FEATURED = JEWELRY[:4]
 
 # file = old card image assets/<file>.jpg (and assets/<file>.pdf when free). design = folder in Patterns/ with the v2 chart.
-# one entry per Etsy listing. live = listing is active right now. free = pdf on this site.
+# one entry per pattern. everything is free since Nov 22, 2026 (moved off Etsy). etsy = the old listing number, kept for redirects + pins.
+# pdfs = [(label, file)] when there's more than one pdf. old_pdf = the pdf is the old style (not the v2 builder), so the "inside" list stays short.
 PATTERNS = [
     {"file": "christmastree", "design": "christmastree", "slug": "christmas-tree", "name": "christmas tree", "type": "brick stitch", "cats": ["christmas"],
      "free": True, "hold": True,       # v1 hasn't been test stitched and the ornaments need a redo (Chad, Nov 12). don't feature it till then
@@ -108,46 +114,46 @@ PATTERNS = [
     {"file": "rainbowdiamonds", "slug": "rainbow-diamonds", "name": "rainbow diamonds", "type": "loom", "cats": ["rainbow"], "free": True,
      "blurb": "A rainbow diamond band for the bead loom. Free."},
     {"file": "parrot", "design": "parrot", "slug": "rainbow-parrot", "name": "rainbow parrot", "type": "brick stitch", "cats": ["animals", "rainbow"],
-     "etsy": "4456758738", "price": "2.99", "live": True,
+     "etsy": "4456758738", "free": True,
      "blurb": "A scarlet macaw in nine colors: red, gold, green, cornflower and a long navy tail on a perch."},
     {"file": "squid", "design": "squid", "slug": "squid-wavy-fringe", "name": "squid (wavy fringe)", "type": "brick stitch", "cats": ["animals", "wavy fringe"],
-     "etsy": "4604548842", "price": "3.99", "live": True,
+     "etsy": "4604548842", "free": True,
      "blurb": "A little plum squid with big eyes and long wavy fringe tentacles. The wave comes from the thread, and the pattern shows you how."},
     {"file": "jellyfish", "design": "jellyfish", "slug": "jellyfish", "name": "jellyfish (3 sizes)", "type": "brick stitch", "cats": ["animals", "wavy fringe"],
-     "etsy": "4604569492", "price": "4.99", "live": True,
+     "etsy": "4604569492", "free": True,
      "blurb": "A round jellyfish bell with wavy fringe. Small, medium and large, two colorways, all in one PDF."},
     {"file": "sillygoose", "design": "sillygoose", "slug": "silly-goose", "name": "silly goose", "type": "brick stitch", "cats": ["animals"],
-     "etsy": "1784926935", "price": "2.99", "live": True,
+     "etsy": "1784926935", "free": True,
      "blurb": "A white goose with an orange beak and feet, framed in black. For the silly geese."},
     {"file": "triceratops", "design": "triceratops", "slug": "triceratops", "name": "triceratops", "type": "brick stitch", "cats": ["animals"],
-     "etsy": "1778070364", "price": "2.99", "live": True,
+     "etsy": "1778070364", "free": True,
      "blurb": "A little green triceratops with terra cotta horns and a spotted back."},
     {"file": "omsymbolbrickstitch", "design": "omsymbolbrickstitch", "slug": "om-symbol", "name": "om symbol", "type": "brick stitch", "cats": ["symbols"],
-     "etsy": "4456770826", "price": "2.99", "live": True,
+     "etsy": "4456770826", "free": True,
      "blurb": "A black Om on a soft beige ground. Simple and steady."},
-    {"file": "magicrainbowmushroom", "design": "magicrainbowmushroom", "slug": "magic-rainbow-mushroom", "name": "magic rainbow mushroom", "type": "brick stitch", "cats": ["rainbow"],
-     "etsy": "1765666810", "price": "2.99", "live": True,
+    {"file": "magicrainbowmushroom", "design": "magicrainbowmushroom", "slug": "magic-rainbow-mushroom", "pdfs": [("rainbow mushroom", "magicrainbowmushroom"), ("bonus: amanita mushroom", "amanitamuscaria")], "old_pdf": True,  "name": "magic rainbow mushroom", "type": "brick stitch", "cats": ["rainbow"],
+     "etsy": "1765666810", "free": True,
      "blurb": "A rainbow cap on a little beige stem. Bright and a little trippy."},
-    {"file": "ufo", "design": "ufo", "slug": "flying-saucer", "name": "flying saucer", "type": "brick stitch", "cats": ["space", "rainbow"],
-     "etsy": "1777788647", "price": "2.99", "live": True,
-     "blurb": "A gray saucer beaming down. Yellow beam or rainbow beam, both in one PDF."},
-    {"file": "aliens", "slug": "aliens-loom", "name": "aliens", "type": "loom", "cats": ["space"], "etsy": "1760591136", "price": "2.99", "live": True,
+    {"file": "ufo", "design": "ufo", "slug": "flying-saucer", "pdfs": [("yellow beam", "ufo"), ("rainbow beam", "uforainbow")], "old_pdf": True,  "name": "flying saucer", "type": "brick stitch", "cats": ["space", "rainbow"],
+     "etsy": "1777788647", "free": True,
+     "blurb": "A gray saucer beaming down. Yellow beam or rainbow beam, one PDF each."},
+    {"file": "aliens", "slug": "aliens-loom", "pdfs": [("green aliens", "aliens"), ("rainbow aliens", "aliensrainbow")],  "name": "aliens", "type": "loom", "cats": ["space"], "etsy": "1760591136", "free": True,
      "blurb": "A row of little alien heads for the bead loom. Green or rainbow."},
-    {"file": "dnarainbow", "slug": "dna-double-helix", "name": "dna double helix", "type": "loom", "cats": ["rainbow", "symbols"], "etsy": "1792298367", "price": "2.99", "live": True,
+    {"file": "dnarainbow", "slug": "dna-double-helix", "pdfs": [("classic", "dna"), ("rainbow", "dnarainbow")],  "name": "dna double helix", "type": "loom", "cats": ["rainbow", "symbols"], "etsy": "1792298367", "free": True,
      "blurb": "A rainbow double helix bracelet for the bead loom."},
-    {"file": "rainbowspirals", "slug": "rainbow-spirals", "name": "rainbow spirals", "type": "loom", "cats": ["rainbow"], "etsy": "1775314125", "price": "2.99", "live": True,
+    {"file": "rainbowspirals", "slug": "rainbow-spirals", "name": "rainbow spirals", "type": "loom", "cats": ["rainbow"], "etsy": "1775314125", "free": True,
      "blurb": "Rainbow spirals for the bead loom. Bold and hypnotic."},
-    {"file": "rainbowsnake", "slug": "rainbow-snake", "name": "rainbow snake", "type": "loom", "cats": ["rainbow", "animals"], "etsy": "1774234169", "price": "2.99", "live": True,
+    {"file": "rainbowsnake", "slug": "rainbow-snake", "name": "rainbow snake", "type": "loom", "cats": ["rainbow", "animals"], "etsy": "1774234169", "free": True,
      "blurb": "A rainbow snake wave for the bead loom."},
-    {"file": "witchhat", "slug": "witch-and-wizard-hats", "name": "witch hat + wizard hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781552260", "price": "2.99", "live": True,
+    {"file": "witchhat", "slug": "witch-and-wizard-hats", "pdfs": [("witch hat", "witchhat"), ("wizard hat", "wizardhat")],  "name": "witch hat + wizard hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781552260", "free": True,
      "blurb": "Two pointy hats, one listing. A witch hat and a starry wizard hat."},
-    {"file": "ghostmoving", "slug": "spooky-ghost", "name": "spooky ghost", "type": "brick stitch", "cats": ["halloween"], "etsy": "1792859785", "price": "2.99", "live": True,
+    {"file": "ghostmoving", "slug": "spooky-ghost", "pdfs": [("still ghost", "ghost"), ("moving ghost", "ghostmoving")],  "name": "spooky ghost", "type": "brick stitch", "cats": ["halloween"], "etsy": "1792859785", "free": True,
      "blurb": "A wavy little ghost mid float."},
-    {"file": "jackolantern", "slug": "jack-o-lantern", "name": "jack o' lantern", "type": "brick stitch", "cats": ["halloween"], "etsy": "1788945937", "price": "2.99", "live": True,
+    {"file": "jackolantern", "slug": "jack-o-lantern", "name": "jack o' lantern", "type": "brick stitch", "cats": ["halloween"], "etsy": "1788945937", "free": True,
      "blurb": "A grinning jack o' lantern."},
-    {"file": "jackolanternwitchhat", "slug": "jack-o-lantern-witch-hat", "name": "jack o' lantern in a witch hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781842810", "price": "2.99", "live": True,
+    {"file": "jackolanternwitchhat", "slug": "jack-o-lantern-witch-hat", "name": "jack o' lantern in a witch hat", "type": "brick stitch", "cats": ["halloween"], "etsy": "1781842810", "free": True,
      "blurb": "A jack o' lantern wearing a witch hat. Both Halloween classics at once."},
-    {"file": "spookyseason", "slug": "spooky-season", "name": "spooky season", "type": "brick stitch", "cats": ["halloween"], "etsy": "1775414610", "price": "2.99", "live": True,
+    {"file": "spookyseason", "slug": "spooky-season", "name": "spooky season", "type": "brick stitch", "cats": ["halloween"], "etsy": "1775414610", "free": True,
      "blurb": "A spooky season set for October."},
 ]
 
@@ -478,8 +484,12 @@ def copy_pattern_images():
         if src.exists() and (not dst.exists() or src.stat().st_mtime > dst.stat().st_mtime):
             subprocess.run(["magick", str(src), "-resize", "1400x1050", "-strip", "-quality", "80", str(dst)], check=True)
 
+def pdfs(p):
+    """[(label, file)] for every pdf this pattern has"""
+    return p.get("pdfs") or [(p["name"], p["file"])]
+
 def facts(p):
-    d = design(p)
+    d = None if p.get("old_pdf") else design(p)
     rows = []
     rows.append(("stitch", p["type"]))
     rows.append(("beads", "size 11/0 round seed beads (toho codes in the legend)" if d else "size 11/0 seed beads"))
@@ -491,8 +501,8 @@ def facts(p):
         info = d.get("info", {})
         for k in ("size", "time", "level"):
             if info.get(k): rows.append((k, info[k]))
-    rows.append(("format", "pdf, instant download" if not p.get("free") else "pdf, free download"))
-    rows.append(("price", "free" if p.get("free") else f'${p["price"]}'))
+    rows.append(("format", f'{len(pdfs(p))} pdfs, free download' if len(pdfs(p)) > 1 else "pdf, free download"))
+    rows.append(("price", "free. tip if you like"))
     return rows
 
 # ---------------- page parts ----------------
@@ -701,14 +711,14 @@ def patterns_grid(base, items, show_filters=True):
     cards = []
     for p in items:
         tags = " ".join(c.replace(" ", "-") for c in p["cats"]) + " " + p["type"].replace(" ", "-") + (" free" if p.get("free") else "")
-        pill = '<span class="pill free">free pdf</span>' if p.get("free") else f'<span class="pill">${p["price"]}</span>'
+        pill = '<span class="pill free">free pdf</span>'
         cards.append(f"""<a class="pcard reveal" href="{base}patterns/{slug(p)}/" data-tags="{tags}" data-name="{e(p['name'])}">
       <div class="pimg">{pic(base, pattern_img(p), f"{p['name']} {p['type']} beading pattern", (170, 260))}</div>
       <div class="pmeta"><h3>{e(p['name'])}</h3>{pill}</div><span class="label">{e(p['type'])}</span>
     </a>""")
     filt = ""
     if show_filters:
-        f = [("all", "all"), ("free", "free"), ("brick-stitch", "brick stitch"), ("loom", "loom"), ("animals", "animals"), ("rainbow", "rainbow"),
+        f = [("all", "all"), ("brick-stitch", "brick stitch"), ("loom", "loom"), ("animals", "animals"), ("rainbow", "rainbow"),
              ("wavy-fringe", "wavy fringe"), ("space", "space"), ("symbols", "symbols"), ("christmas", "christmas"), ("halloween", "halloween")]
         btns = "".join(f'<button type="button" data-f="{k}" aria-pressed="{"true" if k == "all" else "false"}">{t}</button>' for k, t in f)
         filt = f"""<div class="pfilters"><input type="search" id="psearch" placeholder="search patterns" aria-label="search patterns">
@@ -909,10 +919,10 @@ def make_shelves(base):
     """everything we make, one shelf per kind, on the make page. list order is page order.
     a new kind (how-to guides, say) is one more dict here, once it has a page to link to."""
     free = [p for p in PATTERNS if p.get("featured")]
-    picks = [p for p in PATTERNS if p.get("design") and not p.get("free") and p.get("live")][:3]
+    picks = [p for p in PATTERNS if p.get("design") and not p.get("featured") and not p.get("hold")][:3]
     return [
         {"id": "patterns", "name": "beading patterns", "count": f"{len(PATTERNS)} patterns", "feature": True,
-         "note": "Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. A few are free.",
+         "note": "Brick stitch and bead loom patterns with every bead charted, a word chart you can tick off and the Toho colors listed. All of them are free.",
          "items": patterns_grid(base, free + picks, show_filters=False),
          "links": [(f"every pattern ({len(PATTERNS)})", "patterns/"), ("design your own", "bead-lab/")]},
         {"id": "recipes", "name": "recipes", "count": f"{len(RECIPES)} so far",
@@ -1042,20 +1052,47 @@ def patterns_page():
     ld = [{"@context": "https://schema.org", "@type": "ItemList", "name": "Same Old Samsara beading patterns",
            "itemListElement": [{"@type": "ListItem", "position": i + 1, "name": p["name"], "url": f"{SITE}/patterns/{slug(p)}/"} for i, p in enumerate(order)]}]
     body = f"""<section class="hero small"><div class="wrap hero-text">
-  <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">a few free. the rest in our pattern shop.</p>
-  <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. The paid ones are instant downloads from Samsara Digitals, our pattern shop on Etsy.</p>
-  <div class="btns center"><a class="btn solid" href="{DIGITALS}" target="_blank" rel="noopener">our pattern shop on etsy</a><a class="btn" href="{base}bead-lab/">design your own</a></div>
+  <p class="label kicker"><a href="{base}make/">make</a> · patterns</p><h1>beading patterns</h1><p class="tag">every one of them free.</p>
+  <p class="def">Brick stitch and bead loom patterns by Same Old Samsara. Every PDF has the bead diagram, a word chart you can tick off row by row, and the colors. They used to sell on Etsy. Now they're free here, you just leave your email and we'll write when there's a new one.</p>
+  <div class="btns center"><a class="btn" href="{base}bead-lab/">design your own</a><a class="btn" href="{COFFEE}" target="_blank" rel="noopener">tip us a coffee</a></div>
 </div></section>
 <section class="section"><div class="wrap">{patterns_grid(base, order)}
   <div class="note reveal"><p><strong>Don't bead?</strong> See <a href="{base}wear/">the finished pieces</a>.</p></div>
 </div></section>"""
     return page("Beading Patterns: Brick Stitch + Bead Loom PDFs | Same Old Samsara",
-                "Brick stitch and bead loom beading patterns: rainbow parrot, squid and jellyfish wavy fringe, silly goose, triceratops, om, flying saucer and more. A few free PDFs, the rest $2.99 to $4.99 on Etsy.",
-                base, "patterns/", body, here="make/", jsonld=ld, image=f"{SITE}/{pattern_img(next(p for p in order if p.get('design') and not p.get('free')))}")
+                "Brick stitch and bead loom beading patterns: rainbow parrot, squid and jellyfish wavy fringe, silly goose, triceratops, om, flying saucer and more. Every PDF is a free download.",
+                base, "patterns/", body, here="make/", jsonld=ld, image=f"{SITE}/{pattern_img(next(p for p in order if p.get('design') and not p.get('hold')))}")
 
-def pdf_size(p):
+def pdf_size(f):
     """ '0.7 MB', so nobody on phone data is surprised by the download """
-    return f'{(ROOT / "assets" / (p["file"] + ".pdf")).stat().st_size / 1e6:.1f} MB'
+    return f'{(ROOT / "assets" / (f + ".pdf")).stat().st_size / 1e6:.1f} MB'
+
+def pattern_gate(base, p):
+    """leave an email, get the pdf. it's a static site, so this is an honor system: the pdfs sit in assets/ like always.
+    with scripts off the plain links show. once someone signs up, this browser remembers and skips the form next time."""
+    files = pdfs(p)
+    links = "".join(f'<a class="btn{" solid big" if i == 0 else ""}" href="{base}assets/{f}.pdf" target="_blank" rel="noopener" download>'
+                    f'{"download the pdf" if len(files) == 1 else "download: " + e(lbl)}</a>' for i, (lbl, f) in enumerate(files))
+    sizes = ", ".join(pdf_size(f) for _, f in files)
+    tip = (f'<p class="pgate-tip">Free, always. If it saved you a few bucks, pay what you want with a '
+           f'<a href="{COFFEE}" target="_blank" rel="noopener">coffee for us</a>. Totally optional.</p>')
+    cfg = e(json.dumps({"kit": KIT_FORM, "gform": GFORM_POST, "f": GFORM_FIELDS}))
+    return f"""<div class="pgate" data-cfg="{cfg}">
+        <form class="pgate-form" novalidate>
+          <label class="label" for="pg-email">leave your email, get the pdf</label>
+          <div class="pgate-row"><input id="pg-email" type="email" name="email" required autocomplete="email" inputmode="email" placeholder="your email">
+          <button class="btn solid" type="submit">get the free pdf</button></div>
+          <p class="pgate-err label" role="alert" hidden>that email doesn't look right. try again?</p>
+          <p class="label dl-help">we'll write when there's a new pattern. no spam, unsubscribe anytime.</p>
+        </form>
+        <div class="pgate-files" hidden>
+          <p class="pgate-thanks">You're in. Here it is.</p>
+          <div class="btns">{links}</div>
+          <p class="label dl-help">{"a pdf" if len(files) == 1 else f"{len(files)} pdfs"}, {sizes}. if it doesn't save, open this page in your own browser first.</p>
+          {tip}
+        </div>
+        <noscript><div class="btns">{links}</div>{tip}</noscript>
+      </div>"""
 
 def pattern_detail(p):
     base = "../../"
@@ -1063,20 +1100,19 @@ def pattern_detail(p):
     img_abs = f"{SITE}/{pattern_img(p)}"
     title_name = p["name"].replace(" (wavy fringe)", "").replace(" (3 sizes)", "")
     kind = "Bead Loom" if p["type"] == "loom" else "Brick Stitch"
-    free = bool(p.get("free"))
-    pdf_abs = f'{SITE}/assets/{p["file"]}.pdf'
+    free = True
     product = {"@context": "https://schema.org", "@type": "Product",
                "name": f"{title_name.title()} {kind} Beading Pattern (PDF)",
                "description": p["blurb"], "image": [img_abs], "sku": f'SD-{p.get("etsy") or p["file"]}',
                "brand": {"@type": "Brand", "name": "Same Old Samsara"}, "category": "Arts & Crafts > Beading Patterns",
-               "offers": {"@type": "Offer", "price": "0" if free else p["price"], "priceCurrency": "USD", "availability": "https://schema.org/InStock",
-                          "url": pdf_abs if free else listing(p["etsy"]), "seller": {"@type": "Organization", "name": "Samsara Digitals"}}}
+               "offers": {"@type": "Offer", "price": "0", "priceCurrency": "USD", "availability": "https://schema.org/InStock",
+                          "url": url, "seller": {"@type": "Organization", "name": "Same Old Samsara"}}}
     crumbs = {"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
         {"@type": "ListItem", "position": 1, "name": "home", "item": SITE + "/"},
         {"@type": "ListItem", "position": 2, "name": "patterns", "item": SITE + "/patterns/"},
         {"@type": "ListItem", "position": 3, "name": p["name"], "item": url}]}
     rows = "".join(f"<tr><th>{e(k)}</th><td>{e(v)}</td></tr>" for k, v in facts(p))
-    d = design(p)
+    d = None if p.get("old_pdf") else design(p)
     swatches = ""
     if d:
         swatches = "".join(f'<li><i style="background:{c["hex"]}"></i>{e(c["name"])}</li>' for c in d["colorways"][0]["colors"].values())
@@ -1084,16 +1120,10 @@ def pattern_detail(p):
     inside = ["Bead diagram, every bead drawn", "Word chart with a checkbox for every row", "Color legend with Toho codes + how many beads to buy",
               "Stitch guide with thread paths", "Step by step how-to"] if d else ["Bead diagram", "Word chart", "Color legend"]
     if d and d.get("wave"): inside.insert(0, "The wave: how the wavy fringe works")
-    related = [q for q in PATTERNS if q is not p and not q.get("free") and set(q["cats"]) & set(p["cats"])][:3]
-    related = related or [q for q in PATTERNS if not q.get("free") and q.get("design") and q.get("live")][:3]
+    related = [q for q in PATTERNS if q is not p and not q.get("hold") and set(q["cats"]) & set(p["cats"])][:3]
+    related = related or [q for q in PATTERNS if q is not p and q.get("design") and not q.get("hold")][:3]
     rel = patterns_grid(base, related, show_filters=False) if related else ""
-    if free:
-        get = f"""<div class="btns"><a class="btn solid big" href="{base}assets/{p["file"]}.pdf" target="_blank" rel="noopener" download>download the free pdf</a></div>
-      <p class="label dl-help">a pdf, {pdf_size(p)}. if it doesn't save, open this page in your own browser first.</p>
-      <p class="label dl-help">want the next free one? <a href="{NEWSLETTER}" target="_blank" rel="noopener">join the newsletter</a>.</p>"""
-    else:
-        get = f"""<div class="btns"><a class="btn solid big" href="{listing(p["etsy"])}" target="_blank" rel="noopener">get it on etsy · ${p["price"]}</a></div>
-      {inapp_tip()}"""
+    get = pattern_gate(base, p)
     body = f"""<section class="section pdetail"><div class="wrap">
   <p class="label crumbs"><a href="{base}patterns/">patterns</a> / {e(p['type'])}</p>
   <div class="pd">
@@ -1105,14 +1135,15 @@ def pattern_detail(p):
       <table class="facts">{rows}</table>
       {swatches}
       <h3 class="mini">what's inside</h3><ul class="inside">{''.join(f'<li>{e(x)}</li>' for x in inside)}</ul>
-      <p class="label">{"free to download and stitch. it works as earrings, a pendant, a keychain, a pin or a sew-on patch. you can sell what you make from it." if free else "sold through samsara digitals, our pattern shop on etsy. you can sell what you make from it."}</p>
+      <p class="label">free to download and stitch. it works as earrings, a pendant, a keychain, a pin or a sew-on patch. you can sell what you make from it.</p>
     </div>
   </div>
   {f'<div class="related">{section_head("you might also like")}{rel}</div>' if rel else ''}
 </div></section>"""
-    desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} {'Free download.' if free else '$' + p['price'] + ', instant download.'}"
-    return page(f"{'Free ' if free else ''}{title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
-                here="make/", jsonld=[product, crumbs], image=img_abs)
+    desc = f"{title_name.title()} {kind.lower()} beading pattern PDF by Same Old Samsara. {p['blurb']} Free download."
+    return page(f"Free {title_name.title()} {kind} Pattern (PDF) | Same Old Samsara", desc, base, f"patterns/{slug(p)}/", body,
+                here="make/", jsonld=[product, crumbs], image=img_abs,
+                extra_js=f'<script src="{base}js/patterns.js?v={ver("js/patterns.js")}" defer></script>')
 
 def beadlab_page():
     base = "../"
@@ -1227,7 +1258,7 @@ def about_page():
   <ul>
     <li><a href="{base}films/">Films</a>: the documentary, a season a year on <a href="{YT}" target="_blank" rel="noopener">YouTube</a>.</li>
     <li><a href="{base}wear/">Wear</a>: beaded earrings and bracelets made by hand, sold through our Etsy shop. Apparel we designed is coming soon.</li>
-    <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs. A few are free, the rest are in Samsara Digitals, our pattern shop on Etsy.</li>
+    <li><a href="{base}patterns/">Beading patterns</a>: brick stitch and bead loom PDFs. Every one is a free download.</li>
     <li><a href="{base}bead-lab/">The bead lab</a>: a free tool to design your own brick stitch pattern.</li>
     <li><a href="{base}land/#field-guide">The field guide</a>: the animals, plants and mushrooms we've found on the land so far.</li>
   </ul>
@@ -1487,16 +1518,14 @@ def old_patterns_redirect():
 
 def llms_txt():
     lines = ["# Same Old Samsara", "",
-             "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in Central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and brick stitch and bead loom beading patterns (Etsy: samsaradigitals). Motto: the same old cycle.", "",
+             "> The creative outlet of Chad and Daniel: a documentary series about building a homestead on 34 acres in Central New York, handmade beaded jewelry (Etsy: sameoldsamsara), and free brick stitch and bead loom beading patterns. Motto: the same old cycle.", "",
              "Headings on this site are lowercase on purpose. Prices are in USD.", "",
              "## Films", f"- [Films]({SITE}/films/): {DOC_LINE} {FILMS_NEXT}", f"- [YouTube channel]({YT}): Same Old Samsara, a season a year. Season 1 is 2026."]
     lines += [f"- [{x['label'].title()}: {x['title']}](https://www.youtube.com/watch?v={x['id']}) ({x['len']}): {x['blurb']}" for x in reversed(EPISODES)]
-    lines += ["", "## Make", f"- [Make]({SITE}/make/): everything we make in one place, beading patterns and recipes so far.", "", "## Beading patterns", f"PDF patterns. Paid ones are instant downloads from [Samsara Digitals on Etsy]({DIGITALS}). Full library: {SITE}/patterns/", ""]
+    lines += ["", "## Make", f"- [Make]({SITE}/make/): everything we make in one place, beading patterns and recipes so far.", "", "## Beading patterns", f"PDF patterns, all free (leave an email to download). Full library: {SITE}/patterns/", ""]
     for p in pattern_order():
         if p.get("free"):
-            lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): free {p['type']} pattern. {p['blurb']} PDF: {SITE}/assets/{p['file']}.pdf")
-        elif p.get("live"):
-            lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): {p['type']} pattern, ${p['price']}. {p['blurb']} Buy: {listing(p['etsy'])}")
+            lines.append(f"- [{p['name']}]({SITE}/patterns/{slug(p)}/): free {p['type']} pattern. {p['blurb']}")
     lines += ["", "## Tools", f"- [The field guide]({SITE}/land/#field-guide): the animals, plants and fungi found on the land so far, as a small guessing game.", f"- [The bead lab]({SITE}/bead-lab/): free in-browser brick stitch designer. Toho 11/0 colors, mirror mode, exports a word chart.", "",
               "## Recipes"] + [f"- [{r['name'].title()}]({SITE}/recipes/{r['slug']}/): {r['blurb']}" for r in RECIPES] + ["",
               "## Wear", f"- [Wear]({SITE}/wear/): a dozen pieces of handmade jewelry with photos, each linking to its Etsy listing.",
