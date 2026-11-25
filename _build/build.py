@@ -33,7 +33,7 @@ NEWSLETTER = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghs
 COFFEE = "https://buymeacoffee.com/sameoldsamsara"
 # the free pattern signup (js/patterns.js). KIT_FORM = the number in the Kit form's embed code (app.kit.com/forms/<id>/subscriptions).
 # empty = signups go to the old newsletter Google Form instead (same list Chad already has), so nothing waits on the Kit account.
-KIT_FORM = ""
+KIT_FORM = "10244514"
 GFORM_POST = "https://docs.google.com/forms/d/e/1FAIpQLScRgNsfZYcnLNtfIYfRxKKghsxMu-UJ_4P8csSh8ErWM_AfNA/formResponse"
 GFORM_FIELDS = {"email": "entry.1728941795", "name": "entry.2006408268", "ok": "entry.1744470812", "about": "entry.2070174567"}
 # the bird on the site: "crow" (since Nov 18) or "raven" (how it was). THIS ONE WORD SWITCHES IT: the 3D bird in the walk,
