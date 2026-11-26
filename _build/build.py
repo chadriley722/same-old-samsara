@@ -56,6 +56,10 @@ ROAD_LATEST = {"id": "NMxLh7pHhDY", "title": "salem in october.", "place": "Sale
 
 # newest first. a new episode = one dict here + its thumbnail at images/epN-name.jpg (1280x720). date = the day it went live.
 EPISODES = [
+    {"id": "9aohs9HeK98", "title": "our first snow off grid. the rv is still stuck.", "label": "season 1 · episode 7", "len": "25:24", "date": "2026-11-25",
+     "img": "images/ep7-still-stuck.jpg", "blurb": "The RV is still stuck in the mud, and overnight the rain turns to snow. We stay at Chad's mom's and drive back to check on it, try a leaf blower on the ruts and throw out a tray of acorns that waited too long. Then we pull the cards from the trail cams and watch them on the couch. Deer, a coyote and one big cat."},
+    {"id": "JIMyqwNDwpg", "title": "we tried to leave. our truck sank in the mud.", "label": "season 1 · episode 6", "len": "23:41", "date": "2026-11-21",
+     "img": "images/ep6-truck-sank.jpg", "blurb": "One dry day to get the fifth wheel off the land before the snow. About a second after we start rolling, the weight of the RV pushes the back of the truck down into the mud. Boards, branches, gravel dug out of our own driveway and one argument later, the truck is free by sunset. Our home is not."},
     {"id": "ieGJnPSMPlM", "title": "we put 5 trail cams on our 34 acres.", "label": "season 1 · episode 5", "len": "23:42", "date": "2026-11-14",
      "img": "images/ep5-trail-cams.jpg", "blurb": "The trail cams finally go up, one that sends photos to a phone and four that save to SD cards. The first check catches exactly two animals, us. Before that the RV scrapes on our own driveway, and after it come an air pruning bed, bear scratches in the woods and a mushroom hunt that finds almost nothing."},
     {"id": "UhMJZrZttDI", "title": "hunting for a lost well.", "label": "season 1 · episode 4", "len": "26:41", "date": "2026-11-07",
