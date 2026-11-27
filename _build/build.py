@@ -1577,7 +1577,15 @@ def use_bird_stills():
         dst = ROOT / "images/walk" / src.name
         if not dst.exists() or dst.read_bytes() != src.read_bytes(): shutil.copyfile(src, dst)
 
+# Cloudflare Web Analytics (Chad, Nov 27). No cookies. It goes on every page, right before </body>, so it is added
+# here where the pages are written and no page can miss it. To take it off the site: empty this string and rebuild.
+ANALYTICS = """<!-- Cloudflare Web Analytics --><script type='module' src='https://static.cloudflareinsights.com/beacon.min.js' data-cf-beacon='{"token": "a442044bfcf34115afd3ebe7cce36752"}'></script><!-- End Cloudflare Web Analytics -->"""
+
+
 def write(rel, text):
+    if str(rel).endswith(".html") and ANALYTICS:
+        assert text.count("</body>") == 1 and "cloudflareinsights" not in text, rel
+        text = text.replace("</body>", ANALYTICS + "\n</body>")
     f = ROOT / rel; f.parent.mkdir(parents=True, exist_ok=True); f.write_text(text)
 
 def check_jewelry():
